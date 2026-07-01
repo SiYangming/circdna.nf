@@ -1,0 +1,31 @@
+name: circlefinder
+description: Circle_finder eccDNA detection from split/concordant read tables
+keywords:
+  - circle_finder
+  - eccdna
+tools:
+  - circle_finder:
+      description: AWK-based eccDNA detection pipeline by Kumar et al.
+      homepage: https://github.com/pk7zuva/Circle_finder
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - split:
+      type: file
+      description: Tab-delimited split read records
+  - concordant:
+      type: file
+      description: Tab-delimited concordant read records
+output:
+  - circdna:
+      type: file
+      description: Detected microDNA junctions
+      pattern: "*.microDNA-JT.txt"
+  - log:
+      type: file
+      description: Exit log when no eccDNA detected
+      pattern: "*.circle_finder_exit_log.txt"
+authors:
+  - "@SiYangming"

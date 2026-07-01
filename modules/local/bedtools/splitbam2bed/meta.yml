@@ -1,0 +1,30 @@
+name: bedtools_splitbam2bed
+description: Convert split-read BAM (from samblaster) to a formatted BED for circle_finder
+keywords:
+  - bedtools
+  - bamtobed
+  - split-reads
+  - circle_finder
+tools:
+  - bedtools:
+      description: A powerful toolset for genome arithmetic
+      homepage: https://bedtools.readthedocs.io/
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - split_bam:
+      type: file
+      description: BAM containing split reads
+output:
+  - split_txt:
+      type: file
+      description: Tab-delimited split reads
+      pattern: "*.split.txt"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@SiYangming"

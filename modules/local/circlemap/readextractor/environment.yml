@@ -1,0 +1,7 @@
+name: circlemap
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::circle-map=1.1.4

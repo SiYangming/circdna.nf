@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "INPUT_CHECK"
+description: Check input samplesheet and create read channels for FASTQ or BAM input
+keywords:
+  - input
+  - samplesheet
+  - fastq
+  - bam
+components:
+  - samplesheet_check
+input:
+  - samplesheet:
+      description: |
+        Input samplesheet file
+        Structure: path(samplesheet.csv)
+output:
+  - reads:
+      description: |
+        Read channels for FASTQ or BAM input
+        Structure: [ val(meta), [ reads ] ] OR [ val(meta), path(bam) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

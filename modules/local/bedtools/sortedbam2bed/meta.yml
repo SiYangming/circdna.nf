@@ -1,0 +1,32 @@
+name: bedtools_sortedbam2bed
+description: Convert a coordinate sorted BAM to concordant-read BED via bedtools bamtobed (custom downstream awk formatting)
+keywords:
+  - bedtools
+  - bamtobed
+  - circle_finder
+tools:
+  - bedtools:
+      description: A powerful toolset for genome arithmetic
+      homepage: https://bedtools.readthedocs.io/
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - sorted_bam:
+      type: file
+      description: Coordinate sorted BAM
+  - sorted_bai:
+      type: file
+      description: BAI index
+output:
+  - conc_txt:
+      type: file
+      description: Tab-delimited concordant reads
+      pattern: "*.concordant.txt"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@SiYangming"

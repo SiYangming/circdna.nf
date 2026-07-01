@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "CIRCLE_MAP_PIPELINE"
+description: Pipeline for Circle-Map analysis including read extraction, realignment and repeats
+keywords:
+  - circle-map
+  - circdna
+  - circular dna
+  - realign
+  - repeats
+components:
+  - samtools/sort
+  - samtools/index
+  - circlemap/readextractor
+  - circlemap/realign
+  - circlemap/repeats
+input:
+  - bam_sorted:
+      description: |
+        Sorted BAM file
+        Structure: [ val(meta), path(bam) ]
+  - bam_sorted_bai:
+      description: |
+        BAM index file
+        Structure: [ val(meta), path(bai) ]
+  - fasta:
+      description: |
+        Reference genome fasta file
+        Structure: path(fasta)
+  - run_realign:
+      type: boolean
+      description: |
+        Whether to run realignment
+  - run_repeats:
+      type: boolean
+      description: |
+        Whether to run repeats analysis
+output:
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

@@ -1,0 +1,25 @@
+name: samplesheet_check
+description: Validate the pipeline samplesheet using bin/check_samplesheet.py
+keywords:
+  - samplesheet
+  - validation
+tools:
+  - python:
+      description: Python interpreter
+      homepage: https://www.python.org/
+      licence: ["PSF"]
+input:
+  - samplesheet:
+      type: file
+      description: Pipeline samplesheet CSV
+output:
+  - csv:
+      type: file
+      description: Validated samplesheet CSV
+      pattern: "*.csv"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@SiYangming"

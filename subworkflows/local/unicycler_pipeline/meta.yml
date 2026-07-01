@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "UNICYCLER_PIPELINE"
+description: Pipeline for Unicycler circular genome assembly
+keywords:
+  - unicycler
+  - circdna
+  - circular genome
+  - assembly
+components:
+  - unicycler
+  - seqtk/seq
+  - getcircularreads
+  - minimap2/align
+input:
+  - trimmed_reads:
+      description: |
+        Trimmed sequencing reads
+        Structure: [ val(meta), [ reads ] ]
+  - fasta_meta:
+      description: |
+        Reference genome fasta file
+        Structure: [ val(meta), path(fasta) ]
+output:
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

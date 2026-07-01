@@ -8,3 +8,5 @@ testing*
 *.pyc
 null
 .vscode
+/nextflow_work
+/results_testdata

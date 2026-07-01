@@ -1,0 +1,8 @@
+name: getcircularreads
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::coreutils
+  - conda-forge::gzip

@@ -1,0 +1,45 @@
+name: circlemap_realign
+description: Realign candidate split/discordant reads to detect circular DNA breakpoints with Circle-Map Realign
+keywords:
+  - circle-map
+  - eccdna
+  - realign
+tools:
+  - circle-map:
+      description: Circle-Map detects extrachromosomal circular DNA from short-read WGS
+      homepage: https://github.com/iprada/Circle-Map
+      documentation: https://github.com/iprada/Circle-Map/wiki
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - re_bam:
+      type: file
+      description: Coordinate sorted candidate read BAM
+  - re_bai:
+      type: file
+      description: BAI index for re_bam
+  - qname:
+      type: file
+      description: Query-name sorted BAM
+  - sbam:
+      type: file
+      description: Coordinate sorted original BAM
+  - sbai:
+      type: file
+      description: BAI index for sbam
+  - fasta:
+      type: file
+      description: Reference genome FASTA
+output:
+  - bed:
+      type: file
+      description: Detected eccDNA coordinates BED
+      pattern: "*.bed"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@SiYangming"

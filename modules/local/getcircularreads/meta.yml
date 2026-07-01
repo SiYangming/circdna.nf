@@ -1,0 +1,29 @@
+name: getcircularreads
+description: Extract reads marked with circular=true from a Unicycler-derived FASTQ
+keywords:
+  - unicycler
+  - circular
+  - fastq
+tools:
+  - coreutils:
+      description: GNU coreutils
+      homepage: https://www.gnu.org/software/coreutils/
+      licence: ["GPL-3.0-or-later"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - fastq:
+      type: file
+      description: Input FASTQ (gzipped or plain)
+output:
+  - fastq:
+      type: file
+      description: FASTQ containing only circular reads
+      pattern: "*.unicycler.circular.fastq.gz"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@SiYangming"

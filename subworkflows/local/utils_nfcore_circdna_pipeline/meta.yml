@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "UTILS_NFCORE_CIRCDNA_PIPELINE"
+description: Subworkflow with utility functions specific to the nf-core/circdna pipeline
+keywords:
+  - utility
+  - pipeline
+  - initialise
+  - methods
+components: []
+input: []
+output: []
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

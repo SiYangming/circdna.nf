@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "BAM_PREPROCESSING"
+description: BAM preprocessing workflow including BWA MEM alignment, SAMTOOLS indexing, SAMTOOLS stats and Picard MarkDuplicates
+keywords:
+  - bwa
+  - samtools
+  - picard
+  - markduplicates
+  - alignment
+components:
+  - bwa/mem
+  - samtools/index
+  - samtools/faidx
+  - samtools/view
+  - samtools/sort
+  - bam_markduplicates_picard
+  - bam_stats_samtools
+input:
+  - trimmed_reads:
+      description: |
+        Trimmed sequencing reads
+        Structure: [ val(meta), [ reads ] ]
+  - bwa_index:
+      description: |
+        BWA index directory
+        Structure: [ "bwa_index", path(index_dir) ]
+  - fasta_meta:
+      description: |
+        Reference genome fasta file
+        Structure: [ val(meta), path(fasta) ]
+  - run_bwa:
+      type: boolean
+      description: |
+        Whether to run BWA alignment
+output:
+  - bam_sorted:
+      description: |
+        Processed sorted BAM file
+        Structure: [ val(meta), path(bam) ]
+  - bam_sorted_bai:
+      description: |
+        BAM index file
+        Structure: [ val(meta), path(bai) ]
+  - full_bam_sorted:
+      description: |
+        Full sorted BAM file (before filtering)
+        Structure: [ val(meta), path(bam) ]
+  - full_bam_sorted_bai:
+      description: |
+        Full BAM index file
+        Structure: [ val(meta), path(bai) ]
+  - samtools_stats:
+      description: |
+        File containing samtools stats output
+        Structure: [ val(meta), path(stats) ]
+  - samtools_flagstat:
+      description: |
+        File containing samtools flagstat output
+        Structure: [ val(meta), path(flagstat) ]
+  - samtools_idxstats:
+      description: |
+        File containing samtools idxstats output
+        Structure: [ val(meta), path(idxstats) ]
+  - markduplicates_stats:
+      description: |
+        File containing markduplicates stats output
+        Structure: [ val(meta), path(stats) ]
+  - markduplicates_flagstat:
+      description: |
+        File containing markduplicates flagstat output
+        Structure: [ val(meta), path(flagstat) ]
+  - markduplicates_idxstats:
+      description: |
+        File containing markduplicates idxstats output
+        Structure: [ val(meta), path(idxstats) ]
+  - markduplicates_multiqc:
+      description: |
+        MarkDuplicates metrics for MultiQC
+        Structure: [ val(meta), path(metrics) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

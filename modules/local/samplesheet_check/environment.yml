@@ -1,0 +1,7 @@
+name: samplesheet_check
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::python>=3.8

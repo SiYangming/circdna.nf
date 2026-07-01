@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "AMPLICONARCHITECT_PIPELINE"
+description: Pipeline for AmpliconArchitect analysis including CNVkit batch, CNVkit segment and AmpliconSuite
+keywords:
+  - ampliconarchitect
+  - cnvkit
+  - structural variant
+  - WGS
+components:
+  - cnvkit/batch
+  - cnvkit/segment
+  - ampliconsuite
+input:
+  - bam_sorted:
+      description: |
+        Sorted BAM file
+        Structure: [ val(meta), path(bam) ]
+  - bam_sorted_bai:
+      description: |
+        BAM index file
+        Structure: [ val(meta), path(bai) ]
+  - fasta_fai:
+      description: |
+        Reference genome fasta file with index
+        Structure: [ val(meta), path(fasta), path(fai) ]
+  - cnvkit_reference:
+      description: |
+        CNVkit reference file
+        Structure: path(cnn)
+  - mosek_license_dir:
+      description: |
+        Path to Mosek license directory
+        Structure: path(dir)
+  - aa_data_repo:
+      description: |
+        Path to AmpliconArchitect data repository
+        Structure: path(dir)
+output:
+  - cnvkit_cnr:
+      description: |
+        CNVkit coverage report
+        Structure: [ val(meta), path(cnr) ]
+  - cnvkit_cns:
+      description: |
+        CNVkit segment report
+        Structure: [ val(meta), path(cns) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

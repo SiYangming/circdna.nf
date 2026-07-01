@@ -12,21 +12,27 @@ workflow BAM_STATS_SAMTOOLS {
     ch_fasta   // channel: [ val(meta), path(fasta) ]
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     SAMTOOLS_STATS ( ch_bam_bai, ch_fasta )
-    ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
+    ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions_samtools)
 
     SAMTOOLS_FLAGSTAT ( ch_bam_bai )
-    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
+    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions_samtools)
 
     SAMTOOLS_IDXSTATS ( ch_bam_bai )
-    ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions)
+    ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions_samtools)
+
+    ch_multiqc_files = channel.empty()
+        .mix(SAMTOOLS_STATS.out.stats)
+        .mix(SAMTOOLS_FLAGSTAT.out.flagstat)
+        .mix(SAMTOOLS_IDXSTATS.out.idxstats)
+        .transpose().map { row -> row[1] }
 
     emit:
-    stats    = SAMTOOLS_STATS.out.stats       // channel: [ val(meta), path(stats) ]
-    flagstat = SAMTOOLS_FLAGSTAT.out.flagstat // channel: [ val(meta), path(flagstat) ]
-    idxstats = SAMTOOLS_IDXSTATS.out.idxstats // channel: [ val(meta), path(idxstats) ]
-
-    versions = ch_versions                    // channel: [ path(versions.yml) ]
+    stats         = SAMTOOLS_STATS.out.stats       // channel: [ val(meta), path(stats) ]
+    flagstat      = SAMTOOLS_FLAGSTAT.out.flagstat // channel: [ val(meta), path(flagstat) ]
+    idxstats      = SAMTOOLS_IDXSTATS.out.idxstats // channel: [ val(meta), path(idxstats) ]
+    multiqc_files = ch_multiqc_files               // channel: path
+    versions      = ch_versions                    // channel: [ path(versions.yml) ]
 }

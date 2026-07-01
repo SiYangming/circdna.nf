@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "CIRCLE_FINDER_PIPELINE"
+description: Pipeline for circular DNA detection using Circle-Finder
+keywords:
+  - circle-finder
+  - circdna
+  - circular dna
+  - samblaaster
+components:
+  - samtools/sort
+  - samblaster
+  - bedtools/sortedbam2bed
+  - bedtools/splitbam2bed
+  - circlefinder
+input:
+  - bam_sorted:
+      description: |
+        Sorted BAM file (unused)
+        Structure: [ val(meta), path(bam) ]
+  - bam_sorted_bai:
+      description: |
+        BAM index file (unused)
+        Structure: [ val(meta), path(bai) ]
+  - full_bam_sorted:
+      description: |
+        Full sorted BAM file
+        Structure: [ val(meta), path(bam) ]
+  - full_bam_sorted_bai:
+      description: |
+        Full BAM index file
+        Structure: [ val(meta), path(bai) ]
+output:
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

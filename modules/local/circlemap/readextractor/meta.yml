@@ -1,0 +1,31 @@
+name: circlemap_readextractor
+description: Extract reads of interest (split, soft-clipped, discordant) from a query-name-sorted BAM for downstream Circle-Map analysis
+keywords:
+  - circle-map
+  - eccdna
+  - bam
+tools:
+  - circle-map:
+      description: Circle-Map detects extrachromosomal circular DNA from short-read WGS
+      homepage: https://github.com/iprada/Circle-Map
+      documentation: https://github.com/iprada/Circle-Map/wiki
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information, e.g. [ id:'test', single_end:false ]
+  - qname_bam:
+      type: file
+      description: Query-name sorted BAM file
+      pattern: "*.bam"
+output:
+  - bam:
+      type: file
+      description: BAM containing candidate reads for circular DNA detection
+      pattern: "*.circular_read_candidates.bam"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@SiYangming"

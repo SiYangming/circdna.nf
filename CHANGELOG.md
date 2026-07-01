@@ -1,7 +1,38 @@
 # nf-core/circdna: Changelog
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0/).
+
+## v2.0.0 - [2026-06-30]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **MultiQC 报告优化**: 借鉴 riboseq.nf 的处理方式，改进报告生成逻辑，报告内容更丰富
+- **删除废弃模块**: 移除已废弃的 `CUSTOM_DUMPSOFTWAREVERSIONS` 模块（功能由 `softwareVersionsToYAML()` 替代）
+- **离线配置加载修复**: 使用 `/dev/null` 替代不存在的 `empty.config`，支持本地路径配置
+- **iGenomes 配置修复**: 添加 `igenomes_ignored.config` 文件，修复 ignore 模式下的配置加载
+- **添加 arm64 和 emulate_amd64 profile**: 支持 Apple Silicon 原生运行和 x86_64 模拟
+- **添加 gpu 和 wave profile**: 支持 GPU 加速和 Wave 容器自动构建
+- **更新插件版本**: `nf-validation@1.1.3` → `nf-schema@2.5.1`
+- **时间戳文件名**: timeline/report/trace/dag 文件添加时间戳后缀，避免覆盖
+- **安全加固**: `process.shell` 添加 `-C` 选项，禁止输出重定向覆盖文件
+- **补齐 charliecloud registry**: 添加所有容器引擎的默认 registry 配置
+- **添加 CNVkit 模块**: 添加 `nf-core/cnvkit/batch` 和 `nf-core/cnvkit/segment` 模块，支持 WGS 数据分析
+- **SE 数据支持**: 添加单端测序数据支持，samplesheet 解析和各模块均已适配
+- **子工作流拆分**: 将主工作流拆分为 5 个模块化子工作流（`bam_preprocessing`、`circle_map_pipeline`、`circle_finder_pipeline`、`ampliconarchitect_pipeline`、`unicycler_pipeline`）
+
+### Dependencies
+
+- MultiQC: 1.18/1.19 → 1.35
+- BWA: 0.7.17 → 0.7.19
+- Samtools: 1.16.1/1.18 → 1.22.1/1.23.1
+- CNVkit: 0.9.9 → 0.9.13
 
 ## v1.1.0 - [2024-02-03]
 
