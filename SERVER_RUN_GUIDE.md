@@ -65,13 +65,13 @@ rsync -avz --progress /Users/siyangming/nextflow_nf_core/circdnalr.nf/FASTA/*.fa
 
 ## 3. 运行命令
 
-### 3.1 通用运行命令格式
+### 3.1 通用运行命令格式（使用 --fasta 直接指定）
 
 ```bash
 nextflow run main.nf \
     --input samplesheets/<samplesheet.csv> \
     --input_format FASTQ \
-    --genome <genome_name> \
+    --fasta /data1/users/siyangming/FASTA/<fasta_file> \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/<species> \
     -profile server \
@@ -105,7 +105,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
     --input_format FASTQ \
-    --genome Arabidopsis_thaliana \
+    --fasta /data1/users/siyangming/FASTA/Arabidopsis_thaliana.TAIR10.dna.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server \
@@ -120,7 +120,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Artemisia_annua_eccDNA.csv \
     --input_format FASTQ \
-    --genome Artemisia_annua \
+    --fasta /data1/users/siyangming/FASTA/Artemisia_annua_v1.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Artemisia_annua \
     -profile server \
@@ -135,7 +135,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Cryptomeria_japonica_eccDNA.csv \
     --input_format FASTQ \
-    --genome Cryptomeria_japonica \
+    --fasta /data1/users/siyangming/FASTA/Cryptomeria_japonica_1.0.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Cryptomeria_japonica \
     -profile server \
@@ -150,7 +150,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Daucus_carota_eccDNA.csv \
     --input_format FASTQ \
-    --genome Daucus_carota \
+    --fasta /data1/users/siyangming/FASTA/Daucus_carota.ASM162521v1.dna.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Daucus_carota \
     -profile server \
@@ -165,7 +165,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Nicotiana_benthamiana_eccDNA.csv \
     --input_format FASTQ \
-    --genome Nicotiana_benthamiana \
+    --fasta /data1/users/siyangming/FASTA/Nicotiana_benthamiana_v1.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Nicotiana_benthamiana \
     -profile server \
@@ -180,7 +180,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Oryza_sativa_eccDNA.csv \
     --input_format FASTQ \
-    --genome Oryza_sativa \
+    --fasta /data1/users/siyangming/FASTA/Oryza_sativa.IRGSP-1.0.dna.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Oryza_sativa \
     -profile server \
@@ -195,7 +195,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
     --input_format FASTQ \
-    --genome Tragopogon_porrifolius \
+    --fasta /data1/users/siyangming/FASTA/Tragopogon_porrifolius_hap1.1.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Tragopogon_porrifolius \
     -profile server \
@@ -210,7 +210,7 @@ nextflow run main.nf \
 nextflow run main.nf \
     --input samplesheets/circdna_Triticum_aestivum_eccDNA.csv \
     --input_format FASTQ \
-    --genome Triticum_aestivum \
+    --fasta /data1/users/siyangming/FASTA/Triticum_aestivum.IWGSC.dna.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Triticum_aestivum \
     -profile server \
@@ -227,7 +227,7 @@ nextflow run main.nf \
 nohup nextflow run main.nf \
     --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
     --input_format FASTQ \
-    --genome Arabidopsis_thaliana \
+    --fasta /data1/users/siyangming/FASTA/Arabidopsis_thaliana.TAIR10.dna.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server \
@@ -247,7 +247,7 @@ cd /data1/users/siyangming/circdna.nf
 nextflow run main.nf \
     --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
     --input_format FASTQ \
-    --genome Arabidopsis_thaliana \
+    --fasta /data1/users/siyangming/FASTA/Arabidopsis_thaliana.TAIR10.dna.fa.gz \
     --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server
@@ -289,29 +289,36 @@ nextflow run main.nf \
 ```bash
 #!/bin/bash
 
-SPECIES=(
-    "Arabidopsis_thaliana"
-    "Artemisia_annua"
-    "Cryptomeria_japonica"
-    "Daucus_carota"
-    "Nicotiana_benthamiana"
-    "Oryza_sativa"
-    "Tragopogon_porrifolius"
-    "Triticum_aestivum"
+declare -A SPECIES_MAP=(
+    ["Arabidopsis_thaliana"]="Arabidopsis_thaliana.TAIR10.dna.fa.gz"
+    ["Artemisia_annua"]="Artemisia_annua_v1.fa.gz"
+    ["Cryptomeria_japonica"]="Cryptomeria_japonica_1.0.fa.gz"
+    ["Daucus_carota"]="Daucus_carota.ASM162521v1.dna.fa.gz"
+    ["Helianthus_annuus"]="Helianthus_annuus.HanXRQr2.0-SUNRISE.dna.fa.gz"
+    ["Nicotiana_benthamiana"]="Nicotiana_benthamiana_v1.fa.gz"
+    ["Oryza_sativa"]="Oryza_sativa.IRGSP-1.0.dna.fa.gz"
+    ["Tragopogon_porrifolius"]="Tragopogon_porrifolius_hap1.1.fa.gz"
+    ["Triticum_aestivum"]="Triticum_aestivum.IWGSC.dna.fa.gz"
+    ["Solanum_lycopersicum"]="Solanum_lycopersicum_gca000188115v5cm.SL4.0.dna.fa.gz"
+    ["Alopecurus_myosuroides"]="Alopecurus_myosuroides_v1.fa.gz"
+    ["Amaranthus_palmeri"]="Amaranthus_palmeri_v01.fa.gz"
 )
 
 mkdir -p /data1/users/siyangming/eccDNA_results/logs
 mkdir -p /data1/users/siyangming/eccDNA_results/reports
 
-for species in "${SPECIES[@]}"; do
+for species in "${!SPECIES_MAP[@]}"; do
+    fasta_file="${SPECIES_MAP[$species]}"
+
     echo "========================================="
     echo "Running ${species}..."
+    echo "FASTA: ${fasta_file}"
     echo "========================================="
 
     nextflow run main.nf \
         --input "samplesheets/circdna_${species}_eccDNA.csv" \
         --input_format FASTQ \
-        --genome "${species}" \
+        --fasta "/data1/users/siyangming/FASTA/${fasta_file}" \
         --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
         --outdir "/data1/users/siyangming/eccDNA_results/${species}" \
         -profile server \
