@@ -73,9 +73,9 @@ nextflow run main.nf \
     --genome <genome_name> \
     --outdir /data1/users/siyangming/eccDNA_results/<species> \
     -profile server \
-    -with-report /data1/users/siyangming/reports/<species>_report.html \
-    -with-timeline /data1/users/siyangming/reports/<species>_timeline.html \
-    -with-trace /data1/users/siyangming/reports/<species>_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/<species>_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/<species>_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/<species>_trace.txt
 ```
 
 ### 3.2 可用基因组列表
@@ -105,9 +105,9 @@ nextflow run main.nf \
     --genome Arabidopsis_thaliana \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Arabidopsis_thaliana_report.html \
-    -with-timeline /data1/users/siyangming/reports/Arabidopsis_thaliana_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Arabidopsis_thaliana_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_trace.txt
 ```
 
 #### Artemisia_annua (青蒿)
@@ -118,9 +118,9 @@ nextflow run main.nf \
     --genome Artemisia_annua \
     --outdir /data1/users/siyangming/eccDNA_results/Artemisia_annua \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Artemisia_annua_report.html \
-    -with-timeline /data1/users/siyangming/reports/Artemisia_annua_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Artemisia_annua_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Artemisia_annua_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Artemisia_annua_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Artemisia_annua_trace.txt
 ```
 
 #### Cryptomeria_japonica (日本柳杉)
@@ -131,9 +131,9 @@ nextflow run main.nf \
     --genome Cryptomeria_japonica \
     --outdir /data1/users/siyangming/eccDNA_results/Cryptomeria_japonica \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Cryptomeria_japonica_report.html \
-    -with-timeline /data1/users/siyangming/reports/Cryptomeria_japonica_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Cryptomeria_japonica_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Cryptomeria_japonica_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Cryptomeria_japonica_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Cryptomeria_japonica_trace.txt
 ```
 
 #### Daucus_carota (胡萝卜)
@@ -144,9 +144,9 @@ nextflow run main.nf \
     --genome Daucus_carota \
     --outdir /data1/users/siyangming/eccDNA_results/Daucus_carota \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Daucus_carota_report.html \
-    -with-timeline /data1/users/siyangming/reports/Daucus_carota_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Daucus_carota_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Daucus_carota_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Daucus_carota_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Daucus_carota_trace.txt
 ```
 
 #### Nicotiana_benthamiana (本氏烟草)
@@ -157,9 +157,9 @@ nextflow run main.nf \
     --genome Nicotiana_benthamiana \
     --outdir /data1/users/siyangming/eccDNA_results/Nicotiana_benthamiana \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Nicotiana_benthamiana_report.html \
-    -with-timeline /data1/users/siyangming/reports/Nicotiana_benthamiana_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Nicotiana_benthamiana_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Nicotiana_benthamiana_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Nicotiana_benthamiana_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Nicotiana_benthamiana_trace.txt
 ```
 
 #### Oryza_sativa (水稻)
@@ -170,9 +170,9 @@ nextflow run main.nf \
     --genome Oryza_sativa \
     --outdir /data1/users/siyangming/eccDNA_results/Oryza_sativa \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Oryza_sativa_report.html \
-    -with-timeline /data1/users/siyangming/reports/Oryza_sativa_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Oryza_sativa_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Oryza_sativa_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Oryza_sativa_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Oryza_sativa_trace.txt
 ```
 
 #### Tragopogon_porrifolius (婆罗门参)
@@ -183,9 +183,9 @@ nextflow run main.nf \
     --genome Tragopogon_porrifolius \
     --outdir /data1/users/siyangming/eccDNA_results/Tragopogon_porrifolius \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Tragopogon_porrifolius_report.html \
-    -with-timeline /data1/users/siyangming/reports/Tragopogon_porrifolius_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Tragopogon_porrifolius_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_trace.txt
 ```
 
 #### Triticum_aestivum (小麦)
@@ -196,9 +196,9 @@ nextflow run main.nf \
     --genome Triticum_aestivum \
     --outdir /data1/users/siyangming/eccDNA_results/Triticum_aestivum \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Triticum_aestivum_report.html \
-    -with-timeline /data1/users/siyangming/reports/Triticum_aestivum_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Triticum_aestivum_trace.txt
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_trace.txt
 ```
 
 ## 4. 后台运行
@@ -211,10 +211,10 @@ nohup nextflow run main.nf \
     --genome Arabidopsis_thaliana \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server \
-    -with-report /data1/users/siyangming/reports/Arabidopsis_thaliana_report.html \
-    -with-timeline /data1/users/siyangming/reports/Arabidopsis_thaliana_timeline.html \
-    -with-trace /data1/users/siyangming/reports/Arabidopsis_thaliana_trace.txt \
-    > /data1/users/siyangming/logs/Arabidopsis_thaliana.log 2>&1 &
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_trace.txt \
+    > /data1/users/siyangming/eccDNA_results/logs/Arabidopsis_thaliana.log 2>&1 &
 ```
 
 ### 4.2 使用screen
@@ -241,7 +241,7 @@ nextflow run main.nf \
 tail -f .nextflow.log
 
 # 查看运行日志
-tail -f /data1/users/siyangming/logs/<species>.log
+tail -f /data1/users/siyangming/eccDNA_results/logs/<species>.log
 
 # 查看任务状态
 nextflow log
@@ -278,8 +278,8 @@ SPECIES=(
     "Triticum_aestivum"
 )
 
-mkdir -p /data1/users/siyangming/logs
-mkdir -p /data1/users/siyangming/reports
+mkdir -p /data1/users/siyangming/eccDNA_results/logs
+mkdir -p /data1/users/siyangming/eccDNA_results/reports
 
 for species in "${SPECIES[@]}"; do
     echo "========================================="
@@ -291,9 +291,9 @@ for species in "${SPECIES[@]}"; do
         --genome "${species}" \
         --outdir "/data1/users/siyangming/eccDNA_results/${species}" \
         -profile server \
-        -with-report "/data1/users/siyangming/reports/${species}_report.html" \
-        -with-timeline "/data1/users/siyangming/reports/${species}_timeline.html" \
-        -with-trace "/data1/users/siyangming/reports/${species}_trace.txt"
+        -with-report "/data1/users/siyangming/eccDNA_results/reports/${species}_report.html" \
+        -with-timeline "/data1/users/siyangming/eccDNA_results/reports/${species}_timeline.html" \
+        -with-trace "/data1/users/siyangming/eccDNA_results/reports/${species}_trace.txt"
     
     echo ""
     echo "========================================="
