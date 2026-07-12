@@ -1,0 +1,8 @@
+sample,fastq_1,fastq_2
+SRR32429746_eccDNA,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR32429746/SRR32429746_1.fastq.gz,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR32429746/SRR32429746_2.fastq.gz
+SRR32429747_eccDNA,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR32429747/SRR32429747_1.fastq.gz,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR32429747/SRR32429747_2.fastq.gz
+SRR32429748_eccDNA,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR32429748/SRR32429748_1.fastq.gz,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR32429748/SRR32429748_2.fastq.gz
+SRR36603439_eccDNA,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603439/SRR36603439_1.fastq.gz,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603439/SRR36603439_2.fastq.gz
+SRR36603440_eccDNA,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603440/SRR36603440_1.fastq.gz,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603440/SRR36603440_2.fastq.gz
+SRR36603441_eccDNA,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603441/SRR36603441_1.fastq.gz,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603441/SRR36603441_2.fastq.gz
+SRR36603442_eccDNA,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603442/SRR36603442_1.fastq.gz,/data2/users/liuqi/eccdna/Nicotiana_benthamiana/SRR36603442/SRR36603442_2.fastq.gz

@@ -1,0 +1,5 @@
+sample,fastq_1,fastq_2
+SRR13922189_eccDNA,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922189/SRR13922189_1.fastq.gz,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922189/SRR13922189_2.fastq.gz
+SRR13922190_eccDNA,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922190/SRR13922190_1.fastq.gz,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922190/SRR13922190_2.fastq.gz
+SRR13922191_eccDNA,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922191/SRR13922191_1.fastq.gz,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922191/SRR13922191_2.fastq.gz
+SRR13922192_eccDNA,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922192/SRR13922192_1.fastq.gz,/data2/users/liuqi/eccdna/Daucus_carota/SRR13922192/SRR13922192_2.fastq.gz
