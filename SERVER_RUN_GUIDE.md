@@ -70,7 +70,9 @@ rsync -avz --progress /Users/siyangming/nextflow_nf_core/circdnalr.nf/FASTA/*.fa
 ```bash
 nextflow run main.nf \
     --input samplesheets/<samplesheet.csv> \
+    --input_format FASTQ \
     --genome <genome_name> \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/<species> \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/<species>_report.html \
@@ -102,7 +104,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
+    --input_format FASTQ \
     --genome Arabidopsis_thaliana \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_report.html \
@@ -115,7 +119,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Artemisia_annua_eccDNA.csv \
+    --input_format FASTQ \
     --genome Artemisia_annua \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Artemisia_annua \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Artemisia_annua_report.html \
@@ -128,7 +134,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Cryptomeria_japonica_eccDNA.csv \
+    --input_format FASTQ \
     --genome Cryptomeria_japonica \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Cryptomeria_japonica \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Cryptomeria_japonica_report.html \
@@ -141,7 +149,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Daucus_carota_eccDNA.csv \
+    --input_format FASTQ \
     --genome Daucus_carota \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Daucus_carota \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Daucus_carota_report.html \
@@ -154,7 +164,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Nicotiana_benthamiana_eccDNA.csv \
+    --input_format FASTQ \
     --genome Nicotiana_benthamiana \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Nicotiana_benthamiana \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Nicotiana_benthamiana_report.html \
@@ -167,7 +179,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Oryza_sativa_eccDNA.csv \
+    --input_format FASTQ \
     --genome Oryza_sativa \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Oryza_sativa \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Oryza_sativa_report.html \
@@ -180,7 +194,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
+    --input_format FASTQ \
     --genome Tragopogon_porrifolius \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Tragopogon_porrifolius \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_report.html \
@@ -193,7 +209,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --input samplesheets/circdna_Triticum_aestivum_eccDNA.csv \
+    --input_format FASTQ \
     --genome Triticum_aestivum \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Triticum_aestivum \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_report.html \
@@ -208,7 +226,9 @@ nextflow run main.nf \
 ```bash
 nohup nextflow run main.nf \
     --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
+    --input_format FASTQ \
     --genome Arabidopsis_thaliana \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_report.html \
@@ -226,7 +246,9 @@ cd /data1/users/siyangming/circdna.nf
 
 nextflow run main.nf \
     --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
+    --input_format FASTQ \
     --genome Arabidopsis_thaliana \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
     --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
     -profile server
 
@@ -285,16 +307,18 @@ for species in "${SPECIES[@]}"; do
     echo "========================================="
     echo "Running ${species}..."
     echo "========================================="
-    
+
     nextflow run main.nf \
         --input "samplesheets/circdna_${species}_eccDNA.csv" \
+        --input_format FASTQ \
         --genome "${species}" \
+        --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
         --outdir "/data1/users/siyangming/eccDNA_results/${species}" \
         -profile server \
         -with-report "/data1/users/siyangming/eccDNA_results/reports/${species}_report.html" \
         -with-timeline "/data1/users/siyangming/eccDNA_results/reports/${species}_timeline.html" \
         -with-trace "/data1/users/siyangming/eccDNA_results/reports/${species}_trace.txt"
-    
+
     echo ""
     echo "========================================="
     echo "${species} completed!"
