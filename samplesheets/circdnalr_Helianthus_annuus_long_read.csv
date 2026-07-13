@@ -1,5 +1,5 @@
 sample,fastq_1,fastq_2
-SRR31773424_long_read,/data2/users/liuqi/eccdna/Helianthus_annuus/SRR31773424/SRR31773424.fastq.gz,
-SRR31773425_long_read,/data2/users/liuqi/eccdna/Helianthus_annuus/SRR31773425/SRR31773425.fastq.gz,
-SRR31773426_long_read,/data2/users/liuqi/eccdna/Helianthus_annuus/SRR31773426/SRR31773426.fastq.gz,
-SRR31773427_long_read,/data2/users/liuqi/eccdna/Helianthus_annuus/SRR31773427/SRR31773427.fastq.gz,
+SRR31773424_long_read,/data1/users/siyangming/eccDNA/Helianthus_annuus/SRR31773424.fastq.gz,
+SRR31773425_long_read,/data1/users/siyangming/eccDNA/Helianthus_annuus/SRR31773425.fastq.gz,
+SRR31773426_long_read,/data1/users/siyangming/eccDNA/Helianthus_annuus/SRR31773426.fastq.gz,
+SRR31773427_long_read,/data1/users/siyangming/eccDNA/Helianthus_annuus/SRR31773427.fastq.gz,

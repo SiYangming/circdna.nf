@@ -1,4 +1,4 @@
 sample,fastq_1,fastq_2
-ERR11535566_eccDNA,/data2/users/liuqi/eccdna/Tragopogon_porrifolius/ERR11535566/ERR11535566_1.fastq.gz,/data2/users/liuqi/eccdna/Tragopogon_porrifolius/ERR11535566/ERR11535566_2.fastq.gz
-ERR11535567_eccDNA,/data2/users/liuqi/eccdna/Tragopogon_porrifolius/ERR11535567/ERR11535567_1.fastq.gz,/data2/users/liuqi/eccdna/Tragopogon_porrifolius/ERR11535567/ERR11535567_2.fastq.gz
-ERR11535568_eccDNA,/data2/users/liuqi/eccdna/Tragopogon_porrifolius/ERR11535568/ERR11535568_1.fastq.gz,/data2/users/liuqi/eccdna/Tragopogon_porrifolius/ERR11535568/ERR11535568_2.fastq.gz
+ERR11535566_eccDNA,/data1/users/siyangming/eccDNA/Tragopogon_porrifolius/ERR11535566_1.fastq.gz,/data1/users/siyangming/eccDNA/Tragopogon_porrifolius/ERR11535566_2.fastq.gz
+ERR11535567_eccDNA,/data1/users/siyangming/eccDNA/Tragopogon_porrifolius/ERR11535567_1.fastq.gz,/data1/users/siyangming/eccDNA/Tragopogon_porrifolius/ERR11535567_2.fastq.gz
+ERR11535568_eccDNA,/data1/users/siyangming/eccDNA/Tragopogon_porrifolius/ERR11535568_1.fastq.gz,/data1/users/siyangming/eccDNA/Tragopogon_porrifolius/ERR11535568_2.fastq.gz

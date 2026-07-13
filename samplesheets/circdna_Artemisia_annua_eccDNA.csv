@@ -1,4 +1,4 @@
 sample,fastq_1,fastq_2
-ERR11535563_eccDNA,/data2/users/liuqi/eccdna/Artemisia_annua/ERR11535563/ERR11535563_1.fastq.gz,/data2/users/liuqi/eccdna/Artemisia_annua/ERR11535563/ERR11535563_2.fastq.gz
-ERR11535564_eccDNA,/data2/users/liuqi/eccdna/Artemisia_annua/ERR11535564/ERR11535564_1.fastq.gz,/data2/users/liuqi/eccdna/Artemisia_annua/ERR11535564/ERR11535564_2.fastq.gz
-ERR11535565_eccDNA,/data2/users/liuqi/eccdna/Artemisia_annua/ERR11535565/ERR11535565_1.fastq.gz,/data2/users/liuqi/eccdna/Artemisia_annua/ERR11535565/ERR11535565_2.fastq.gz
+ERR11535563_eccDNA,/data1/users/siyangming/eccDNA/Artemisia_annua/ERR11535563_1.fastq.gz,/data1/users/siyangming/eccDNA/Artemisia_annua/ERR11535563_2.fastq.gz
+ERR11535564_eccDNA,/data1/users/siyangming/eccDNA/Artemisia_annua/ERR11535564_1.fastq.gz,/data1/users/siyangming/eccDNA/Artemisia_annua/ERR11535564_2.fastq.gz
+ERR11535565_eccDNA,/data1/users/siyangming/eccDNA/Artemisia_annua/ERR11535565_1.fastq.gz,/data1/users/siyangming/eccDNA/Artemisia_annua/ERR11535565_2.fastq.gz
