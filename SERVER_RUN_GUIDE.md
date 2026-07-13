@@ -16,7 +16,10 @@
 │   ├── Artemisia_annua_v1.fa.gz
 │   ├── Cryptomeria_japonica_1.0.fa.gz
 │   ├── Nicotiana_benthamiana_v1.fa.gz
-│   └── Tragopogon_porrifolius_hap1.1.fa.gz
+│   ├── Tragopogon_porrifolius_hap1.1.fa.gz
+│   ├── Beta_vulgaris.RefBeet-1.2.2.dna.fa.gz
+│   ├── Lycium_ruthenicum_ASM4143038v1.fa.gz
+│   └── Cynodon_dactylon_ASM4686236v1.fa.gz
 ├── GENE/                            # 基因注释文件（可选）
 ├── circdna.nf/                      # Nextflow流程代码（通过GitHub获取）
 │   ├── samplesheets/                # 样本表文件
@@ -96,6 +99,9 @@ nextflow run main.nf \
 | Cryptomeria_japonica | Cryptomeria_japonica_1.0.fa.gz | 日本柳杉 |
 | Nicotiana_benthamiana | Nicotiana_benthamiana_v1.fa.gz | 本氏烟草 |
 | Tragopogon_porrifolius | Tragopogon_porrifolius_hap1.1.fa.gz | 婆罗门参 |
+| Beta_vulgaris | Beta_vulgaris.RefBeet-1.2.2.dna.fa.gz | 甜菜 |
+| Lycium_ruthenicum | Lycium_ruthenicum_ASM4143038v1.fa.gz | 黑果枸杞 |
+| Cynodon_dactylon | Cynodon_dactylon_ASM4686236v1.fa.gz | 狗牙根 |
 
 ### 3.3 按物种运行命令（二代数据）
 
@@ -216,7 +222,52 @@ nextflow run main.nf \
     -profile server \
     -with-report /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_report.html \
     -with-timeline /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_trace.txt
+    --with-trace /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_trace.txt
+```
+
+#### Beta_vulgaris (甜菜)
+
+```bash
+nextflow run main.nf \
+    --input samplesheets/circdna_Beta_vulgaris_eccDNA.csv \
+    --input_format FASTQ \
+    --fasta /data1/users/siyangming/FASTA/Beta_vulgaris.RefBeet-1.2.2.dna.fa.gz \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
+    --outdir /data1/users/siyangming/eccDNA_results/Beta_vulgaris \
+    -profile server \
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Beta_vulgaris_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Beta_vulgaris_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Beta_vulgaris_trace.txt
+```
+
+#### Lycium_ruthenicum (黑果枸杞)
+
+```bash
+nextflow run main.nf \
+    --input samplesheets/circdna_Lycium_ruthenicum_eccDNA.csv \
+    --input_format FASTQ \
+    --fasta /data1/users/siyangming/FASTA/Lycium_ruthenicum_ASM4143038v1.fa.gz \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
+    --outdir /data1/users/siyangming/eccDNA_results/Lycium_ruthenicum \
+    -profile server \
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Lycium_ruthenicum_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Lycium_ruthenicum_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Lycium_ruthenicum_trace.txt
+```
+
+#### Cynodon_dactylon (狗牙根)
+
+```bash
+nextflow run main.nf \
+    --input samplesheets/circdna_Cynodon_dactylon_eccDNA.csv \
+    --input_format FASTQ \
+    --fasta /data1/users/siyangming/FASTA/Cynodon_dactylon_ASM4686236v1.fa.gz \
+    --circle_identifier 'circexplorer2,circle_finder,circle_map_realign,circle_map_repeats,unicycler' \
+    --outdir /data1/users/siyangming/eccDNA_results/Cynodon_dactylon \
+    -profile server \
+    -with-report /data1/users/siyangming/eccDNA_results/reports/Cynodon_dactylon_report.html \
+    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Cynodon_dactylon_timeline.html \
+    -with-trace /data1/users/siyangming/eccDNA_results/reports/Cynodon_dactylon_trace.txt
 ```
 
 ## 4. 后台运行
@@ -302,6 +353,9 @@ declare -A SPECIES_MAP=(
     ["Solanum_lycopersicum"]="Solanum_lycopersicum_gca000188115v5cm.SL4.0.dna.fa.gz"
     ["Alopecurus_myosuroides"]="Alopecurus_myosuroides_v1.fa.gz"
     ["Amaranthus_palmeri"]="Amaranthus_palmeri_v01.fa.gz"
+    ["Beta_vulgaris"]="Beta_vulgaris.RefBeet-1.2.2.dna.fa.gz"
+    ["Lycium_ruthenicum"]="Lycium_ruthenicum_ASM4143038v1.fa.gz"
+    ["Cynodon_dactylon"]="Cynodon_dactylon_ASM4686236v1.fa.gz"
 )
 
 mkdir -p /data1/users/siyangming/eccDNA_results/logs
