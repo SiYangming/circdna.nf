@@ -1,4 +1,5 @@
 sample,fastq_1,fastq_2
+ERR11838731_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR11838731.fastq.gz,
 ERR10889820_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889820_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889820_2.fastq.gz
 ERR10889821_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889821_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889821_2.fastq.gz
 ERR10889822_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889822_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889822_2.fastq.gz
@@ -26,7 +27,6 @@ ERR10889852_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889852_1.fas
 ERR10889853_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889853_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889853_2.fastq.gz
 ERR10889854_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889854_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889854_2.fastq.gz
 ERR10889855_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889855_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR10889855_2.fastq.gz
-ERR11838731_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR11838731_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR11838731_2.fastq.gz
 ERR12389800_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR12389800_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR12389800_2.fastq.gz
 ERR12389801_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR12389801_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR12389801_2.fastq.gz
 ERR12389802_eccDNA,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR12389802_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR12389802_2.fastq.gz
