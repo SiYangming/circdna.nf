@@ -26,7 +26,17 @@ include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/amplicona
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
 
 workflow CIRCDNA {
-    if (params.fasta) { ch_fasta =  channel.fromPath(params.fasta) } else { exit 1, 'Fasta reference genome not specified!' }
+    if (params.fasta) { 
+        ch_fasta = channel.fromPath(params.fasta) 
+    } else {
+        def genome_fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
+        if (genome_fasta) {
+            params.fasta = genome_fasta
+            ch_fasta = channel.fromPath(genome_fasta)
+        } else {
+            exit 1, 'Fasta reference genome not specified!' 
+        }
+    }
     if (!(params.input_format == "FASTQ" | params.input_format == "BAM")) {
     exit 1, 'Please specifiy --input_format "FASTQ" or "BAM" in capital letters, depending on the input file format.'
     }
