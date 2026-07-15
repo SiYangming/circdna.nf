@@ -1,0 +1,133 @@
+Execution cancelled -- Finishing pending tasks before exit
+ERROR ~ Error executing process > 'NFCORE_CIRCDNA:CIRCDNA:BAM_PREPROCESSING:BAM_MARKDUPLICATES_PICARD:PICARD_MARKDUPLICATES (ERR10889832_eccDNA)'
+
+Caused by:
+  Process `NFCORE_CIRCDNA:CIRCDNA:BAM_PREPROCESSING:BAM_MARKDUPLICATES_PICARD:PICARD_MARKDUPLICATES (ERR10889832_eccDNA)` terminated with an error exit status (1)
+
+
+Command executed:
+
+  picard \
+      -Xmx52428M \
+      MarkDuplicates \
+      --ASSUME_SORTED true --REMOVE_DUPLICATES false --VALIDATION_STRINGENCY LENIENT --TMP_DIR tmp \
+      --INPUT ERR10889832_eccDNA.bam \
+      --OUTPUT ERR10889832_eccDNA.md.bam \
+      --REFERENCE_SEQUENCE Oryza_sativa.IRGSP-1.0.dna.bgz \
+      --METRICS_FILE ERR10889832_eccDNA.md.metrics.txt
+
+Command exit status:
+  1
+
+Command output:
+  (empty)
+
+Command error:
+  /opt/conda/bin/picard: line 5: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8): No such file or directory
+  02:35:18.714 INFO  NativeLibraryLoader - Loading libgkl_compression.so from jar:file:/opt/conda/share/picard-3.4.0-0/picard.jar!/com/intel/gkl/native/libgkl_compression.so
+  [Wed Jul 15 02:35:18 GMT 2026] MarkDuplicates --INPUT ERR10889832_eccDNA.bam --OUTPUT ERR10889832_eccDNA.md.bam --METRICS_FILE ERR10889832_eccDNA.md.metrics.txt --REMOVE_DUPLICATES false --ASSUME_SORTED true --TMP_DIR tmp --VALIDATION_STRINGENCY LENIENT --REFERENCE_SEQUENCE Oryza_sativa.IRGSP-1.0.dna.bgz --MAX_SEQUENCES_FOR_DISK_READ_ENDS_MAP 50000 --MAX_FILE_HANDLES_FOR_READ_ENDS_MAP 8000 --SORTING_COLLECTION_SIZE_RATIO 0.25 --TAG_DUPLICATE_SET_MEMBERS false --REMOVE_SEQUENCING_DUPLICATES false --TAGGING_POLICY DontTag --CLEAR_DT true --DUPLEX_UMI false --FLOW_MODE false --FLOW_DUP_STRATEGY FLOW_QUALITY_SUM_STRATEGY --FLOW_USE_END_IN_UNPAIRED_READS false --FLOW_USE_UNPAIRED_CLIPPED_END false --FLOW_UNPAIRED_END_UNCERTAINTY 0 --FLOW_UNPAIRED_START_UNCERTAINTY 0 --FLOW_SKIP_FIRST_N_FLOWS 0 --FLOW_Q_IS_KNOWN_END false --FLOW_EFFECTIVE_QUALITY_THRESHOLD 15 --ADD_PG_TAG_TO_READS true --DUPLICATE_SCORING_STRATEGY SUM_OF_BASE_QUALITIES --PROGRAM_RECORD_ID MarkDuplicates --PROGRAM_GROUP_NAME MarkDuplicates --READ_NAME_REGEX <optimized capture of last three ':' separated fields as numeric values> --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 --MAX_OPTICAL_DUPLICATE_SET_SIZE 300000 --VERBOSITY INFO --QUIET false --COMPRESSION_LEVEL 5 --MAX_RECORDS_IN_RAM 500000 --CREATE_INDEX false --CREATE_MD5_FILE false --help false --version false --showHidden false --USE_JDK_DEFLATER false --USE_JDK_INFLATER false
+  [Wed Jul 15 02:35:18 GMT 2026] Executing as root@459bf0fd3cfc on Linux 3.10.0-1160.118.1.el7.x86_64 amd64; OpenJDK 64-Bit Server VM 23.0.2-internal-adhoc.conda.src; Deflater: Intel; Inflater: Intel; Provider GCS is available; Picard version: Version:3.4.0
+  INFO  2026-07-15 02:35:18     MarkDuplicates  Start of doWork freeMemory: 222033560; totalMemory: 234881024; maxMemory: 54995714048
+  INFO  2026-07-15 02:35:18     MarkDuplicates  Reading input file and constructing read end information.
+  INFO  2026-07-15 02:35:18     MarkDuplicates  Will retain up to 199259833 data points before spilling to disk.
+  [Wed Jul 15 02:35:20 GMT 2026] picard.sam.markduplicates.MarkDuplicates done. Elapsed time: 0.03 minutes.
+  Runtime.totalMemory()=5536481280
+  To get help, see http://broadinstitute.github.io/picard/index.html#GettingHel
+  Exception in thread "main" java.lang.IllegalArgumentException: File is not a supported reference file type: Oryza_sativa.IRGSP-1.0.dna.bgz
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.lambda$getFastaExtension$0(ReferenceSequenceFileFactory.java:253)
+        at java.base/java.util.Optional.orElseGet(Optional.java:364)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getFastaExtension(ReferenceSequenceFileFactory.java:253)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getReferenceSequenceFile(ReferenceSequenceFileFactory.java:135)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getReferenceSequenceFile(ReferenceSequenceFileFactory.java:122)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getReferenceSequenceFile(ReferenceSequenceFileFactory.java:111)
+        at htsjdk.samtools.cram.ref.ReferenceSource.<init>(ReferenceSource.java:74)
+        at htsjdk.samtools.cram.ref.ReferenceSource.<init>(ReferenceSource.java:70)
+        at htsjdk.samtools.SamReaderFactory$SamReaderFactoryImpl.referenceSequence(SamReaderFactory.java:262)
+executor >  local (8)
+[ae/a8ba14] NFC…a_Oryza_sativa_eccDNA.csv) | 1 of 1, cached: 1 ✔
+[e2/2f9873] NFC…FASTQ (ERR12389807_eccDNA) | 40 of 40, cached: 40 ✔
+[54/860499] NFC…ASTQC (ERR10889833_eccDNA) | 41 of 41, cached: 41 ✔
+[11/a52be9] NFC…GALORE (SRR5051138_eccDNA) | 41 of 41, cached: 41 ✔
+[36/b0129b] NFC…_sativa.IRGSP-1.0.dna.bgz) | 1 of 1, cached: 1 ✔
+[da/d6dc02] NFC…_sativa.IRGSP-1.0.dna.bgz) | 1 of 1, cached: 1 ✔
+[4c/602c9b] NFC…A_MEM (ERR10889852_eccDNA) | 2 of 41, cached: 2
+[76/731299] NFC…X_BAM (ERR10889849_eccDNA) | 2 of 2, cached: 1
+[0a/2b78b6] NFC…STATS (ERR10889832_eccDNA) | 1 of 1, cached: 1 ✔
+[3d/520655] NFC…GSTAT (ERR10889832_eccDNA) | 0 of 1
+[e2/2e3693] NFC…STATS (ERR10889832_eccDNA) | 1 of 1, cached: 1
+[5b/315a7c] NFC…CATES (ERR10889832_eccDNA) | 0 of 1 ✘
+[-        ] NFC…ATES_PICARD:SAMTOOLS_INDEX -
+[-        ] NFC…TS_SAMTOOLS:SAMTOOLS_STATS -
+[-        ] NFC…SAMTOOLS:SAMTOOLS_FLAGSTAT -
+[-        ] NFC…SAMTOOLS:SAMTOOLS_IDXSTATS -
+[-        ] NFC…INE:SAMTOOLS_SORT_QNAME_CF -
+[-        ] NFC…FINDER_PIPELINE:SAMBLASTER -
+[-        ] NFC…LINE:BEDTOOLS_SPLITBAM2BED -
+[5b/75d6ab] NFC…M2BED (ERR10889832_eccDNA) | 0 of 1
+[-        ] NFC…NDER_PIPELINE:CIRCLEFINDER -
+[99/66efeb] NFC…YCLER (ERR10889852_eccDNA) | 4 of 41, cached: 4
+[9f/8004ba] NFC…TK_SEQ (SRR5051138_eccDNA) | 4 of 4, cached: 4
+[17/170f3c] NFC…RREADS (SRR5051138_eccDNA) | 4 of 4, cached: 4
+[42/8a3ef3] NFC…_ALIGN (SRR5051136_eccDNA) | 4 of 4, cached: 4
+Plus 7 more processes waiting for tasks…
+Execution cancelled -- Finishing pending tasks before exit
+ERROR ~ Error executing process > 'NFCORE_CIRCDNA:CIRCDNA:BAM_PREPROCESSING:BAM_MARKDUPLICATES_PICARD:PICARD_MARKDUPLICATES (ERR10889832_eccDNA)'
+
+Caused by:
+  Process `NFCORE_CIRCDNA:CIRCDNA:BAM_PREPROCESSING:BAM_MARKDUPLICATES_PICARD:PICARD_MARKDUPLICATES (ERR10889832_eccDNA)` terminated with an error exit status (1)
+
+
+Command executed:
+
+  picard \
+      -Xmx52428M \
+      MarkDuplicates \
+      --ASSUME_SORTED true --REMOVE_DUPLICATES false --VALIDATION_STRINGENCY LENIENT --TMP_DIR tmp \
+      --INPUT ERR10889832_eccDNA.bam \
+      --OUTPUT ERR10889832_eccDNA.md.bam \
+      --REFERENCE_SEQUENCE Oryza_sativa.IRGSP-1.0.dna.bgz \
+      --METRICS_FILE ERR10889832_eccDNA.md.metrics.txt
+
+Command exit status:
+  1
+
+Command output:
+  (empty)
+
+Command error:
+  /opt/conda/bin/picard: line 5: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8): No such file or directory
+  02:35:18.714 INFO  NativeLibraryLoader - Loading libgkl_compression.so from jar:file:/opt/conda/share/picard-3.4.0-0/picard.jar!/com/intel/gkl/native/libgkl_compression.so
+  [Wed Jul 15 02:35:18 GMT 2026] MarkDuplicates --INPUT ERR10889832_eccDNA.bam --OUTPUT ERR10889832_eccDNA.md.bam --METRICS_FILE ERR10889832_eccDNA.md.metrics.txt --REMOVE_DUPLICATES false --ASSUME_SORTED true --TMP_DIR tmp --VALIDATION_STRINGENCY LENIENT --REFERENCE_SEQUENCE Oryza_sativa.IRGSP-1.0.dna.bgz --MAX_SEQUENCES_FOR_DISK_READ_ENDS_MAP 50000 --MAX_FILE_HANDLES_FOR_READ_ENDS_MAP 8000 --SORTING_COLLECTION_SIZE_RATIO 0.25 --TAG_DUPLICATE_SET_MEMBERS false --REMOVE_SEQUENCING_DUPLICATES false --TAGGING_POLICY DontTag --CLEAR_DT true --DUPLEX_UMI false --FLOW_MODE false --FLOW_DUP_STRATEGY FLOW_QUALITY_SUM_STRATEGY --FLOW_USE_END_IN_UNPAIRED_READS false --FLOW_USE_UNPAIRED_CLIPPED_END false --FLOW_UNPAIRED_END_UNCERTAINTY 0 --FLOW_UNPAIRED_START_UNCERTAINTY 0 --FLOW_SKIP_FIRST_N_FLOWS 0 --FLOW_Q_IS_KNOWN_END false --FLOW_EFFECTIVE_QUALITY_THRESHOLD 15 --ADD_PG_TAG_TO_READS true --DUPLICATE_SCORING_STRATEGY SUM_OF_BASE_QUALITIES --PROGRAM_RECORD_ID MarkDuplicates --PROGRAM_GROUP_NAME MarkDuplicates --READ_NAME_REGEX <optimized capture of last three ':' separated fields as numeric values> --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 --MAX_OPTICAL_DUPLICATE_SET_SIZE 300000 --VERBOSITY INFO --QUIET false --COMPRESSION_LEVEL 5 --MAX_RECORDS_IN_RAM 500000 --CREATE_INDEX false --CREATE_MD5_FILE false --help false --version false --showHidden false --USE_JDK_DEFLATER false --USE_JDK_INFLATER false
+  [Wed Jul 15 02:35:18 GMT 2026] Executing as root@459bf0fd3cfc on Linux 3.10.0-1160.118.1.el7.x86_64 amd64; OpenJDK 64-Bit Server VM 23.0.2-internal-adhoc.conda.src; Deflater: Intel; Inflater: Intel; Provider GCS is available; Picard version: Version:3.4.0
+  INFO  2026-07-15 02:35:18     MarkDuplicates  Start of doWork freeMemory: 222033560; totalMemory: 234881024; maxMemory: 54995714048
+  INFO  2026-07-15 02:35:18     MarkDuplicates  Reading input file and constructing read end information.
+  INFO  2026-07-15 02:35:18     MarkDuplicates  Will retain up to 199259833 data points before spilling to disk.
+  [Wed Jul 15 02:35:20 GMT 2026] picard.sam.markduplicates.MarkDuplicates done. Elapsed time: 0.03 minutes.
+  Runtime.totalMemory()=5536481280
+  To get help, see http://broadinstitute.github.io/picard/index.html#GettingHel
+  Exception in thread "main" java.lang.IllegalArgumentException: File is not a supported reference file type: Oryza_sativa.IRGSP-1.0.dna.bgz
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.lambda$getFastaExtension$0(ReferenceSequenceFileFactory.java:253)
+        at java.base/java.util.Optional.orElseGet(Optional.java:364)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getFastaExtension(ReferenceSequenceFileFactory.java:253)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getReferenceSequenceFile(ReferenceSequenceFileFactory.java:135)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getReferenceSequenceFile(ReferenceSequenceFileFactory.java:122)
+        at htsjdk.samtools.reference.ReferenceSequenceFileFactory.getReferenceSequenceFile(ReferenceSequenceFileFactory.java:111)
+        at htsjdk.samtools.cram.ref.ReferenceSource.<init>(ReferenceSource.java:74)
+        at htsjdk.samtools.cram.ref.ReferenceSource.<init>(ReferenceSource.java:70)
+        at htsjdk.samtools.SamReaderFactory$SamReaderFactoryImpl.referenceSequence(SamReaderFactory.java:262)
+        at picard.sam.markduplicates.util.AbstractMarkDuplicatesCommandLineProgram.openInputs(AbstractMarkDuplicatesCommandLineProgram.java:246)
+        at picard.sam.markduplicates.MarkDuplicates.buildSortedReadEndLists(MarkDuplicates.java:509)
+        at picard.sam.markduplicates.MarkDuplicates.doWork(MarkDuplicates.java:270)
+        at picard.cmdline.CommandLineProgram.instanceMain(CommandLineProgram.java:281)
+        at picard.cmdline.PicardCommandLine.instanceMain(PicardCommandLine.java:105)
+        at picard.cmdline.PicardCommandLine.main(PicardCommandLine.java:115)
+
+Work dir:
+  /data1/users/siyangming/nextflow_nf_core/circdna.nf/work/5b/315a7cb385f029f923f809849291db
+
+Container:
+  community.wave.seqera.io/library/picard:3.4.0--e9963040df0a9bf6
+
+Tip: you can try to figure out what's wrong by changing to the process work dir and showing the script file named `.command.sh`
+
+ -- Check '.nextflow.log' file for details
