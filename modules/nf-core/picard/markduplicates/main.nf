@@ -25,6 +25,7 @@ process PICARD_MARKDUPLICATES {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def suffix = task.ext.suffix ?: "${reads.getExtension()}"
+    def reference = fasta ? "--REFERENCE_SEQUENCE ${fasta}" : ""
     def avail_mem = 3072
     if (!task.memory) {
         log.info('[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.')
@@ -33,21 +34,10 @@ process PICARD_MARKDUPLICATES {
         avail_mem = (task.memory.mega * 0.8).intValue()
     }
 
-    def ref_file = fasta
-    if (fasta && fasta.getName().endsWith('.bgz')) {
-        ref_file = fasta.getName().replaceAll('\\.bgz$', '.gz')
-    }
-
-    def reference = fasta ? "--REFERENCE_SEQUENCE ${ref_file}" : ""
-
     if ("${reads}" == "${prefix}.${suffix}") {
         error("Input and output names are the same, use \"task.ext.prefix\" to disambiguate!")
     }
     """
-    if [[ -f "${fasta}" && "${fasta}" != "${ref_file}" ]]; then
-        ln -s "${fasta}" "${ref_file}"
-    fi
-
     picard \
         -Xmx${avail_mem}M \
         MarkDuplicates \
