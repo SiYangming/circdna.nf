@@ -1,9 +1,7 @@
 sample,fastq_1,fastq_2
-SRR28004411_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/SRR28004411.fastq.gz,
-SRR28004412_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/SRR28004412.fastq.gz,
-CRR1082977_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082977_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082977_2.fastq.gz
-CRR1082978_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082978_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082978_2.fastq.gz
-CRR1082979_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082979_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082979_2.fastq.gz
-CRR1082980_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082980_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082980_2.fastq.gz
-CRR924678_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924678_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924678_2.fastq.gz
-CRR924679_eccDNA,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924679_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924679_2.fastq.gz
+CRR1082978,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082978_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082978_2.fastq.gz
+CRR924679,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924679_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924679_2.fastq.gz
+CRR924678,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924678_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR924678_2.fastq.gz
+CRR1082980,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082980_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082980_2.fastq.gz
+CRR1082977,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082977_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082977_2.fastq.gz
+CRR1082979,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082979_1.fastq.gz,/data1/users/siyangming/eccDNA/Solanum_lycopersicum/CRR1082979_2.fastq.gz

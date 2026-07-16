@@ -1,0 +1,9 @@
+# 数据问题记录
+
+## SRR24335769 (Arabidopsis_thaliana)
+- 状态: 待修复
+- 问题: SRA 数据有错误，实际应为二代双端数据，但下载后只有单端文件
+- 当前记录: /data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769.fastq.gz (单端)
+- 预期: /data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769_1.fastq.gz 和 /data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769_2.fastq.gz (双端)
+- 处理方式: 已提交反馈，等待修复后重新下载
+- 当前处理: 按双端二代数据处理，等待修复后替换文件

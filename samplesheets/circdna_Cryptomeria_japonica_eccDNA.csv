@@ -1,3 +1,3 @@
 sample,fastq_1,fastq_2
-DRR426557_eccDNA,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426557_1.fastq.gz,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426557_2.fastq.gz
-DRR426558_eccDNA,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426558_1.fastq.gz,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426558_2.fastq.gz
+DRR426557,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426557_1.fastq.gz,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426557_2.fastq.gz
+DRR426558,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426558_1.fastq.gz,/data1/users/siyangming/eccDNA/Cryptomeria_japonica/DRR426558_2.fastq.gz

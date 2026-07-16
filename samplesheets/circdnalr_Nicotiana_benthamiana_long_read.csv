@@ -1,5 +1,5 @@
 sample,fastq_1,fastq_2
-SRR36603439_long_read,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603439.fastq.gz,
-SRR36603440_long_read,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603440.fastq.gz,
-SRR36603441_long_read,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603441.fastq.gz,
-SRR36603442_long_read,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603442.fastq.gz,
+SRR36603439,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603439.fastq.gz,
+SRR36603440,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603440.fastq.gz,
+SRR36603441,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603441.fastq.gz,
+SRR36603442,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR36603442.fastq.gz,
