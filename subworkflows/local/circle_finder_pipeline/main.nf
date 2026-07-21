@@ -15,13 +15,14 @@ workflow CIRCLE_FINDER_PIPELINE {
     _bam_sorted_bai          // channel: [ val(meta), path(bai) ] (unused)
     full_bam_sorted         // channel: [ val(meta), path(bam) ]
     full_bam_sorted_bai     // channel: [ val(meta), path(bai) ]
+    fasta_fai               // channel: [ val(meta), path(fasta), path(fai) ]
 
     main:
     ch_versions = channel.empty()
 
     SAMTOOLS_SORT_QNAME_CF (
         full_bam_sorted,
-        channel.empty(),
+        fasta_fai,
         ''
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_QNAME_CF.out.versions_samtools)

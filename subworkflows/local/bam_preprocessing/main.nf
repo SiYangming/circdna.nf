@@ -127,6 +127,7 @@ workflow BAM_PREPROCESSING {
     bam_sorted_bai           = ch_bam_sorted_bai
     full_bam_sorted          = ch_full_bam_sorted
     full_bam_sorted_bai      = ch_full_bam_sorted_bai
+    fasta_fai                = ch_fasta_fai
     samtools_stats           = ch_samtools_stats
     samtools_flagstat        = ch_samtools_flagstat
     samtools_idxstats        = ch_samtools_idxstats

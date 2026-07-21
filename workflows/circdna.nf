@@ -15,7 +15,6 @@ include { TRIMGALORE    }    from '../modules/nf-core/trimgalore/main'
 include { BWA_INDEX     }   from '../modules/nf-core/bwa/index/main'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_BAM        }   from '../modules/nf-core/samtools/sort/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BAM      }   from '../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FAIDX                            }   from '../modules/nf-core/samtools/faidx/main'
 include { CIRCEXPLORER2_PARSE       }     from '../modules/nf-core/circexplorer2/parse/main'
 include { MULTIQC }     from '../modules/nf-core/multiqc/main'
 
@@ -26,15 +25,15 @@ include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/amplicona
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
 
 workflow CIRCDNA {
-    if (params.fasta) { 
-        ch_fasta = channel.fromPath(params.fasta) 
+    if (params.fasta) {
+        ch_fasta = channel.fromPath(params.fasta)
     } else {
         def genome_fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
         if (genome_fasta) {
             params.fasta = genome_fasta
             ch_fasta = channel.fromPath(genome_fasta)
         } else {
-            exit 1, 'Fasta reference genome not specified!' 
+            exit 1, 'Fasta reference genome not specified!'
         }
     }
     if (!(params.input_format == "FASTQ" | params.input_format == "BAM")) {
@@ -218,6 +217,7 @@ workflow CIRCDNA {
         ch_bam_sorted_bai           = BAM_PREPROCESSING.out.bam_sorted_bai
         ch_full_bam_sorted          = BAM_PREPROCESSING.out.full_bam_sorted
         ch_full_bam_sorted_bai      = BAM_PREPROCESSING.out.full_bam_sorted_bai
+        ch_fasta_fai                = BAM_PREPROCESSING.out.fasta_fai
         ch_samtools_stats           = BAM_PREPROCESSING.out.samtools_stats
         ch_samtools_flagstat        = BAM_PREPROCESSING.out.samtools_flagstat
         ch_samtools_idxstats        = BAM_PREPROCESSING.out.samtools_idxstats
@@ -229,7 +229,6 @@ workflow CIRCDNA {
     }
 
     if (run_ampliconarchitect) {
-        def ch_fasta_fai = ch_fasta_meta.join(SAMTOOLS_FAIDX.out.fai)
         AMPLICONARCHITECT_PIPELINE (
             ch_bam_sorted,
             ch_bam_sorted_bai,
@@ -249,7 +248,8 @@ workflow CIRCDNA {
             ch_bam_sorted,
             ch_bam_sorted_bai,
             ch_full_bam_sorted,
-            ch_full_bam_sorted_bai
+            ch_full_bam_sorted_bai,
+            ch_fasta_fai
         )
         ch_versions = ch_versions.mix(CIRCLE_FINDER_PIPELINE.out.versions)
     }
@@ -262,6 +262,7 @@ workflow CIRCDNA {
             ch_bam_sorted,
             ch_bam_sorted_bai,
             ch_fasta,
+            ch_fasta_fai,
             run_circle_map_realign,
             run_circle_map_repeats
         )
