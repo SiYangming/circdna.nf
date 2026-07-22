@@ -32,7 +32,7 @@ input:
 output:
   - versions:
       description: |
-        Files containing software versions
+        Software versions
         Structure: [ path(versions.yml) ]
 authors:
   - "@siyangming"

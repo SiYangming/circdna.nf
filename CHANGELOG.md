@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0/).
 
+## v3.0.1 - [2026-07-22]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **Unicycler kmers 配置优化**: 在 `conf/test_local.config` 中添加 UNICYCLER 的 `ext.args` 覆盖配置，测试环境只使用 27kmer 进行组装，减少计算时间和资源消耗
+- **参考基因组通道类型修复**: 将参考基因组的 `fasta`/`fai` 通道从 queue channel 转为 value channel（通过 `.first()`），确保所有样本共享的单一参考基因组文件能被无限次消费，修复流程第一次运行只处理一个样本的问题
+
 ## v3.0.0 - [2026-07-14]
 
 ### Credits
