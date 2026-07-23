@@ -45,5 +45,5 @@ workflow UNICYCLER_PIPELINE {
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions_minimap2)
 
     emit:
-    versions = ch_versions
+    ch_versions.map { v -> v }
 }

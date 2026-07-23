@@ -44,21 +44,11 @@
 
 ```bash
 ssh siyangming@192.168.16.65
-
 conda activate nextflow
-
-mkdir -p /data1/users/siyangming/FASTA
-mkdir -p /data1/users/siyangming/GENE
-mkdir -p /data1/users/siyangming/eccDNA_results
-mkdir -p /data1/users/siyangming/eccDNA_results/reports
-mkdir -p /data1/users/siyangming/eccDNA_results/logs
-
-cd /data1/users/siyangming
-git clone https://github.com/SiYangming/circdna.nf.git
-cd circdna.nf
+cd /data1/users/siyangming/nextflow_nf_core/circdna.nf/
 ```
 
-## 2. 上传FASTA文件到服务器
+## 同步FASTA文件到服务器
 
 ```bash
 rsync -avz --progress /Users/siyangming/nextflow_nf_core/circdnalr.nf/FASTA/*.fa.gz \
@@ -215,7 +205,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Artemisia_annua (青蒿)
+### 胡萝卜 (Daucus_carota)
 
 ```bash
 screen -S circdna_Artemisia_annua
@@ -232,7 +222,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Beta_vulgaris (甜菜)
+### 向日葵 (Helianthus_annuus)
 
 ```bash
 screen -S circdna_Beta_vulgaris
@@ -249,7 +239,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Cryptomeria_japonica (日本柳杉)
+### 本氏烟草 (Nicotiana_benthamiana)
 
 ```bash
 screen -S circdna_Cryptomeria_japonica
@@ -266,7 +256,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Cynodon_dactylon (狗牙根)
+### 甜菜 (Beta_vulgaris)
 
 ```bash
 screen -S circdna_Cynodon_dactylon
@@ -283,7 +273,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Daucus_carota (胡萝卜)
+### 黑果枸杞 (Lycium_ruthenicum)
 
 ```bash
 screen -S circdna_Daucus_carota
@@ -300,7 +290,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Helianthus_annuus (向日葵)
+### 婆罗门参 (Tragopogon_porrifolius)
 
 ```bash
 screen -S circdna_Helianthus_annuus
@@ -317,7 +307,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Lycium_ruthenicum (黑果枸杞)
+### 狗牙根 (Cynodon_dactylon)
 
 ```bash
 screen -S circdna_Lycium_ruthenicum
@@ -334,7 +324,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Nicotiana_benthamiana (本氏烟草)
+### 青蒿 (Artemisia_annua)
 
 ```bash
 screen -S circdna_Nicotiana_benthamiana
@@ -351,7 +341,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Oryza_sativa (水稻)
+### 苋 (Amaranthus_palmeri)
 
 ```bash
 screen -S circdna_Oryza_sativa
@@ -368,7 +358,7 @@ nextflow run main.nf \
     -resume
 ```
 
-#### Solanum_lycopersicum (番茄)
+### 黑麦草 (Alopecurus_myosuroides) — 大基因组
 
 ```bash
 screen -S circdna_Solanum_lycopersicum
@@ -439,9 +429,7 @@ nextflow run main.nf \
     -resume
 ```
 
-## 4. 后台运行
-
-### 4.1 使用nohup
+## 常用操作
 
 ```bash
 screen -S circdna_Triticum_aestivum
@@ -465,27 +453,16 @@ nextflow run main.nf \
     -with-trace /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_trace.txt \
     -resume
 # Ctrl+A+D 退出screen
-# screen -r circdna_Arabidopsis 重新连接
-```
 
-## 5. 监控运行状态
+tail -f /data1/users/siyangming/eccDNA_results/reports/<species>_trace.txt
 
-```bash
-screen -S circdna_Triticum_aestivum
-cd nextflow_nf_core/circdna.nf/
+screen -S circdna_<species>
 conda activate nextflow
-```
-
-## 6. 重新运行
-
-```bash
-screen -S circdna_Triticum_aestivum
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
+cd /data1/users/siyangming/nextflow_nf_core/circdna.nf/
 nextflow run main.nf \
-    --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
-    --genome Arabidopsis_thaliana \
-    --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
+    --input samplesheets/circdna_<species>_eccDNA.csv \
+    --genome <species> \
+    --outdir /data1/users/siyangming/eccDNA_results/<species> \
     -profile server \
     -resume
 ```

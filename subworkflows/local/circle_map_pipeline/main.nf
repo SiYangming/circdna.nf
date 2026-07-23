@@ -14,16 +14,18 @@ workflow CIRCLE_MAP_PIPELINE {
     take:
     bam_sorted              // channel: [ val(meta), path(bam) ]
     bam_sorted_bai          // channel: [ val(meta), path(bai) ]
-    fasta                   // channel: path(fasta)
+    fasta_fai               // channel (value): [ val(meta), path(fasta), path(fai) ]
     run_realign             // boolean: whether to run realign
     run_repeats             // boolean: whether to run repeats
 
     main:
     ch_versions = channel.empty()
 
+    def ch_fasta_fai = fasta_fai
+
     SAMTOOLS_SORT_QNAME_CM (
         bam_sorted,
-        channel.empty(),
+        ch_fasta_fai,
         'bai'
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_QNAME_CM.out.versions_samtools)
@@ -35,7 +37,7 @@ workflow CIRCLE_MAP_PIPELINE {
 
     SAMTOOLS_SORT_RE (
         CIRCLEMAP_READEXTRACTOR.out.bam,
-        channel.empty(),
+        ch_fasta_fai,
         'bai'
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_RE.out.versions_samtools)
@@ -57,11 +59,11 @@ workflow CIRCLE_MAP_PIPELINE {
 
         CIRCLEMAP_REALIGN (
             ch_cm_realign_in,
-            fasta
+            fasta_fai.map { _meta, fasta, _fai -> fasta }
         )
         ch_versions = ch_versions.mix(CIRCLEMAP_REALIGN.out.versions)
     }
 
     emit:
-    versions = ch_versions
+    ch_versions.map { v -> v }
 }

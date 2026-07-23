@@ -28,7 +28,9 @@ workflow BAM_PREPROCESSING {
         channel.value(true)
     )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
-    def ch_fasta_fai = fasta_meta.join(SAMTOOLS_FAIDX.out.fai)
+    def ch_fasta_fai = fasta_meta.join(SAMTOOLS_FAIDX.out.fai).map { meta, fasta, fai ->
+        [meta, fasta, fai]
+    }.first()
 
     if (run_bwa) {
         // BWA MEM ALIGNMENT
@@ -134,5 +136,7 @@ workflow BAM_PREPROCESSING {
     markduplicates_flagstat  = ch_markduplicates_flagstat
     markduplicates_idxstats  = ch_markduplicates_idxstats
     markduplicates_multiqc   = ch_markduplicates_multiqc
+    fai                      = SAMTOOLS_FAIDX.out.fai.first()
+    fasta_fai                = ch_fasta_fai
     versions                 = ch_versions
 }
