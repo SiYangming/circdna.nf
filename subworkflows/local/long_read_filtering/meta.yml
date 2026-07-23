@@ -1,0 +1,25 @@
+name: long_read_filtering
+description: "Filtering workflow for long-read eccDNA candidates"
+keywords:
+  - filtering
+  - eccdna
+  - bedtools
+
+subworkflows:
+  - long_read_filtering:
+      description: "Filter eccDNA candidates using blacklist and repeat regions"
+
+input:
+  - eccdna_candidates:
+      type: channel
+      description: |
+        Channel containing [meta, bed_file]
+
+output:
+  - filtered_candidates:
+      type: channel
+      description: |
+        Channel containing [meta, filtered_bed]
+
+authors:
+  - "@SiYangming"

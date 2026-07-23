@@ -1,0 +1,55 @@
+name: fled
+description: "FLED (Find Large ExtraChromosomal DNA) identifies large circular DNA from long-read sequencing data"
+keywords:
+  - eccdna
+  - circular dna
+  - long-read
+  - fled
+
+tools:
+  - fled:
+      description: "Find Large ExtraChromosomal DNA from long-read sequencing data"
+      homepage: https://github.com/zhqingit/FLED
+      documentation: https://github.com/zhqingit/FLED
+      tool_dev_url: https://github.com/zhqingit/FLED
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - bam:
+      type: file
+      description: BAM file containing aligned reads
+      pattern: "*.bam"
+  - bai:
+      type: file
+      description: BAM index file
+      pattern: "*.bai"
+  - genome_fasta:
+      type: file
+      description: Reference genome FASTA file
+      pattern: "*.fa"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - circles_bed:
+      type: file
+      description: Identified circular DNA candidates in BED format
+      pattern: "*.fled_circles.bed"
+  - report:
+      type: file
+      description: FLED report file
+      pattern: "*.fled_report.txt"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@SiYangming"

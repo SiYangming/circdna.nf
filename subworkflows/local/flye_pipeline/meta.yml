@@ -1,0 +1,26 @@
+name: flye_pipeline
+description: "Flye assembly pipeline for circular DNA identification"
+keywords:
+  - flye
+  - assembly
+  - eccdna
+  - long-read
+
+subworkflows:
+  - flye_pipeline:
+      description: "Run Flye de novo assembly for eccDNA detection"
+
+input:
+  - reads:
+      type: channel
+      description: |
+        Channel containing [meta, fastq]
+
+output:
+  - contigs:
+      type: channel
+      description: |
+        Channel containing [meta, assembly.fasta]
+
+authors:
+  - "@SiYangming"

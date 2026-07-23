@@ -1,0 +1,28 @@
+name: long_read_mapping
+description: "Mapping workflow for long-read sequencing data"
+keywords:
+  - mapping
+  - long-read
+  - minimap2
+
+subworkflows:
+  - long_read_mapping:
+      description: "Map long reads to reference genome using minimap2"
+
+input:
+  - reads:
+      type: channel
+      description: |
+        Channel containing [meta, fastq]
+  - genome_fasta:
+      type: file
+      description: Reference genome FASTA file
+
+output:
+  - mapped_reads:
+      type: channel
+      description: |
+        Channel containing [meta, bam, bai]
+
+authors:
+  - "@SiYangming"

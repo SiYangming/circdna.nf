@@ -32,8 +32,8 @@ workflow NFCORE_CIRCDNA {
     if (params.help) {
         def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
         def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-        def String command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --genome GRCh38 -profile docker -outdir results --circle_identifier [circexplorer2,circle_map_realign,circle_map_repeats,circle_finder,unicycler,ampliconarchitect]"
-        log.info logo + paramsHelp(command) + citation + NfcoreTemplate.dashedLine(params.monochrome_logs)
+        def String command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --genome GRCh38 --outdir results"
+        log.info logo + citation + NfcoreTemplate.dashedLine(params.monochrome_logs)
         System.exit(0)
     }
 

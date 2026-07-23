@@ -13,9 +13,17 @@
                 "errorMessage": "Sample name must be provided and cannot contain spaces"
             },
             "fastq_1": {
-                "type": "string",
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "errorMessage": "FastQ file for reads 1 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^\\S+\\.f(ast)?q\\.gz$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
             },
             "fastq_2": {
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
@@ -29,8 +37,26 @@
                         "maxLength": 0
                     }
                 ]
+            },
+            "input_bam": {
+                "errorMessage": "BAM file cannot contain spaces and must have extension '.bam'",
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^\\S+\\.bam$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
+            },
+            "entrypoint": {
+                "type": "string",
+                "enum": ["cleaned_fastq", "raw_fastq", "subreads", "hifi_bam"],
+                "errorMessage": "Entrypoint must be one of: cleaned_fastq, raw_fastq, subreads, hifi_bam"
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["sample"]
     }
 }

@@ -21,7 +21,7 @@ workflow CIRCLE_FINDER_PIPELINE {
 
     SAMTOOLS_SORT_QNAME_CF (
         full_bam_sorted,
-        channel.empty(),
+        channel.value([[], null, null]).repeat(),
         ''
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_QNAME_CF.out.versions_samtools)

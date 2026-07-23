@@ -1,0 +1,52 @@
+name: pychopper
+description: "PyChopper identifies and trims full-length cDNA reads from Oxford Nanopore sequencing"
+keywords:
+  - ont
+  - nanopore
+  - pychopper
+  - cdna
+  - trimming
+
+tools:
+  - pychopper:
+      description: "Identify and trim full-length cDNA reads from ONT sequencing"
+      homepage: https://github.com/nanoporetech/pychopper
+      documentation: https://github.com/nanoporetech/pychopper
+      tool_dev_url: https://github.com/nanoporetech/pychopper
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - fastq:
+      type: file
+      description: FASTQ file containing ONT cDNA reads
+      pattern: "*.fastq.gz"
+  - primers:
+      type: file
+      description: FASTA file containing primer sequences
+      pattern: "*.fasta"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - full_length_fastq:
+      type: file
+      description: Full-length trimmed reads
+      pattern: "*.full_length.fastq.gz"
+  - stats:
+      type: file
+      description: PyChopper statistics
+      pattern: "*.pychopper.stats.txt"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@SiYangming"

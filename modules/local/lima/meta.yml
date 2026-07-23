@@ -1,0 +1,52 @@
+name: lima
+description: "PacBio Lima removes SMRTbell adapters and primers from reads"
+keywords:
+  - pacbio
+  - lima
+  - primer
+  - adapter
+  - trimming
+
+tools:
+  - lima:
+      description: "Remove SMRTbell adapters and primers from PacBio reads"
+      homepage: https://github.com/PacificBiosciences/barcoding
+      documentation: https://lima.how/
+      tool_dev_url: https://github.com/PacificBiosciences/barcoding
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - fastq:
+      type: file
+      description: FASTQ file containing PacBio reads
+      pattern: "*.fastq.gz"
+  - primers:
+      type: file
+      description: FASTA file containing primer sequences
+      pattern: "*.fasta"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - trimmed_fastq:
+      type: file
+      description: Primer-trimmed reads
+      pattern: "*.primer_removed.fastq.gz"
+  - report:
+      type: file
+      description: Lima report file
+      pattern: "*.lima.report"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@SiYangming"

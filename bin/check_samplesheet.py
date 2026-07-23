@@ -9,12 +9,13 @@ import argparse
 
 def parse_args(args=None):
     Description = "Reformat nf-core/circleseq samplesheet file and check its contents."
-    Epilog = "Example usage: python check_samplesheet.py <FILE_IN> <FILE_OUT>"
+    Epilog = "Example usage: python check_samplesheet.py <FILE_IN> <FILE_OUT> <INPUT_FORMAT> <PROTOCOL>"
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument("FILE_IN", help="Input samplesheet file.")
     parser.add_argument("FILE_OUT", help="Output file.")
     parser.add_argument("INPUT_FORMAT", help="'FASTQ' or 'BAM' File Format.")
+    parser.add_argument("PROTOCOL", help="'short_read', 'pacbio', or 'ont' Sequencing Protocol.")
     return parser.parse_args(args)
 
 
@@ -37,27 +38,28 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-def check_samplesheet(file_in, file_out, input_format):
+def check_samplesheet(file_in, file_out, input_format, protocol):
     """
     This function checks that the samplesheet follows the following structure:
 
+    short_read FASTQ:
     sample,fastq_1,fastq_2
     SAMPLE_PE,SAMPLE_PE_RUN1_1.fastq.gz,SAMPLE_PE_RUN1_2.fastq.gz
-    SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz
     SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,
 
+    short_read BAM:
     sample,bam_file
-    SAMPLE_PE,SAMPLE_PE_RUN1.bam
-    SAMPLE_PE,SAMPLE_PE_RUN2.bam
+    SAMPLE,SAMPLE.bam
 
-    For an example see:
-    https://raw.githubusercontent.com/nf-core/test-datasets/circdna/samplesheet/samplesheet.csv
+    long-read (pacbio/ont):
+    sample,fastq_1,input_bam,entrypoint
+    SAMPLE,SAMPLE.fastq.gz,,cleaned_fastq
+    SAMPLE,,SAMPLE.subreads.bam,subreads
     """
 
     sample_mapping_dict = {}
     with open(file_in, "r") as fin:
-        if input_format == "FASTQ":
-            ## Check header
+        if protocol == "short_read" and input_format == "FASTQ":
             MIN_COLS = 2
             HEADER = ["sample", "fastq_1", "fastq_2"]
             header = [x.strip('"') for x in fin.readline().strip().split(",")]
@@ -65,11 +67,9 @@ def check_samplesheet(file_in, file_out, input_format):
                 print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
                 sys.exit(1)
 
-            ## Check sample entries
             for line in fin:
                 lspl = [x.strip().strip('"') for x in line.strip().split(",")]
 
-                # Check valid number of columns per row
                 if len(lspl) < len(HEADER):
                     print_error(
                         "Invalid number of columns (minimum = {})!".format(len(HEADER)),
@@ -84,13 +84,11 @@ def check_samplesheet(file_in, file_out, input_format):
                         line,
                     )
 
-                ## Check sample name entries
                 sample, fastq_1, fastq_2 = lspl[: len(HEADER)]
                 sample = sample.replace(" ", "_")
                 if not sample:
                     print_error("Sample entry has not been specified!", "Line", line)
 
-                ## Check FastQ file extension
                 for fastq in [fastq_1, fastq_2]:
                     if fastq:
                         if fastq.find(" ") != -1:
@@ -101,16 +99,15 @@ def check_samplesheet(file_in, file_out, input_format):
                                 "Line",
                                 line,
                             )
-                ## Auto-detect paired-end/single-end
-                sample_info = []  ## [single_end, fastq_1, fastq_2]
-                if sample and fastq_1 and fastq_2:  ## Paired-end short reads
+
+                sample_info = []
+                if sample and fastq_1 and fastq_2:
                     sample_info = ["0", fastq_1, fastq_2]
-                elif sample and fastq_1 and not fastq_2:  ## Single-end short reads
+                elif sample and fastq_1 and not fastq_2:
                     sample_info = ["1", fastq_1, fastq_2]
                 else:
                     print_error("Invalid combination of columns provided!", "Line", line)
 
-                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] }
                 if sample not in sample_mapping_dict:
                     sample_mapping_dict[sample] = [sample_info]
                 else:
@@ -119,7 +116,7 @@ def check_samplesheet(file_in, file_out, input_format):
                     else:
                         sample_mapping_dict[sample].append(sample_info)
 
-        elif input_format == "BAM":
+        elif protocol == "short_read" and input_format == "BAM":
             MIN_COLS = 2
             HEADER = ["sample", "bam"]
             header = [x.strip('"') for x in fin.readline().strip().split(",")]
@@ -127,11 +124,9 @@ def check_samplesheet(file_in, file_out, input_format):
                 print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
                 sys.exit(1)
 
-            ## Check sample entries
             for line in fin:
                 lspl = [x.strip().strip('"') for x in line.strip().split(",")]
 
-                # Check valid number of columns per row
                 if len(lspl) < len(HEADER):
                     print_error(
                         "Invalid number of columns (minimum = {})!".format(len(HEADER)),
@@ -146,13 +141,11 @@ def check_samplesheet(file_in, file_out, input_format):
                         line,
                     )
 
-                ## Check sample name entries
                 sample, bam = lspl[: len(HEADER)]
                 sample = sample.replace(" ", "_")
                 if not sample:
                     print_error("Sample entry has not been specified!", "Line", line)
 
-                ## Check bam file extension
                 if bam:
                     if bam.find(" ") != -1:
                         print_error("BAM file contains spaces!", "Line", line)
@@ -164,7 +157,65 @@ def check_samplesheet(file_in, file_out, input_format):
                         )
                 sample_info = ["1", bam]
 
-                ## Create sample mapping dictionary = { sample: [ bam ] }
+                if sample not in sample_mapping_dict:
+                    sample_mapping_dict[sample] = [sample_info]
+                else:
+                    if sample_info in sample_mapping_dict[sample]:
+                        print_error("Samplesheet contains duplicate rows!", "Line", line)
+                    else:
+                        sample_mapping_dict[sample].append(sample_info)
+
+        elif protocol in ["pacbio", "ont"]:
+            MIN_COLS = 1
+            HEADER = ["sample", "fastq_1", "input_bam", "entrypoint"]
+            header = [x.strip('"') for x in fin.readline().strip().split(",")]
+            if header[:1] != ["sample"]:
+                print("ERROR: Please check samplesheet header -> {} should start with 'sample'".format(",".join(header)))
+                sys.exit(1)
+
+            for line in fin:
+                lspl = [x.strip().strip('"') for x in line.strip().split(",")]
+
+                while len(lspl) < len(HEADER):
+                    lspl.append("")
+
+                sample, fastq_1, input_bam, entrypoint = lspl[: len(HEADER)]
+                sample = sample.replace(" ", "_")
+                if not sample:
+                    print_error("Sample entry has not been specified!", "Line", line)
+
+                if fastq_1:
+                    if fastq_1.find(" ") != -1:
+                        print_error("FastQ file contains spaces!", "Line", line)
+                    if not fastq_1.endswith(".fastq.gz") and not fastq_1.endswith(".fq.gz"):
+                        print_error(
+                            "FastQ file does not have extension '.fastq.gz' or '.fq.gz'!",
+                            "Line",
+                            line,
+                        )
+
+                if input_bam:
+                    if input_bam.find(" ") != -1:
+                        print_error("BAM file contains spaces!", "Line", line)
+                    if not input_bam.endswith(".bam"):
+                        print_error(
+                            "BAM file does not have extension '.bam'!",
+                            "Line",
+                            line,
+                        )
+
+                if entrypoint and entrypoint not in ["cleaned_fastq", "raw_fastq", "subreads", "hifi_bam"]:
+                    print_error(
+                        "Invalid entrypoint '{}'! Must be one of: cleaned_fastq, raw_fastq, subreads, hifi_bam".format(entrypoint),
+                        "Line",
+                        line,
+                    )
+
+                if not fastq_1 and not input_bam:
+                    print_error("Either fastq_1 or input_bam must be provided!", "Line", line)
+
+                sample_info = ["1", fastq_1, input_bam, entrypoint]
+
                 if sample not in sample_mapping_dict:
                     sample_mapping_dict[sample] = [sample_info]
                 else:
@@ -174,18 +225,16 @@ def check_samplesheet(file_in, file_out, input_format):
                         sample_mapping_dict[sample].append(sample_info)
 
         else:
-            print_error("INPUT_FORMAT needs to be either 'FASTQ' or 'BAM'")
+            print_error("INPUT_FORMAT needs to be either 'FASTQ' or 'BAM' and PROTOCOL needs to be 'short_read', 'pacbio', or 'ont'")
             sys.exit(1)
 
-        ## Write validated samplesheet with appropriate columns
         if len(sample_mapping_dict) > 0:
             out_dir = os.path.dirname(file_out)
             make_dir(out_dir)
             with open(file_out, "w") as fout:
-                if input_format == "FASTQ":
+                if protocol == "short_read" and input_format == "FASTQ":
                     fout.write(",".join(["sample", "single_end", "fastq_1", "fastq_2"]) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
-                        ## Check that multiple runs of the same sample are of the same datatype
                         if not all(x[0] == sample_mapping_dict[sample][0][0] for x in sample_mapping_dict[sample]):
                             print_error(
                                 "Multiple runs of a sample must be of the same datatype!",
@@ -194,11 +243,16 @@ def check_samplesheet(file_in, file_out, input_format):
 
                         for idx, val in enumerate(sample_mapping_dict[sample]):
                             fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
-                elif input_format == "BAM":
+                elif protocol == "short_read" and input_format == "BAM":
                     fout.write(",".join(["sample", "idx", "bam"]) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
                         for idx, val in enumerate(sample_mapping_dict[sample]):
                             fout.write(",".join(["{}".format(sample)] + val) + "\n")
+                elif protocol in ["pacbio", "ont"]:
+                    fout.write(",".join(["sample", "single_end", "fastq_1", "input_bam", "entrypoint"]) + "\n")
+                    for sample in sorted(sample_mapping_dict.keys()):
+                        for idx, val in enumerate(sample_mapping_dict[sample]):
+                            fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
 
         else:
             print_error("No entries to process!", "Samplesheet: {}".format(file_in))
@@ -206,7 +260,7 @@ def check_samplesheet(file_in, file_out, input_format):
 
 def main(args=None):
     args = parse_args(args)
-    check_samplesheet(args.FILE_IN, args.FILE_OUT, args.INPUT_FORMAT)
+    check_samplesheet(args.FILE_IN, args.FILE_OUT, args.INPUT_FORMAT, args.PROTOCOL)
 
 
 if __name__ == "__main__":

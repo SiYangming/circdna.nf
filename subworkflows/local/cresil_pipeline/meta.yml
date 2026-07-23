@@ -1,0 +1,32 @@
+name: cresil_pipeline
+description: "CReSIL eccDNA identification pipeline for long-read data"
+keywords:
+  - eccdna
+  - cresil
+  - long-read
+
+subworkflows:
+  - cresil_pipeline:
+      description: "Run CReSIL eccDNA identification"
+
+input:
+  - reads:
+      type: channel
+      description: |
+        Channel containing [meta, fastq]
+  - genome_fasta:
+      type: file
+      description: Reference genome FASTA file
+
+output:
+  - eccdna_candidates:
+      type: channel
+      description: |
+        Channel containing [meta, eccdna_final.txt]
+  - annotated_eccdna:
+      type: channel
+      description: |
+        Channel containing [meta, annotated.txt]
+
+authors:
+  - "@SiYangming"
