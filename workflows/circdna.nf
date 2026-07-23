@@ -23,6 +23,12 @@ include { CIRCLE_MAP_PIPELINE            } from '../subworkflows/local/circle_ma
 include { CIRCLE_FINDER_PIPELINE         } from '../subworkflows/local/circle_finder_pipeline/main'
 include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/ampliconarchitect_pipeline/main'
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
+include { LONG_READ_PREPROCESSING        } from '../subworkflows/local/long_read_preprocessing/main'
+include { LONG_READ_MAPPING             } from '../subworkflows/local/long_read_mapping/main'
+include { CRESIL_PIPELINE               } from '../subworkflows/local/cresil_pipeline/main'
+include { FLED_PIPELINE                 } from '../subworkflows/local/fled_pipeline/main'
+include { FLYE_PIPELINE                 } from '../subworkflows/local/flye_pipeline/main'
+include { LONG_READ_FILTERING           } from '../subworkflows/local/long_read_filtering/main'
 
 workflow CIRCDNA {
     if (params.fasta) { 
@@ -106,15 +112,88 @@ workflow CIRCDNA {
     ch_markduplicates_flagstat  = channel.empty()
     ch_markduplicates_idxstats  = channel.empty()
     ch_markduplicates_multiqc   = channel.empty()
+    ch_fastqc_multiqc           = channel.empty()
+    ch_trimgalore_multiqc       = channel.empty()
+    ch_trimgalore_multiqc_log   = channel.empty()
 
-    // Check file format
-    if (params.input_format == "FASTQ") {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
+    // Check protocol first - long-read analysis is independent
+    if (params.protocol in ["pacbio", "ont"]) {
+        def lr_branch = params.long_read_identifier.split(",")
+        def run_cresil = ("cresil" in lr_branch)
+        def run_fled = ("fled" in lr_branch)
+        def run_flye = ("flye" in lr_branch)
+
         INPUT_CHECK (
             file(params.input)
         )
+        .reads
+        .set { ch_long_reads }
+        ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+
+        LONG_READ_PREPROCESSING (
+            ch_long_reads
+        )
+        .preprocessed_fastq
+        .set { ch_preprocessed_fastq }
+
+        if (run_cresil) {
+            CRESIL_PIPELINE (
+                ch_preprocessed_fastq,
+                ch_fasta
+            )
+            .eccdna_candidates
+            .map { meta, file -> [ meta, file ] }
+            .set { ch_cresil_candidates }
+
+            LONG_READ_FILTERING (
+                ch_cresil_candidates
+            )
+            .filtered_candidates
+            .set { ch_filtered_cresil }
+        }
+
+        if (run_fled) {
+            LONG_READ_MAPPING (
+                ch_preprocessed_fastq,
+                ch_fasta
+            )
+            .mapped_reads
+            .set { ch_long_read_mapped }
+
+            FLED_PIPELINE (
+                ch_long_read_mapped,
+                ch_fasta
+            )
+            .eccdna_candidates
+            .map { meta, file -> [ meta, file ] }
+            .set { ch_fled_candidates }
+
+            LONG_READ_FILTERING (
+                ch_fled_candidates
+            )
+            .filtered_candidates
+            .set { ch_filtered_fled }
+        }
+
+        if (run_flye) {
+            FLYE_PIPELINE (
+                ch_preprocessed_fastq
+            )
+            .contigs
+            .map { meta, file -> [ meta, file ] }
+            .set { ch_flye_contigs }
+        }
+
+    } else {
+        // Short-read analysis
+        // Check file format
+        if (params.input_format == "FASTQ") {
+            //
+            // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+            //
+            INPUT_CHECK (
+                file(params.input)
+            )
         .reads
         .map {
             meta, fastq ->
@@ -281,6 +360,7 @@ workflow CIRCDNA {
             ch_fasta_meta
         )
         ch_versions = ch_versions.mix(UNICYCLER_PIPELINE.out)
+    }
     }
 
     //

@@ -1,0 +1,8 @@
+name: pychopper
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - pychopper>=2.7.1
+  - python>=3.8

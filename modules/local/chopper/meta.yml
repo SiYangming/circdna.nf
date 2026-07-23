@@ -1,0 +1,48 @@
+name: chopper
+description: "Chopper filters and trims Oxford Nanopore reads based on quality and length"
+keywords:
+  - ont
+  - nanopore
+  - chopper
+  - quality
+  - filtering
+
+tools:
+  - chopper:
+      description: "Filter and trim Oxford Nanopore reads"
+      homepage: https://github.com/wdecoster/chopper
+      documentation: https://github.com/wdecoster/chopper
+      tool_dev_url: https://github.com/wdecoster/chopper
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - fastq:
+      type: file
+      description: FASTQ file containing ONT reads
+      pattern: "*.fastq.gz"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - filtered_fastq:
+      type: file
+      description: Quality-filtered reads
+      pattern: "*.filtered.fastq.gz"
+  - stats:
+      type: file
+      description: Chopper statistics
+      pattern: "*.chopper.stats.txt"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@SiYangming"

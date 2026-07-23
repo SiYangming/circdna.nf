@@ -1,0 +1,51 @@
+name: bedtools_intersect
+description: "Bedtools intersect finds overlapping intervals between two BED files"
+keywords:
+  - bedtools
+  - intersect
+  - genomics
+  - intervals
+
+tools:
+  - bedtools:
+      description: "A powerful toolset for genome arithmetic"
+      homepage: https://bedtools.readthedocs.io/
+      documentation: https://bedtools.readthedocs.io/
+      tool_dev_url: https://github.com/arq5x/bedtools2
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - a_bed:
+      type: file
+      description: First BED file
+      pattern: "*.bed"
+  - b_bed:
+      type: file
+      description: Second BED file
+      pattern: "*.bed"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - intersect_bed:
+      type: file
+      description: Overlapping intervals
+      pattern: "*.intersect.bed"
+  - non_overlapping_bed:
+      type: file
+      description: Non-overlapping intervals
+      pattern: "*.non_overlapping.bed"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@SiYangming"

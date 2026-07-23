@@ -75,6 +75,81 @@
                 }
             }
         },
+        "long_read_options": {
+            "title": "Long-read sequencing options",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Options for PacBio/ONT long-read eccDNA analysis",
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "enum": ["short_read", "pacbio", "ont"],
+                    "default": "short_read",
+                    "description": "Sequencing protocol to use. Options: 'short_read' (Illumina), 'pacbio', 'ont'.",
+                    "help_text": "Specify the sequencing protocol. 'short_read' runs the standard Illumina pipeline, 'pacbio' runs the PacBio long-read pipeline, 'ont' runs the Oxford Nanopore long-read pipeline.",
+                    "fa_icon": "fas fa-dna"
+                },
+                "entrypoint": {
+                    "type": "string",
+                    "enum": ["cleaned_fastq", "raw_fastq", "subreads", "hifi_bam"],
+                    "default": "cleaned_fastq",
+                    "description": "Input entrypoint for long-read data. Controls preprocessing depth.",
+                    "help_text": "For PacBio: 'subreads' (raw subreads BAM → PBCCS → LIMA), 'hifi_bam' (HiFi BAM → LIMA), 'raw_fastq' (raw FASTQ → LIMA), 'cleaned_fastq' (ready-to-use FASTQ). For ONT: 'raw_fastq' (raw FASTQ → CHOPPER → PYCHOPPER), 'cleaned_fastq' (ready-to-use FASTQ).",
+                    "fa_icon": "fas fa-arrow-right"
+                },
+                "primers": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Path to primers FASTA file for adapter trimming with Lima/Pychopper.",
+                    "help_text": "Required for PacBio (Lima) and ONT (Pychopper) adapter trimming. Provide a FASTA file containing the primer sequences.",
+                    "fa_icon": "fas fa-file-code"
+                },
+                "long_read_identifier": {
+                    "type": "string",
+                    "default": "cresil,fled,flye",
+                    "description": "Long-read eccDNA identification algorithms to use. Options: 'cresil', 'fled', 'flye'. Multiple can be specified with comma-separated string.",
+                    "help_text": "Specify the long-read eccDNA identification engines. 'cresil' and 'fled' are mapping-based tools; 'flye' is an assembly-based tool. E.g. `--long_read_identifier 'cresil,flye'`.",
+                    "fa_icon": "fas fa-circle-notch"
+                },
+                "min_read_support": {
+                    "type": "integer",
+                    "default": 2,
+                    "minimum": 1,
+                    "description": "Minimum number of supporting reads to retain an eccDNA candidate.",
+                    "help_text": "Filter out eccDNA candidates with fewer supporting reads than this threshold.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "blacklist_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to BED file containing blacklisted genomic regions.",
+                    "help_text": "Filter out eccDNA candidates overlapping with blacklisted regions (e.g., centromeres, telomeres).",
+                    "fa_icon": "fas fa-ban"
+                },
+                "repeats_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to BED file containing repetitive genomic regions.",
+                    "help_text": "Filter out eccDNA candidates overlapping with highly repetitive regions.",
+                    "fa_icon": "fas fa-repeat"
+                },
+                "save_long_read_intermediate": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Save intermediate files from long-read preprocessing.",
+                    "help_text": "Set this parameter to save intermediate files from PBCCS, LIMA, CHOPPER, and PYCHOPPER.",
+                    "fa_icon": "fas fa-save"
+                },
+                "skip_long_read_qc": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Skip quality control steps for long-read data.",
+                    "help_text": "Set this parameter to skip QC steps for long-read preprocessing.",
+                    "fa_icon": "fas fa-fast-forward"
+                }
+            }
+        },
         "reference_genome_options": {
             "title": "Reference genome options",
             "type": "object",
@@ -526,6 +601,7 @@
         { "$ref": "#/definitions/max_job_request_options" },
         { "$ref": "#/definitions/process_skipping_options" },
         { "$ref": "#/definitions/circdna_identifier_options" },
+        { "$ref": "#/definitions/long_read_options" },
         { "$ref": "#/definitions/circle_map_options" },
         { "$ref": "#/definitions/circle_finder_options" },
         { "$ref": "#/definitions/unicycler_options" },

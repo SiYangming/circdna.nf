@@ -1,0 +1,8 @@
+name: lima
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - lima>=2.7.1
+  - samtools>=1.15

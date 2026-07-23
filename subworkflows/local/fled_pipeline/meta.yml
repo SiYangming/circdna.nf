@@ -1,0 +1,28 @@
+name: fled_pipeline
+description: "FLED eccDNA identification pipeline for long-read data"
+keywords:
+  - eccdna
+  - fled
+  - long-read
+
+subworkflows:
+  - fled_pipeline:
+      description: "Run FLED eccDNA identification"
+
+input:
+  - mapped_reads:
+      type: channel
+      description: |
+        Channel containing [meta, bam, bai]
+  - genome_fasta:
+      type: file
+      description: Reference genome FASTA file
+
+output:
+  - eccdna_candidates:
+      type: channel
+      description: |
+        Channel containing [meta, circles.bed]
+
+authors:
+  - "@SiYangming"

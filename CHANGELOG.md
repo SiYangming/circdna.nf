@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0/).
 
-## v3.0.1 - [2026-07-22]
+## v3.1.0 - [2026-07-20]
 
 ### Credits
 
@@ -13,8 +13,24 @@ Special thanks to the following for their input and contributions to the release
 
 ### Enhancements & fixes
 
-- **Unicycler kmers 配置优化**: 在 `conf/test_local.config` 中添加 UNICYCLER 的 `ext.args` 覆盖配置，测试环境只使用 27kmer 进行组装，减少计算时间和资源消耗
-- **参考基因组通道类型修复**: 将参考基因组的 `fasta`/`fai` 通道从 queue channel 转为 value channel（通过 `.first()`），确保所有样本共享的单一参考基因组文件能被无限次消费，修复流程第一次运行只处理一个样本的问题
+- **三代长读长 eccDNA 分析流程**: 在 circdna.nf 中集成 PacBio / ONT 长读长 eccDNA 分析，参考 nanoseq.nf 使用 `--protocol` 参数区分二代/三代，参考 isoseq.nf 使用 `--entrypoint` 参数控制预处理深度
+- **三引擎分析**: 新增 CReSIL（mapping）、FLED（mapping）、Flye（assembly）三种长读长 eccDNA 鉴定引擎，可通过 `--long_read_identifier` 组合启用
+- **平台特异性预处理**: PacBio 分支支持 PBCCS + LIMA；ONT 分支支持 CHOPPER + PYCHOPPER；默认以清洗后的 FASTQ 为入口，支持多级 entrypoint 回退到原始数据
+- **结果收敛与过滤**: 新增长读结果过滤子流程，支持 blacklist/repeats 区域去除及最小 read support 过滤，统一输出标准 BED
+- **模块管理**: nf-core 已有模块（pbccs/lima/chopper/pychopper/flye/minimap2）直接安装使用；CReSIL 从 bio.nf 复制到 modules/local；FLED 在 bio.nf 新建模块后复制到 modules/local
+- **容器策略**: 优先使用 nf-core/biocontainers；FLED 容器在缺失时自行构建并上传至 quay.io/bioinfortools 和 anaconda.org/yangmingsi
+- **参数扩展**: 新增 `protocol`、`entrypoint`、`primers`、`long_read_identifier`、`min_read_support`、`blacklist_bed`、`repeats_bed`、`save_long_read_intermediate`、`skip_long_read_qc` 等参数
+- **样本表兼容**: 扩展样本表校验，支持长读样本表 `sample,fastq_1` 格式及可选 `input_bam` 列
+- **文档与记录**: 所有变更同步记录于 CHANGELOG.md 与 CHANGES&FIX/20260720.md
+- **技术实现**:
+  - 重构主流程 `workflows/circdna.nf`，将长读分析独立于短读分析，避免重复调用 INPUT_CHECK
+  - 修复 `input_check` 子流程中 SAMPLESHEET_CHECK 重复调用问题
+  - 修复 `long_read_preprocessing` 子流程中 LIMA 重复调用问题，合并 lima_hifi 和 lima_fastq 分支
+  - 修复 `long_read_mapping` 子流程中 MINIMAP2_ALIGN 和 SAMTOOLS_SORT 参数传递问题，使用 channel.value() 包装常量值
+  - 修复 `fled_pipeline` 子流程中参数传递问题，将 tuple 拆分为独立 channel
+  - 修复 `cresil_pipeline` 子流程中 channel.value() 使用问题，改为 channel.from()
+  - 修复主流程中 MultiQC 相关 channel 未初始化问题，在流程开始时初始化所有空 channel
+  - 修复 help 信息中 `paramsHelp()` 函数解析命令字符串失败问题，移除该调用
 
 ## v3.0.0 - [2026-07-14]
 
