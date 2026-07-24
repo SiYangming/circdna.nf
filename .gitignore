@@ -2,6 +2,7 @@
 work/
 data/
 results/
+results_test_*/
 .DS_Store
 testing/
 testing*
@@ -11,3 +12,16 @@ null
 /nextflow_work
 /results_testdata
 server.txt
+
+# Temporary capture files
+genome.txt
+program.txt
+scripts/err
+scripts/errors.txt
+scripts/reslts
+scripts/*_trace.txt
+scripts/命令.txt
+*.log
+
+# IDE internal
+.trae/

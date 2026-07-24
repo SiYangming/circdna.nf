@@ -1,7 +1,46 @@
 # nf-core/circdna: Changelog
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0/).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## v3.2.0 - [2026-07-24]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **Phase 0 Bug 修复**: 修复 v3.1.0 遗留的 5 个 bug，确保长读流程基础稳定性
+  - 修复 `FLED_PIPELINE` 输入不匹配问题：`LONG_READ_MAPPING` emit 为 2 元组（无 bai），但 `FLED_PIPELINE` take 声明为 3 元组；新增 `SAMTOOLS_INDEX` 调用并 join 合并 bam+bai 为 3 元组
+  - 修复 `FLYE_PIPELINE` ext.args 设置方式不生效问题：DSL2 中 `.ext.args` 在输出 channel 上设置无效，改由 `conf/modules.config` 中 `withName: 'FLYE'` 设置
+  - 修复 `LONG_READ_FILTERING` 未实现 min_read_support 过滤问题：schema 定义了参数但代码中仅实现 blacklist + repeats 过滤
+  - 新增长读测试配置 `conf/test_pacbio_lr.config` 和 `conf/test_nanopore_lr.config`，本地化测试数据
+  - 修复主流程长读分支 minimap2 preset 切换：`conf/modules.config` 中 `MINIMAP2_ALIGN.ext.args` 改为依据 `meta.platform` 切换 `-ax map-hifi` / `-ax map-ont`
+- **ecc_finder 第四引擎集成**: 新增 ecc_finder 作为第四种 eccDNA 检测引擎，支持 mapping-based（map）和 assembly-based（asm）两种模式
+  - 模块来源：bio.nf 新建分支构建 4 个子模块（map_ont/map_sr/asm_ont/asm_sr），复制到 `modules/local/ecc_finder/`
+  - 容器：`quay.io/bioinfortools/ecc_finder:1.0.0`（自构建上传）
+  - 新增 `ECCFINDER_PIPELINE` 子流程，依据 `--eccfinder_mode`（map|asm|both）和 `--protocol`（pacbio/ont）选择子模块
+  - 新增 `--eccfinder_mode` 参数及 schema 定义
+- **NanoPlot QC 集成**: 在 `LONG_READ_PREPROCESSING` 子流程中集成 NanoPlot QC，对 PacBio 和 ONT 长读数据进行质量控制
+- **Schema 修复**: 
+  - 移除 `circle_identifier` 必填约束（长读模式下非必填）
+  - 新增 `eccfinder_mode` schema 定义（enum: map/asm/both）
+  - 更新 `long_read_identifier` 默认值包含 `eccfinder`
+- **测试验证**: PacBio 和 Nanopore 长读 stub 测试均通过（`test_pacbio_lr` / `test_nanopore_lr` profile）
+- **资源限制**: 测试配置中添加 `process_high`/`process_medium`/`process_low` 资源上限，适配本地测试环境
+- **base.config 资源分配**: 为 13 个长读分析模块新增 `withName` 资源覆盖（PBCCS/LIMA/CHOPPER/PYCHOPPER/CRESIL_*/FLED/FLYE/ECC_FINDER_*/NANOPLOT/FILTER_ECCDNA_BY_SUPPORT）
+- **临时文件清理**: 删除 `genome.txt`、`program.txt`、`scripts/err` 等临时捕获文件，更新 `.gitignore` 防止再次跟踪
+- **Git 同步（Rebase）**: 将 circdnalr 分支 rebase 到远程最新版本，合入 7 个远程提交（短读 Bug 修复 + master 合并），保持线性历史
+  - 合入 `153c4f4`: 修复 CIRCLE_FINDER_PIPELINE / CIRCLE_MAP_PIPELINE 结果不完整问题
+  - 合入 `114cf9c`: 修复单样本处理问题
+  - 合入 `8000897`: 将 fasta/fai 转换为 value channel 并传播到下游子流程
+  - 合入 `4fc4571`: 合并 master（test_local.config 调整）
+  - 合入 `6401fa4`: 更新 server guide 和 report 文件路径（来自 master）
+  - 合入 `df389ad`: 合并 master 到 circdnalr
+  - 合入 `3706645`: 远程版 v3.1.0 长读流程（与本地版内容等价）
 
 ## v3.1.0 - [2026-07-20]
 

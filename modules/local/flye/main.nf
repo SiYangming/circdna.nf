@@ -24,6 +24,7 @@ process FLYE {
     """
     flye \\
         $args \\
+        $reads \\
         --out-dir .
 
     cat <<-END_VERSIONS > versions.yml

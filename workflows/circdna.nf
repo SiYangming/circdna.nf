@@ -28,16 +28,18 @@ include { LONG_READ_MAPPING             } from '../subworkflows/local/long_read_
 include { CRESIL_PIPELINE               } from '../subworkflows/local/cresil_pipeline/main'
 include { FLED_PIPELINE                 } from '../subworkflows/local/fled_pipeline/main'
 include { FLYE_PIPELINE                 } from '../subworkflows/local/flye_pipeline/main'
-include { LONG_READ_FILTERING           } from '../subworkflows/local/long_read_filtering/main'
+include { LONG_READ_FILTERING as LONG_READ_FILTERING_CRESIL } from '../subworkflows/local/long_read_filtering/main'
+include { LONG_READ_FILTERING as LONG_READ_FILTERING_FLED   } from '../subworkflows/local/long_read_filtering/main'
+include { ECCFINDER_PIPELINE            } from '../subworkflows/local/eccfinder_pipeline/main'
 
 workflow CIRCDNA {
-    if (params.fasta) { 
-        ch_fasta = channel.fromPath(params.fasta) 
+    if (params.fasta) {
+        ch_fasta = channel.fromPath(params.fasta).collect()
     } else {
         def genome_fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
         if (genome_fasta) {
             params.fasta = genome_fasta
-            ch_fasta = channel.fromPath(genome_fasta)
+            ch_fasta = channel.fromPath(genome_fasta).collect()
         } else {
             exit 1, 'Fasta reference genome not specified!' 
         }
@@ -47,18 +49,27 @@ workflow CIRCDNA {
     }
     ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }.collect()
 
-    def branch = params.circle_identifier.split(",")
-    def run_circexplorer2 = ("circexplorer2" in branch)
-    def run_circle_map_realign = ("circle_map_realign" in branch)
-    def run_circle_map_repeats = ("circle_map_repeats" in branch)
-    def run_circle_finder = ("circle_finder" in branch)
-    def run_ampliconarchitect = ("ampliconarchitect" in branch)
-    def run_unicycler = ("unicycler" in branch)
-    if (!(run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)) {
-    exit 1, 'circle_identifier param not valid. Please check!'
-    }
-    if (run_unicycler && !params.input_format == "FASTQ") {
-        exit 1, 'Unicycler needs FastQ input. Please specify input_format == "FASTQ", if possible, or don`t run unicycler.'
+    // circle_identifier validation only applies to short-read protocol
+    def run_circexplorer2 = false
+    def run_circle_map_realign = false
+    def run_circle_map_repeats = false
+    def run_circle_finder = false
+    def run_ampliconarchitect = false
+    def run_unicycler = false
+    if (params.protocol == "short_read") {
+        def branch = params.circle_identifier ? params.circle_identifier.split(",") : []
+        run_circexplorer2 = ("circexplorer2" in branch)
+        run_circle_map_realign = ("circle_map_realign" in branch)
+        run_circle_map_repeats = ("circle_map_repeats" in branch)
+        run_circle_finder = ("circle_finder" in branch)
+        run_ampliconarchitect = ("ampliconarchitect" in branch)
+        run_unicycler = ("unicycler" in branch)
+        if (!(run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)) {
+            exit 1, 'circle_identifier param not valid. Please check! For short-read protocol, at least one valid identifier is required.'
+        }
+        if (run_unicycler && !params.input_format == "FASTQ") {
+            exit 1, 'Unicycler needs FastQ input. Please specify input_format == "FASTQ", if possible, or don`t run unicycler.'
+        }
     }
     if (!params.input) { exit 1, 'Input samplesheet not specified!' }
     def bwa_index_exists = false
@@ -122,6 +133,7 @@ workflow CIRCDNA {
         def run_cresil = ("cresil" in lr_branch)
         def run_fled = ("fled" in lr_branch)
         def run_flye = ("flye" in lr_branch)
+        def run_eccfinder = ("eccfinder" in lr_branch)
 
         INPUT_CHECK (
             file(params.input)
@@ -136,6 +148,8 @@ workflow CIRCDNA {
         .preprocessed_fastq
         .set { ch_preprocessed_fastq }
 
+        ch_versions = ch_versions.mix(LONG_READ_PREPROCESSING.out.versions)
+
         if (run_cresil) {
             CRESIL_PIPELINE (
                 ch_preprocessed_fastq,
@@ -145,7 +159,7 @@ workflow CIRCDNA {
             .map { meta, file -> [ meta, file ] }
             .set { ch_cresil_candidates }
 
-            LONG_READ_FILTERING (
+            LONG_READ_FILTERING_CRESIL (
                 ch_cresil_candidates
             )
             .filtered_candidates
@@ -165,10 +179,9 @@ workflow CIRCDNA {
                 ch_fasta
             )
             .eccdna_candidates
-            .map { meta, file -> [ meta, file ] }
             .set { ch_fled_candidates }
 
-            LONG_READ_FILTERING (
+            LONG_READ_FILTERING_FLED (
                 ch_fled_candidates
             )
             .filtered_candidates
@@ -182,6 +195,17 @@ workflow CIRCDNA {
             .contigs
             .map { meta, file -> [ meta, file ] }
             .set { ch_flye_contigs }
+        }
+
+        if (run_eccfinder) {
+            ECCFINDER_PIPELINE (
+                ch_preprocessed_fastq,
+                ch_fasta
+            )
+            .eccdna_candidates
+            .set { ch_eccfinder_candidates }
+
+            ch_versions = ch_versions.mix(ECCFINDER_PIPELINE.out.versions)
         }
 
     } else {

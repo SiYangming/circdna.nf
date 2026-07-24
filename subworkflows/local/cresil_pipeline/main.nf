@@ -5,13 +5,16 @@ include { CRESIL_ANNOTATE }  from '../../../modules/local/cresil/annotate/main'
 workflow CRESIL_PIPELINE {
     take:
     reads           // channel: [ val(meta), fastq ]
-    genome_fasta    // file: reference genome
+    genome_fasta    // channel: reference genome file
 
     main:
-    def genome_fasta_meta = channel.from([[id: 'genome'], genome_fasta])
+    genome_fasta
+        .map { fasta -> [[id: 'genome'], fasta] }
+        .set { genome_fasta_meta }
 
-    def minimap2_index = channel.fromPath(genome_fasta.toString().replace('.fa', '.mmi'), checkIfExists: false)
-        .ifEmpty { channel.empty() }
+    // Use genome fasta as minimap2 index reference (cresil builds index if .mmi not found)
+    genome_fasta_meta
+        .set { minimap2_index }
 
     CRESIL_TRIM ( reads, minimap2_index )
         .trim

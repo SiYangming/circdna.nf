@@ -2,12 +2,29 @@ include { PBCCS }            from '../../../modules/local/pbccs/main'
 include { LIMA }             from '../../../modules/local/lima/main'
 include { CHOPPER }          from '../../../modules/local/chopper/main'
 include { PYCHOPPER }        from '../../../modules/local/pychopper/main'
+include { NANOPLOT }         from '../../../modules/nf-core/nanoplot/main'
 
 workflow LONG_READ_PREPROCESSING {
     take:
     reads   // channel: [ val(meta), fastq, input_bam, entrypoint ]
 
     main:
+    // QC with NanoPlot (works for both PacBio and ONT long reads)
+    ch_nanoplot_versions = channel.empty()
+    ch_nanoplot_qc       = channel.empty()
+    preprocessed_fastq   = channel.empty()
+
+    if (!params.skip_long_read_qc) {
+        reads
+            .map { meta, fastq, bam, ep -> [ meta, fastq ?: bam ] }
+            .filter { meta, f -> f != null }
+            .set { ch_nanoplot_input }
+
+        NANOPLOT ( ch_nanoplot_input )
+        ch_nanoplot_versions = NANOPLOT.out.versions_nanoplot
+        ch_nanoplot_qc       = NANOPLOT.out.txt
+    }
+
     if ( params.protocol == "pacbio" ) {
         def pb_branches = reads
             .branch { meta, fastq, input_bam, entrypoint ->
@@ -19,7 +36,7 @@ workflow LONG_READ_PREPROCESSING {
         def lima_input = channel.empty()
 
         if ( pb_branches.pbccs ) {
-            PBCCS ( 
+            PBCCS (
                 pb_branches.pbccs.map { meta, fastq, input_bam, entrypoint -> meta },
                 pb_branches.pbccs.map { meta, fastq, input_bam, entrypoint -> input_bam },
                 pb_branches.pbccs.map { meta, fastq, input_bam, entrypoint -> input_bam.toString().replace('.bam', '.bai') }
@@ -36,7 +53,7 @@ workflow LONG_READ_PREPROCESSING {
         }
 
         if ( lima_input ) {
-            LIMA ( 
+            LIMA (
                 lima_input.map { meta, fastq -> meta },
                 lima_input.map { meta, fastq -> fastq },
                 channel.value(params.primers)
@@ -47,12 +64,11 @@ workflow LONG_READ_PREPROCESSING {
         }
 
         if ( pb_branches.cleaned ) {
-            pb_branches.cleaned.map { meta, fastq, input_bam, entrypoint -> [ meta, fastq ] }
-                .set { preprocessed_fastq }
+            preprocessed_fastq = pb_branches.cleaned.map { meta, fastq, input_bam, entrypoint -> [ meta, fastq ] }
         }
 
         if ( lima_input ) {
-            lima_output.set { preprocessed_fastq }
+            preprocessed_fastq = lima_output
         }
 
     } else if ( params.protocol == "ont" ) {
@@ -63,7 +79,7 @@ workflow LONG_READ_PREPROCESSING {
             }
 
         if ( ont_branches.raw ) {
-            CHOPPER ( 
+            CHOPPER (
                 ont_branches.raw.map { meta, fastq, input_bam, entrypoint -> meta },
                 ont_branches.raw.map { meta, fastq, input_bam, entrypoint -> fastq }
             )
@@ -71,7 +87,7 @@ workflow LONG_READ_PREPROCESSING {
                 .combine(ont_branches.raw.map { meta, fastq, input_bam, entrypoint -> meta })
                 .set { chopper_output }
 
-            PYCHOPPER ( 
+            PYCHOPPER (
                 chopper_output.map { meta, filtered_fastq -> meta },
                 chopper_output.map { meta, filtered_fastq -> filtered_fastq },
                 channel.value(params.primers)
@@ -82,11 +98,12 @@ workflow LONG_READ_PREPROCESSING {
         }
 
         if ( ont_branches.cleaned ) {
-            ont_branches.cleaned.map { meta, fastq, input_bam, entrypoint -> [ meta, fastq ] }
-                .set { preprocessed_fastq }
+            preprocessed_fastq = ont_branches.cleaned.map { meta, fastq, input_bam, entrypoint -> [ meta, fastq ] }
         }
     }
 
     emit:
-    preprocessed_fastq   // channel: [ val(meta), fastq ]
+    preprocessed_fastq = preprocessed_fastq
+    nanoplot_qc        = ch_nanoplot_qc
+    versions           = ch_nanoplot_versions
 }

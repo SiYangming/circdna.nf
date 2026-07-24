@@ -5,10 +5,7 @@ workflow FLYE_PIPELINE {
     reads   // channel: [ val(meta), fastq ]
 
     main:
-    def flye_args = params.protocol == "pacbio" ? "--pacbio-hifi" : "--nano-hq"
-    
-    FLYE ( reads.map { meta, fastq -> [ meta, fastq ] } )
-        .ext.args = flye_args
+    FLYE ( reads )
         .assembly
         .set { contigs }
 

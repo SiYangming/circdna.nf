@@ -64,13 +64,12 @@
             "title": "Circular DNA identifier options",
             "type": "object",
             "fa_icon": "fas fa-circle-notch",
-            "description": "Options to adjust inital circular DNA identifier",
-            "required": ["circle_identifier"],
+            "description": "Options to adjust inital circular DNA identifier (required for short-read protocol only)",
             "properties": {
                 "circle_identifier": {
                     "type": "string",
-                    "description": "Specifies the circular DNA identification algorithm to use - available 'circle_map_realign', 'circle_map_repeats', 'circle_finder', 'circexplorer2', and 'ampliconarchitect'. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`.",
-                    "help_text": "Specify the circle_identifier branch used. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`.",
+                    "description": "Specifies the circular DNA identification algorithm to use - available 'circle_map_realign', 'circle_map_repeats', 'circle_finder', 'circexplorer2', and 'ampliconarchitect'. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`. Required when --protocol is 'short_read'; ignored for 'pacbio'/'ont'.",
+                    "help_text": "Specify the circle_identifier branch used. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`. Leave empty for long-read protocols (pacbio/ont).",
                     "fa_icon": "fas fa-circle-notch"
                 }
             }
@@ -107,10 +106,18 @@
                 },
                 "long_read_identifier": {
                     "type": "string",
-                    "default": "cresil,fled,flye",
-                    "description": "Long-read eccDNA identification algorithms to use. Options: 'cresil', 'fled', 'flye'. Multiple can be specified with comma-separated string.",
-                    "help_text": "Specify the long-read eccDNA identification engines. 'cresil' and 'fled' are mapping-based tools; 'flye' is an assembly-based tool. E.g. `--long_read_identifier 'cresil,flye'`.",
+                    "default": "cresil,fled,flye,eccfinder",
+                    "description": "Long-read eccDNA identification algorithms to use. Options: 'cresil', 'fled', 'flye', 'eccfinder'. Multiple can be specified with comma-separated string.",
+                    "help_text": "Specify the long-read eccDNA identification engines. 'cresil' and 'fled' are mapping-based tools; 'flye' is an assembly-based tool; 'eccfinder' supports both mapping and assembly modes. E.g. `--long_read_identifier 'cresil,flye'`.",
                     "fa_icon": "fas fa-circle-notch"
+                },
+                "eccfinder_mode": {
+                    "type": "string",
+                    "enum": ["map", "asm", "both"],
+                    "default": "map",
+                    "description": "ecc_finder detection mode. 'map' = mapping-based, 'asm' = assembly-based, 'both' = run both.",
+                    "help_text": "Controls which ecc_finder sub-pipeline runs. map-ont/map-sr for mapping-based detection; asm-ont/asm-sr for assembly-based detection.",
+                    "fa_icon": "fas fa-search"
                 },
                 "min_read_support": {
                     "type": "integer",

@@ -55,6 +55,11 @@
                 "type": "string",
                 "enum": ["cleaned_fastq", "raw_fastq", "subreads", "hifi_bam"],
                 "errorMessage": "Entrypoint must be one of: cleaned_fastq, raw_fastq, subreads, hifi_bam"
+            },
+            "platform": {
+                "type": "string",
+                "enum": ["pacbio", "ont", "illumina"],
+                "errorMessage": "Platform must be one of: pacbio, ont, illumina"
             }
         },
         "required": ["sample"]

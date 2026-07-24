@@ -77,6 +77,7 @@ def create_long_read_channels(LinkedHashMap row) {
     meta.id           = row.sample
     meta.single_end   = row.single_end.toBoolean()
     meta.entrypoint   = row.entrypoint ?: params.entrypoint
+    meta.platform     = row.platform ?: params.protocol
 
     def fastq = null
     def input_bam = null

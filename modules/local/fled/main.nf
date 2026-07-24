@@ -41,4 +41,15 @@ process FLED {
         bedtools: \$(bedtools --version 2>&1 | grep -oP 'v[\\d.]+')
     END_VERSIONS
     """
+
+    stub:
+    """
+    touch ${meta.id}.fled_circles.bed
+    touch ${meta.id}.fled_report.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        fled: "stub"
+    END_VERSIONS
+    """
 }
