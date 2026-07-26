@@ -22,6 +22,3 @@ scripts/reslts
 scripts/*_trace.txt
 scripts/命令.txt
 *.log
-
-# IDE internal
-.trae/
