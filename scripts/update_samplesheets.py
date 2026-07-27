@@ -3,6 +3,7 @@ import os
 import re
 
 BASE_DIR = "/Users/siyangming/nextflow_nf_core/circdna.nf/samplesheets"
+CIRCRNA_BASE_DIR = "/Users/siyangming/nextflow_nf_core/circrna.nf/samplesheets"
 
 SPECIES_NAME_MAP = {
     "Oryza_sativa_Japonica_Group": "Oryza_sativa",
@@ -58,35 +59,26 @@ def read_csv_safe(filepath):
 
 def update_circdna_ngs():
     print("=" * 60)
-    print("Processing circDNA NGS data (including other_clean merge)...")
+    print("Processing circDNA NGS data...")
     print("=" * 60)
 
     ngs_file = os.path.join(BASE_DIR, "circdna_ngs_clean.csv")
-    other_file = os.path.join(BASE_DIR, "circdna_other_clean.csv")
 
     ngs_df = pd.read_csv(ngs_file)
     print(f"  Read {len(ngs_df)} entries from circdna_ngs_clean.csv")
 
-    other_df = read_csv_safe(other_file)
-    other_count = 0
-    if other_df is not None:
-        print(f"  Read {len(other_df)} entries from circdna_other_clean.csv")
-        other_count = len(other_df)
-
-    combined_df = ngs_df.copy()
-    if other_df is not None:
-        combined_df = pd.concat([combined_df, other_df], ignore_index=True)
-
-    species_map = split_by_species(combined_df)
+    species_map = split_by_species(ngs_df)
 
     print(f"\n  Species distribution:")
     total = 0
     for sp, rows in sorted(species_map.items()):
-        print(f"    {sp}: {len(rows)} entries")
+        ecc_count = sum(1 for r in rows if r.get('data_type', 'eccDNA') == 'eccDNA')
+        gdna_count = sum(1 for r in rows if r.get('data_type') == 'gDNA')
+        type_info = f", eccDNA={ecc_count}" if gdna_count == 0 else f", eccDNA={ecc_count}, gDNA={gdna_count}"
+        print(f"    {sp}: {len(rows)} entries{type_info}")
         total += len(rows)
     print(f"    Total: {total}")
 
-    all_rows = []
     existing_files = [f for f in os.listdir(BASE_DIR) if f.startswith("circdna_") and f.endswith("_eccDNA.csv")]
 
     for f in existing_files:
@@ -102,14 +94,6 @@ def update_circdna_ngs():
 
         species_df.to_csv(file_path, index=False)
         print(f"  Created: {file_name} ({len(rows)} entries)")
-
-        all_rows.extend(rows)
-
-    if all_rows:
-        all_df = pd.DataFrame(all_rows)
-        all_file = os.path.join(BASE_DIR, "circdna_all.csv")
-        all_df.to_csv(all_file, index=False)
-        print(f"  Updated: circdna_all.csv ({len(all_rows)} entries)")
 
 def update_circdna_tgs():
     print("\n" + "=" * 60)
@@ -129,7 +113,6 @@ def update_circdna_tgs():
         total += len(rows)
     print(f"    Total: {total}")
 
-    all_rows = []
     existing_files = [f for f in os.listdir(BASE_DIR) if f.startswith("circdnalr_") and f.endswith("_long_read.csv")]
 
     for f in existing_files:
@@ -146,20 +129,12 @@ def update_circdna_tgs():
         species_df.to_csv(file_path, index=False)
         print(f"  Created: {file_name} ({len(rows)} entries)")
 
-        all_rows.extend(rows)
-
-    if all_rows:
-        all_df = pd.DataFrame(all_rows)
-        all_file = os.path.join(BASE_DIR, "circdnalr_all.csv")
-        all_df.to_csv(all_file, index=False)
-        print(f"  Updated: circdnalr_all.csv ({len(all_rows)} entries)")
-
 def update_circrna():
     print("\n" + "=" * 60)
     print("Processing circRNA data...")
     print("=" * 60)
 
-    clean_file = os.path.join(BASE_DIR, "circrna_clean.csv")
+    clean_file = os.path.join(CIRCRNA_BASE_DIR, "circrna_clean.csv")
     df = pd.read_csv(clean_file)
     print(f"  Read {len(df)} entries from circrna_clean.csv")
 
@@ -172,11 +147,10 @@ def update_circrna():
         total += len(rows)
     print(f"    Total: {total}")
 
-    all_rows = []
-    existing_files = [f for f in os.listdir(BASE_DIR) if f.startswith("circrna_") and f.endswith("_circRNA.csv") and f != "circrna_all.csv"]
+    existing_files = [f for f in os.listdir(CIRCRNA_BASE_DIR) if f.startswith("circrna_") and f.endswith("_circRNA.csv")]
 
     for f in existing_files:
-        fp = os.path.join(BASE_DIR, f)
+        fp = os.path.join(CIRCRNA_BASE_DIR, f)
         os.remove(fp)
         print(f"  Deleted: {f} (will be regenerated)")
 
@@ -184,18 +158,10 @@ def update_circrna():
         species_df = pd.DataFrame(rows)
 
         file_name = f"circrna_{sp}_circRNA.csv"
-        file_path = os.path.join(BASE_DIR, file_name)
+        file_path = os.path.join(CIRCRNA_BASE_DIR, file_name)
 
         species_df.to_csv(file_path, index=False)
         print(f"  Created: {file_name} ({len(rows)} entries)")
-
-        all_rows.extend(rows)
-
-    if all_rows:
-        all_df = pd.DataFrame(all_rows)
-        all_file = os.path.join(BASE_DIR, "circrna_all.csv")
-        all_df.to_csv(all_file, index=False)
-        print(f"  Updated: circrna_all.csv ({len(all_rows)} entries)")
 
 def update_ont_isoseq():
     print("\n" + "=" * 60)
