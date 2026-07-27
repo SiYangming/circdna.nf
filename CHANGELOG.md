@@ -3,6 +3,45 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0/).
 
+## v3.2.0 - [2026-07-27]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **增量/减量缓存实现（方案3）**: 重构 `input_check/main.nf`，将 SAMPLESHEET_CHECK 验证步骤与 channel 创建解耦，使用 `Channel.fromPath(samplesheet).splitCsv()` 直接从原始 CSV 解析样本，实现样本级增量/减量缓存（增加或减少样本时，其他样本的任务缓存不受影响）
+- **自动检测单端/双端**: `create_fastq_channels` 和 `create_long_read_channels` 函数支持自动检测 `single_end` 列，兼容无 `single_end` 列的原始 CSV 格式
+- **移除冗余 `.first()` 操作符**: 移除 value channel 上多余的 `.first()` 调用，消除 Nextflow 警告 "The operator `first` is useless when applied to a value channel"
+- **配置优化**:
+  - `test_local.config` 添加 `fasta_base_path = null` 消除参数未定义警告
+  - 添加 `trace.overwrite`、`report.overwrite`、`timeline.overwrite` 配置，支持重复运行覆盖输出
+- **代码清理**:
+  - 恢复 `bam_preprocessing/main.nf` 到原始样式，移除 `SAMTOOLS_VIEW_DEDUP` 步骤
+  - 移除 `--READ_NAME_REGEX null` 参数，测试原生 Picard 处理能力
+  - 清理 `SAMTOOLS_VIEW_DEDUP` 相关配置和注释
+- **文档更新**: 更新 `testdatasets/README.md`，添加样本表说明、本地测试命令和缓存验证步骤
+- **测试文件清理**: 移除冗余测试文件（samplesheet.csv、test_AA_local.csv、test_backcompat.csv、test_incr_lane_*.csv、test_multilane.csv），保留核心缓存测试文件
+
+## v3.1.0 - [2026-07-27]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **样本级增量缓存**: samplesheet 支持可选 `lane` 列（`sample,fastq_1,fastq_2,lane`），使用 sample + lane 明确区分样本与 lane。有 lane 列时按 sample 列值直接分组，不再做隐式 `_T\d+` 归并，实现样本级增量/减量缓存（resume 时未变更样本的任务全部命中缓存）
+- **向后兼容**: 无 lane 列时保留原有 `sample_T1`/`sample_T2` 归并逻辑，旧格式 samplesheet 行为不变
+- **Picard MarkDuplicates 修复**: 在 BAM 预处理中新增 `SAMTOOLS_VIEW_DEDUP` 步骤（`-F 0x900`），过滤 secondary/supplementary alignments，避免多比对重复 read name 导致的 "Value was put into PairInfoMap more than once" 错误
+- **groupTuple 分组修复**: 按 `meta.id` 字段提取分组键，修复按完整 meta map 分组导致同 sample 不同 lane 被错误拆分的问题
+- **BWA_INDEX 资源配置**: test_local profile 中为 BWA_INDEX 单独配置内存（4GB），避免本地测试时 OOM kill
+
 ## v3.0.1 - [2026-07-22]
 
 ### Credits

@@ -118,9 +118,18 @@ workflow CIRCDNA {
         .reads
         .map {
             meta, fastq ->
-                meta.id = meta.id.split('_')[0..-2].join('_')
-                [ meta, fastq ] }
+                if (!meta.containsKey('lane')) {
+                    def parts = meta.id.split('_')
+                    if (parts.size() > 1 && parts[-1] ==~ /T\d+/) {
+                        meta.id = parts[0..-2].join('_')
+                    }
+                }
+                [ meta.id, meta, fastq ] }
         .groupTuple(by: [0])
+        .map { id, meta_list, fastq_list ->
+            def merged_meta = meta_list[0].clone()
+            merged_meta.id = id
+            [ merged_meta, fastq_list ] }
         .branch {
             meta, fastq ->
                 single  : fastq.size() == 1 && meta.single_end

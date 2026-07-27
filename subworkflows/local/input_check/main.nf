@@ -1,41 +1,39 @@
-//
-// Check input samplesheet and get read channels
-//
-
 include { SAMPLESHEET_CHECK } from '../../../modules/local/samplesheet_check/main'
 
 workflow INPUT_CHECK {
     take:
-    samplesheet // file: /path/to/samplesheet.csv
+    samplesheet
 
     main:
+    SAMPLESHEET_CHECK ( samplesheet )
+    ch_versions = SAMPLESHEET_CHECK.out.versions
+
     if ( params.input_format == "FASTQ" ) {
-        SAMPLESHEET_CHECK ( samplesheet )
-            .csv
-            .splitCsv ( header:true, sep:',' )
+        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
             .map { it -> create_fastq_channels(it) }
             .set { reads }
     } else if ( params.input_format == "BAM" ) {
-        SAMPLESHEET_CHECK ( samplesheet )
-            .csv
-            .splitCsv ( header:true, sep:',' )
+        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
             .map { it -> create_bam_channels(it) }
             .set { reads }
-    } else {
-
+    } else if ( params.protocol in ["pacbio", "ont"] ) {
+        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
+            .map { it -> create_long_read_channels(it) }
+            .set { reads }
     }
 
     emit:
-    reads   // channel: [ val(meta), [ reads ] ] OR
-            // channel: [ val(meta),  bam  ]
-    versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
+    reads
+    versions = ch_versions
 }
 
-// Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
+    meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
+    if (row.containsKey('lane') && row.lane) {
+        meta.lane = row.lane
+    }
 
     def array = []
     if (!file(row.fastq_1).exists()) {
@@ -52,7 +50,6 @@ def create_fastq_channels(LinkedHashMap row) {
     return array
 }
 
-// Function to get list of [ meta, bam ]
 def create_bam_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id             = row.sample
@@ -66,4 +63,31 @@ def create_bam_channels(LinkedHashMap row) {
         array = [ meta, file(row.bam) ]
     }
     return array
+}
+
+def create_long_read_channels(LinkedHashMap row) {
+    def meta = [:]
+    meta.id           = row.sample
+    meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
+    meta.entrypoint   = row.entrypoint ?: params.entrypoint
+    meta.platform     = row.platform ?: params.protocol
+
+    def fastq = null
+    def input_bam = null
+
+    if (row.fastq_1 && !row.fastq_1.isEmpty()) {
+        if (!file(row.fastq_1).exists()) {
+            exit 1, "ERROR: Please check input samplesheet -> FastQ file does not exist!\n${row.fastq_1}"
+        }
+        fastq = file(row.fastq_1)
+    }
+
+    if (row.input_bam && !row.input_bam.isEmpty()) {
+        if (!file(row.input_bam).exists()) {
+            exit 1, "ERROR: Please check input samplesheet -> BAM file does not exist!\n${row.input_bam}"
+        }
+        input_bam = file(row.input_bam)
+    }
+
+    return [ meta, fastq, input_bam, meta.entrypoint ]
 }

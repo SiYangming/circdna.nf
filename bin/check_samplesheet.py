@@ -60,9 +60,12 @@ def check_samplesheet(file_in, file_out, input_format):
             ## Check header
             MIN_COLS = 2
             HEADER = ["sample", "fastq_1", "fastq_2"]
+            HEADER_LANE = ["sample", "fastq_1", "fastq_2", "lane"]
             header = [x.strip('"') for x in fin.readline().strip().split(",")]
-            if header[: len(HEADER)] != HEADER:
-                print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
+            has_lane = len(header) >= 4 and header[3] == "lane"
+            expected_header = HEADER_LANE if has_lane else HEADER
+            if header[: len(expected_header)] != expected_header:
+                print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(expected_header)))
                 sys.exit(1)
 
             ## Check sample entries
@@ -70,9 +73,9 @@ def check_samplesheet(file_in, file_out, input_format):
                 lspl = [x.strip().strip('"') for x in line.strip().split(",")]
 
                 # Check valid number of columns per row
-                if len(lspl) < len(HEADER):
+                if len(lspl) < len(expected_header):
                     print_error(
-                        "Invalid number of columns (minimum = {})!".format(len(HEADER)),
+                        "Invalid number of columns (minimum = {})!".format(len(expected_header)),
                         "Line",
                         line,
                     )
@@ -90,6 +93,12 @@ def check_samplesheet(file_in, file_out, input_format):
                 if not sample:
                     print_error("Sample entry has not been specified!", "Line", line)
 
+                lane = ""
+                if has_lane:
+                    lane = lspl[3].strip()
+                    if not lane:
+                        print_error("Lane entry has not been specified!", "Line", line)
+
                 ## Check FastQ file extension
                 for fastq in [fastq_1, fastq_2]:
                     if fastq:
@@ -102,15 +111,15 @@ def check_samplesheet(file_in, file_out, input_format):
                                 line,
                             )
                 ## Auto-detect paired-end/single-end
-                sample_info = []  ## [single_end, fastq_1, fastq_2]
+                sample_info = []  ## [single_end, fastq_1, fastq_2, lane]
                 if sample and fastq_1 and fastq_2:  ## Paired-end short reads
-                    sample_info = ["0", fastq_1, fastq_2]
+                    sample_info = ["0", fastq_1, fastq_2, lane] if has_lane else ["0", fastq_1, fastq_2]
                 elif sample and fastq_1 and not fastq_2:  ## Single-end short reads
-                    sample_info = ["1", fastq_1, fastq_2]
+                    sample_info = ["1", fastq_1, fastq_2, lane] if has_lane else ["1", fastq_1, fastq_2]
                 else:
                     print_error("Invalid combination of columns provided!", "Line", line)
 
-                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] }
+                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2, lane ] }
                 if sample not in sample_mapping_dict:
                     sample_mapping_dict[sample] = [sample_info]
                 else:
@@ -183,7 +192,10 @@ def check_samplesheet(file_in, file_out, input_format):
             make_dir(out_dir)
             with open(file_out, "w") as fout:
                 if input_format == "FASTQ":
-                    fout.write(",".join(["sample", "single_end", "fastq_1", "fastq_2"]) + "\n")
+                    out_header = ["sample", "single_end", "fastq_1", "fastq_2"]
+                    if has_lane:
+                        out_header.append("lane")
+                    fout.write(",".join(out_header) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
                         ## Check that multiple runs of the same sample are of the same datatype
                         if not all(x[0] == sample_mapping_dict[sample][0][0] for x in sample_mapping_dict[sample]):
@@ -193,7 +205,10 @@ def check_samplesheet(file_in, file_out, input_format):
                             )
 
                         for idx, val in enumerate(sample_mapping_dict[sample]):
-                            fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
+                            if has_lane:
+                                fout.write(",".join([sample] + val) + "\n")
+                            else:
+                                fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
                 elif input_format == "BAM":
                     fout.write(",".join(["sample", "idx", "bam"]) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
