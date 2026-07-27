@@ -1,9 +1,3 @@
-sample,fastq_1,fastq_2
-ERR12724678,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724678_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724678_2.fastq.gz
-ERR6326084,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326084_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326084_2.fastq.gz
-ERR12724677,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724677_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724677_2.fastq.gz
-ERR12724681,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724681_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724681_2.fastq.gz
-ERR12724679,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724679_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724679_2.fastq.gz
-ERR12724680,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724680_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724680_2.fastq.gz
-ERR6326085,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326085_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326085_2.fastq.gz
-ERR12724682,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724682_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR12724682_2.fastq.gz
+sample,fastq_1,fastq_2,data_type
+ERR6326084,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326084_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326084_2.fastq.gz,eccDNA
+ERR6326085,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326085_1.fastq.gz,/data1/users/siyangming/eccDNA/Triticum_aestivum/ERR6326085_2.fastq.gz,eccDNA
