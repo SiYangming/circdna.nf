@@ -1,0 +1,462 @@
+WARN: Access to undefined parameter `fasta` -- Initialise it to a default value eg. `params.fasta = some_value`
+[-        ] NFCORE_CIRCDNA:CIRCDNA:INPUT_CHECK:SAMPLESHEET_CHECK                -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:CAT_FASTQ                                    -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:FASTQC                                       -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:TRIMGALORE                                   -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:BWA_INDEX                                    -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:BAM_PREPROCESSING:SAMTOOLS_FAIDX             -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:BAM_PREPROCESSING:BWA_MEM                    -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:BAM_PREPROCESSING:SAMTOOLS_INDEX_BAM         -
+[-        ] NFC…DNA:CIRCDNA:BAM_PREPROCESSING:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS -
+[-        ] NFC…:CIRCDNA:BAM_PREPROCESSING:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT -
+[-        ] NFC…:CIRCDNA:BAM_PREPROCESSING:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS -
+[-        ] NFC…M_PREPROCESSING:BAM_MARKDUPLICATES_PICARD:PICARD_MARKDUPLICATES -
+[-        ] NFC…CDNA:BAM_PREPROCESSING:BAM_MARKDUPLICATES_PICARD:SAMTOOLS_INDEX -
+[-        ] NFC…ING:BAM_MARKDUPLICATES_PICARD:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS -
+[-        ] NFC…:BAM_MARKDUPLICATES_PICARD:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT -
+[-        ] NFC…:BAM_MARKDUPLICATES_PICARD:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS -
+[-        ] NFC…E_CIRCDNA:CIRCDNA:CIRCLE_FINDER_PIPELINE:SAMTOOLS_SORT_QNAME_CF -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:CIRCLE_FINDER_PIPELINE:SAMBLASTER            -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:CIRCLE_FINDER_PIPELINE:BEDTOOLS_SPLITBAM2BED -
+[-        ] NFC…E_CIRCDNA:CIRCDNA:CIRCLE_FINDER_PIPELINE:BEDTOOLS_SORTEDBAM2BED -
+[-        ] NFCORE_CIRCDNA:CIRCDNA:CIRCLE_FINDER_PIPELINE:CIRCLEFINDER          -
+Plus 7 more processes waiting for tasks…
+ERROR ~ ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!
+/data1/users/siyangming/eccDNA/Oryza_sativa/ERR1830502_1.fastq.gz
+
+ -- Check '.nextflow.log' file for details
+
+(nextflow) [siyangming@localhost circdna.nf]$ ll /data1/users/siyangming/eccDNA/A
+Alopecurus_myosuroides/ Amaranthus_palmeri/     Arabidopsis_thaliana/   Artemisia_annua/
+(nextflow) [siyangming@localhost circdna.nf]$ ll /data1/users/siyangming/eccDNA/Arabidopsis_thaliana/ERR1830
+ERR1830498_1.fastq.gz  ERR1830500_2.fastq.gz  ERR1830503_1.fastq.gz  ERR1830505_2.fastq.gz  ERR1830508_1.fastq.gz
+ERR1830498_2.fastq.gz  ERR1830501_1.fastq.gz  ERR1830503_2.fastq.gz  ERR1830506_1.fastq.gz  ERR1830508_2.fastq.gz
+ERR1830499_1.fastq.gz  ERR1830501_2.fastq.gz  ERR1830504_1.fastq.gz  ERR1830506_2.fastq.gz
+ERR1830499_2.fastq.gz  ERR1830502_1.fastq.gz  ERR1830504_2.fastq.gz  ERR1830507_1.fastq.gz
+ERR1830500_1.fastq.gz  ERR1830502_2.fastq.gz  ERR1830505_1.fastq.gz  ERR1830507_2.fastq.gz
+(nextflow) [siyangming@localhost circdna.nf]$ tree /data1/users/siyangming/eccDNA/
+/data1/users/siyangming/eccDNA/
+├── Alopecurus_myosuroides
+│   ├── SRR26069818.fastq.gz
+│   ├── SRR26069819.fastq.gz
+│   ├── SRR26069820.fastq.gz
+│   ├── SRR26069821.fastq.gz
+│   ├── SRR26069822.fastq.gz
+│   ├── SRR26069823.fastq.gz
+│   └── SRR26069824.fastq.gz
+├── Amaranthus_palmeri
+│   ├── SRR16958684.fastq.gz
+│   ├── SRR16958685.fastq.gz
+│   ├── SRR16958686.fastq.gz
+│   ├── SRR16958687.fastq.gz
+│   ├── SRR16958688.fastq.gz
+│   ├── SRR16958689.fastq.gz
+│   ├── SRR16958690.fastq.gz
+│   ├── SRR16958691.fastq.gz
+│   ├── SRR16958692.fastq.gz
+│   ├── SRR16958693.fastq.gz
+│   ├── SRR30359583.fastq.gz
+│   ├── SRR30359584.fastq.gz
+│   ├── SRR30359585.fastq.gz
+│   ├── SRR30359586.fastq.gz
+│   ├── SRR30359587.fastq.gz
+│   └── SRR30359588.fastq.gz
+├── Arabidopsis_thaliana
+│   ├── ERR1830498_1.fastq.gz
+│   ├── ERR1830498_2.fastq.gz
+│   ├── ERR1830499_1.fastq.gz
+│   ├── ERR1830499_2.fastq.gz
+│   ├── ERR1830500_1.fastq.gz
+│   ├── ERR1830500_2.fastq.gz
+│   ├── ERR1830501_1.fastq.gz
+│   ├── ERR1830501_2.fastq.gz
+│   ├── ERR1830502_1.fastq.gz
+│   ├── ERR1830502_2.fastq.gz
+│   ├── ERR1830503_1.fastq.gz
+│   ├── ERR1830503_2.fastq.gz
+│   ├── ERR1830504_1.fastq.gz
+│   ├── ERR1830504_2.fastq.gz
+│   ├── ERR1830505_1.fastq.gz
+│   ├── ERR1830505_2.fastq.gz
+│   ├── ERR1830506_1.fastq.gz
+│   ├── ERR1830506_2.fastq.gz
+│   ├── ERR1830507_1.fastq.gz
+│   ├── ERR1830507_2.fastq.gz
+│   ├── ERR1830508_1.fastq.gz
+│   ├── ERR1830508_2.fastq.gz
+│   ├── ERR6326000_1.fastq.gz
+│   ├── ERR6326000_2.fastq.gz
+│   ├── ERR6326075_1.fastq.gz
+│   ├── ERR6326075_2.fastq.gz
+│   ├── ERR6326076_1.fastq.gz
+│   ├── ERR6326076_2.fastq.gz
+│   ├── ERR6326077_1.fastq.gz
+│   ├── ERR6326077_2.fastq.gz
+│   ├── ERR6559223_1.fastq.gz
+│   ├── ERR6559223_2.fastq.gz
+│   ├── ERR9968613_1.fastq.gz
+│   ├── ERR9968613_2.fastq.gz
+│   ├── ERR9968689_1.fastq.gz
+│   ├── ERR9968689_2.fastq.gz
+│   ├── ERR9968690_1.fastq.gz
+│   ├── ERR9968690_2.fastq.gz
+│   ├── ERR9968691_1.fastq.gz
+│   ├── ERR9968691_2.fastq.gz
+│   ├── ERR9968692_1.fastq.gz
+│   ├── ERR9968692_2.fastq.gz
+│   ├── ERR9968693_1.fastq.gz
+│   ├── ERR9968693_2.fastq.gz
+│   ├── SRR10163228_1.fastq.gz
+│   ├── SRR10163228_2.fastq.gz
+│   ├── SRR10163229_1.fastq.gz
+│   ├── SRR10163229_2.fastq.gz
+│   ├── SRR10163230_1.fastq.gz
+│   ├── SRR10163230_2.fastq.gz
+│   ├── SRR10163231_1.fastq.gz
+│   ├── SRR10163231_2.fastq.gz
+│   ├── SRR10163232_1.fastq.gz
+│   ├── SRR10163232_2.fastq.gz
+│   ├── SRR10163233_1.fastq.gz
+│   ├── SRR10163233_2.fastq.gz
+│   ├── SRR10163234_1.fastq.gz
+│   ├── SRR10163234_2.fastq.gz
+│   ├── SRR10163235_1.fastq.gz
+│   ├── SRR10163235_2.fastq.gz
+│   ├── SRR10163236_1.fastq.gz
+│   ├── SRR10163236_2.fastq.gz
+│   ├── SRR10163237_1.fastq.gz
+│   ├── SRR10163237_2.fastq.gz
+│   ├── SRR10163238_1.fastq.gz
+│   ├── SRR10163238_2.fastq.gz
+│   ├── SRR10163239_1.fastq.gz
+│   ├── SRR10163239_2.fastq.gz
+│   ├── SRR24335743_1.fastq.gz
+│   ├── SRR24335743_2.fastq.gz
+│   ├── SRR24335744_1.fastq.gz
+│   ├── SRR24335744_2.fastq.gz
+│   ├── SRR24335745_1.fastq.gz
+│   ├── SRR24335745_2.fastq.gz
+│   ├── SRR24335746_1.fastq.gz
+│   ├── SRR24335746_2.fastq.gz
+│   ├── SRR24335747_1.fastq.gz
+│   ├── SRR24335747_2.fastq.gz
+│   ├── SRR24335748_1.fastq.gz
+│   ├── SRR24335748_2.fastq.gz
+│   ├── SRR24335749.fastq.gz
+│   ├── SRR24335750.fastq.gz
+│   ├── SRR24335751.fastq.gz
+│   ├── SRR24335752_1.fastq.gz
+│   ├── SRR24335752_2.fastq.gz
+│   ├── SRR24335753.fastq.gz
+│   ├── SRR24335754.fastq.gz
+│   ├── SRR24335755.fastq.gz
+│   ├── SRR24335756.fastq.gz
+│   ├── SRR24335757.fastq.gz
+│   ├── SRR24335758.fastq.gz
+│   ├── SRR24335759.fastq.gz
+│   ├── SRR24335760.fastq.gz
+│   ├── SRR24335761.fastq.gz
+│   ├── SRR24335762.fastq.gz
+│   ├── SRR24335763_1.fastq.gz
+│   ├── SRR24335763_2.fastq.gz
+│   ├── SRR24335764.fastq.gz
+│   ├── SRR24335765.fastq.gz
+│   ├── SRR24335766_1.fastq.gz
+│   ├── SRR24335766_2.fastq.gz
+│   ├── SRR24335767_1.fastq.gz
+│   ├── SRR24335767_2.fastq.gz
+│   ├── SRR24335768_1.fastq.gz
+│   ├── SRR24335768_2.fastq.gz
+│   ├── SRR24335769_1.fastq.gz
+│   ├── SRR24335769_2.fastq.gz
+│   ├── SRR24335770_1.fastq.gz
+│   ├── SRR24335770_2.fastq.gz
+│   ├── SRR24335771_1.fastq.gz
+│   ├── SRR24335771_2.fastq.gz
+│   ├── SRR24335772_1.fastq.gz
+│   ├── SRR24335772_2.fastq.gz
+│   ├── SRR24335773_1.fastq.gz
+│   ├── SRR24335773_2.fastq.gz
+│   ├── SRR24335774_1.fastq.gz
+│   ├── SRR24335774_2.fastq.gz
+│   ├── SRR24335775_1.fastq.gz
+│   ├── SRR24335775_2.fastq.gz
+│   ├── SRR24693334.fastq.gz
+│   ├── SRR24693335.fastq.gz
+│   ├── SRR24693336.fastq.gz
+│   ├── SRR24693337.fastq.gz
+│   ├── SRR24693338.fastq.gz
+│   ├── SRR24693339.fastq.gz
+│   ├── SRR24693340.fastq.gz
+│   ├── SRR24693341.fastq.gz
+│   ├── SRR24693342.fastq.gz
+│   ├── SRR24693343.fastq.gz
+│   ├── SRR24693344.fastq.gz
+│   └── SRR24693345.fastq.gz
+├── Artemisia_annua
+│   ├── ERR11535563_1.fastq.gz
+│   ├── ERR11535563_2.fastq.gz
+│   ├── ERR11535564_1.fastq.gz
+│   ├── ERR11535564_2.fastq.gz
+│   ├── ERR11535565_1.fastq.gz
+│   └── ERR11535565_2.fastq.gz
+├── Beta_vulgaris
+│   ├── ERR6004146_1.fastq.gz
+│   └── ERR6004146_2.fastq.gz
+├── cleanup_output.sh
+├── convert_sra_to_fastq_batch.sh
+├── convert_sra_to_fastq_parallel.sh
+├── Cryptomeria_japonica
+│   ├── DRR426557_1.fastq.gz
+│   ├── DRR426557_2.fastq.gz
+│   ├── DRR426558_1.fastq.gz
+│   └── DRR426558_2.fastq.gz
+├── Cynodon_dactylon
+│   ├── CRR3168885_1.fastq.gz
+│   ├── CRR3168885_2.fastq.gz
+│   ├── CRR3168886_1.fastq.gz
+│   ├── CRR3168886_2.fastq.gz
+│   ├── CRR3168887_1.fastq.gz
+│   ├── CRR3168887_2.fastq.gz
+│   ├── CRR3168888_1.fastq.gz
+│   ├── CRR3168888_2.fastq.gz
+│   ├── CRR3168889_1.fastq.gz
+│   ├── CRR3168889_2.fastq.gz
+│   ├── CRR3168890_1.fastq.gz
+│   └── CRR3168890_2.fastq.gz
+├── Daucus_carota
+│   ├── SRR13922189_1.fastq.gz
+│   ├── SRR13922189_2.fastq.gz
+│   ├── SRR13922190_1.fastq.gz
+│   ├── SRR13922190_2.fastq.gz
+│   ├── SRR13922191_1.fastq.gz
+│   ├── SRR13922191_2.fastq.gz
+│   ├── SRR13922192_1.fastq.gz
+│   └── SRR13922192_2.fastq.gz
+├── fastq_stats.tsv
+├── Helianthus_annuus
+│   ├── SRR31773424.fastq.gz
+│   ├── SRR31773425.fastq.gz
+│   ├── SRR31773426.fastq.gz
+│   └── SRR31773427.fastq.gz
+├── Lycium_ruthenicum
+│   ├── CRR1082975_1.fastq.gz
+│   ├── CRR1082975_2.fastq.gz
+│   ├── CRR1082976_1.fastq.gz
+│   └── CRR1082976_2.fastq.gz
+├── Nicotiana_benthamiana
+│   ├── SRR32429746_1.fastq.gz
+│   ├── SRR32429746_2.fastq.gz
+│   ├── SRR32429747_1.fastq.gz
+│   ├── SRR32429747_2.fastq.gz
+│   ├── SRR32429748_1.fastq.gz
+│   ├── SRR32429748_2.fastq.gz
+│   ├── SRR36603439.fastq.gz
+│   ├── SRR36603440.fastq.gz
+│   ├── SRR36603441.fastq.gz
+│   └── SRR36603442.fastq.gz
+├── Oryza_sativa
+│   ├── ERR10889820_1.fastq.gz
+│   ├── ERR10889820_2.fastq.gz
+│   ├── ERR10889821_1.fastq.gz
+│   ├── ERR10889821_2.fastq.gz
+│   ├── ERR10889822_1.fastq.gz
+│   ├── ERR10889822_2.fastq.gz
+│   ├── ERR10889823_1.fastq.gz
+│   ├── ERR10889823_2.fastq.gz
+│   ├── ERR10889824_1.fastq.gz
+│   ├── ERR10889824_2.fastq.gz
+│   ├── ERR10889825_1.fastq.gz
+│   ├── ERR10889825_2.fastq.gz
+│   ├── ERR10889826_1.fastq.gz
+│   ├── ERR10889826_2.fastq.gz
+│   ├── ERR10889827_1.fastq.gz
+│   ├── ERR10889827_2.fastq.gz
+│   ├── ERR10889828_1.fastq.gz
+│   ├── ERR10889828_2.fastq.gz
+│   ├── ERR10889829_1.fastq.gz
+│   ├── ERR10889829_2.fastq.gz
+│   ├── ERR10889830_1.fastq.gz
+│   ├── ERR10889830_2.fastq.gz
+│   ├── ERR10889831_1.fastq.gz
+│   ├── ERR10889831_2.fastq.gz
+│   ├── ERR10889832_1.fastq.gz
+│   ├── ERR10889832_2.fastq.gz
+│   ├── ERR10889833_1.fastq.gz
+│   ├── ERR10889833_2.fastq.gz
+│   ├── ERR10889834_1.fastq.gz
+│   ├── ERR10889834_2.fastq.gz
+│   ├── ERR10889835_1.fastq.gz
+│   ├── ERR10889835_2.fastq.gz
+│   ├── ERR10889838_1.fastq.gz
+│   ├── ERR10889838_2.fastq.gz
+│   ├── ERR10889842_1.fastq.gz
+│   ├── ERR10889842_2.fastq.gz
+│   ├── ERR10889843_1.fastq.gz
+│   ├── ERR10889843_2.fastq.gz
+│   ├── ERR10889848_1.fastq.gz
+│   ├── ERR10889848_2.fastq.gz
+│   ├── ERR10889849_1.fastq.gz
+│   ├── ERR10889849_2.fastq.gz
+│   ├── ERR10889850_1.fastq.gz
+│   ├── ERR10889850_2.fastq.gz
+│   ├── ERR10889851_1.fastq.gz
+│   ├── ERR10889851_2.fastq.gz
+│   ├── ERR10889852_1.fastq.gz
+│   ├── ERR10889852_2.fastq.gz
+│   ├── ERR10889853_1.fastq.gz
+│   ├── ERR10889853_2.fastq.gz
+│   ├── ERR10889854_1.fastq.gz
+│   ├── ERR10889854_2.fastq.gz
+│   ├── ERR10889855_1.fastq.gz
+│   ├── ERR10889855_2.fastq.gz
+│   ├── ERR11838731.fastq.gz
+│   ├── ERR12389800_1.fastq.gz
+│   ├── ERR12389800_2.fastq.gz
+│   ├── ERR12389801_1.fastq.gz
+│   ├── ERR12389801_2.fastq.gz
+│   ├── ERR12389802_1.fastq.gz
+│   ├── ERR12389802_2.fastq.gz
+│   ├── ERR12389803_1.fastq.gz
+│   ├── ERR12389803_2.fastq.gz
+│   ├── ERR12389804_1.fastq.gz
+│   ├── ERR12389804_2.fastq.gz
+│   ├── ERR12389805_1.fastq.gz
+│   ├── ERR12389805_2.fastq.gz
+│   ├── ERR12389806_1.fastq.gz
+│   ├── ERR12389806_2.fastq.gz
+│   ├── ERR12389807_1.fastq.gz
+│   ├── ERR12389807_2.fastq.gz
+│   ├── ERR12389808_1.fastq.gz
+│   ├── ERR12389808_2.fastq.gz
+│   ├── SRR5051136_1.fastq.gz
+│   ├── SRR5051136_2.fastq.gz
+│   ├── SRR5051137_1.fastq.gz
+│   ├── SRR5051137_2.fastq.gz
+│   ├── SRR5051138_1.fastq.gz
+│   ├── SRR5051138_2.fastq.gz
+│   ├── SRR5051139_1.fastq.gz
+│   └── SRR5051139_2.fastq.gz
+├── Solanum_lycopersicum
+│   ├── CRR1082977_1.fastq.gz
+│   ├── CRR1082977_2.fastq.gz
+│   ├── CRR1082978_1.fastq.gz
+│   ├── CRR1082978_2.fastq.gz
+│   ├── CRR1082979_1.fastq.gz
+│   ├── CRR1082979_2.fastq.gz
+│   ├── CRR1082980_1.fastq.gz
+│   ├── CRR1082980_2.fastq.gz
+│   ├── CRR924678_1.fastq.gz
+│   ├── CRR924678_2.fastq.gz
+│   ├── CRR924679_1.fastq.gz
+│   ├── CRR924679_2.fastq.gz
+│   ├── SRR28004411.fastq.gz
+│   └── SRR28004412.fastq.gz
+├── sra.broken
+├── sra.completed
+├── Tragopogon_porrifolius
+│   ├── ERR11535566_1.fastq.gz
+│   ├── ERR11535566_2.fastq.gz
+│   ├── ERR11535567_1.fastq.gz
+│   ├── ERR11535567_2.fastq.gz
+│   ├── ERR11535568_1.fastq.gz
+│   └── ERR11535568_2.fastq.gz
+└── Triticum_aestivum
+    ├── ERR12724336.fastq.gz
+    ├── ERR12724337.fastq.gz
+    ├── ERR12724338.fastq.gz
+    ├── ERR12724339.fastq.gz
+    ├── ERR12724340.fastq.gz
+    ├── ERR12724341.fastq.gz
+    ├── ERR12724342.fastq.gz
+    ├── ERR12724343.fastq.gz
+    ├── ERR12724344.fastq.gz
+    ├── ERR12724345.fastq.gz
+    ├── ERR12724346.fastq.gz
+    ├── ERR12724347.fastq.gz
+    ├── ERR12724348.fastq.gz
+    ├── ERR12724349.fastq.gz
+    ├── ERR12724350.fastq.gz
+    ├── ERR12724351.fastq.gz
+    ├── ERR12724352.fastq.gz
+    ├── ERR12724353.fastq.gz
+    ├── ERR12724354.fastq.gz
+    ├── ERR12724355.fastq.gz
+    ├── ERR12724356.fastq.gz
+    ├── ERR12724357.fastq.gz
+    ├── ERR12724358.fastq.gz
+    ├── ERR12724359.fastq.gz
+    ├── ERR12724360.fastq.gz
+    ├── ERR12724361.fastq.gz
+    ├── ERR12724362.fastq.gz
+    ├── ERR12724363.fastq.gz
+    ├── ERR12724364.fastq.gz
+    ├── ERR12724365.fastq.gz
+    ├── ERR12724366.fastq.gz
+    ├── ERR12724367.fastq.gz
+    ├── ERR12724368.fastq.gz
+    ├── ERR12724369.fastq.gz
+    ├── ERR12724370.fastq.gz
+    ├── ERR12724371.fastq.gz
+    ├── ERR12724372.fastq.gz
+    ├── ERR12724373.fastq.gz
+    ├── ERR12724374.fastq.gz
+    ├── ERR12724375.fastq.gz
+    ├── ERR12724376.fastq.gz
+    ├── ERR12724377.fastq.gz
+    ├── ERR12724378.fastq.gz
+    ├── ERR12724379.fastq.gz
+    ├── ERR12724380.fastq.gz
+    ├── ERR12724381.fastq.gz
+    ├── ERR12724382.fastq.gz
+    ├── ERR12724383.fastq.gz
+    ├── ERR12724384.fastq.gz
+    ├── ERR12724385.fastq.gz
+    ├── ERR12724386.fastq.gz
+    ├── ERR12724387.fastq.gz
+    ├── ERR12724388.fastq.gz
+    ├── ERR12724389.fastq.gz
+    ├── ERR12724390.fastq.gz
+    ├── ERR12724391.fastq.gz
+    ├── ERR12724392.fastq.gz
+    ├── ERR12724393.fastq.gz
+    ├── ERR12724394.fastq.gz
+    ├── ERR12724395.fastq.gz
+    ├── ERR12724396.fastq.gz
+    ├── ERR12724397.fastq.gz
+    ├── ERR12724398.fastq.gz
+    ├── ERR12724399.fastq.gz
+    ├── ERR12724400.fastq.gz
+    ├── ERR12724401.fastq.gz
+    ├── ERR12724402.fastq.gz
+    ├── ERR12724403.fastq.gz
+    ├── ERR12724404.fastq.gz
+    ├── ERR12724405.fastq.gz
+    ├── ERR12724406.fastq.gz
+    ├── ERR12724407.fastq.gz
+    ├── ERR12724408.fastq.gz
+    ├── ERR12724409.fastq.gz
+    ├── ERR12724410.fastq.gz
+    ├── ERR12724411.fastq.gz
+    ├── ERR12724412.fastq.gz
+    ├── ERR12724413.fastq.gz
+    ├── ERR12724677_1.fastq.gz
+    ├── ERR12724677_2.fastq.gz
+    ├── ERR12724678_1.fastq.gz
+    ├── ERR12724678_2.fastq.gz
+    ├── ERR12724679_1.fastq.gz
+    ├── ERR12724679_2.fastq.gz
+    ├── ERR12724680_1.fastq.gz
+    ├── ERR12724680_2.fastq.gz
+    ├── ERR12724681_1.fastq.gz
+    ├── ERR12724681_2.fastq.gz
+    ├── ERR12724682_1.fastq.gz
+    ├── ERR12724682_2.fastq.gz
+    ├── ERR6326020.fastq.gz
+    ├── ERR6326021.fastq.gz
+    ├── ERR6326084_1.fastq.gz
+    ├── ERR6326084_2.fastq.gz
+    ├── ERR6326085_1.fastq.gz
+    └── ERR6326085_2.fastq.gz
+
+16 directories, 407 files

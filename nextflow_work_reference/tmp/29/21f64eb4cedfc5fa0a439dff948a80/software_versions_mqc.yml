@@ -1,0 +1,11 @@
+SAMPLESHEET_CHECK:
+  python: 3.12.12
+samtools: 1.22.1
+bwa: 0.7.19-r1273
+cat: '9.5'
+trimgalore: 2.1.0
+fastqc: 0.12.1
+mosdepth: 0.3.14
+Workflow:
+  nf-core/circdna: v3.2.0
+  Nextflow: !!nextflow.util.VersionNumber {}

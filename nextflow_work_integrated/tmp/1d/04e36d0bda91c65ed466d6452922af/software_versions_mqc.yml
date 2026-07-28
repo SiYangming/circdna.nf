@@ -1,0 +1,18 @@
+bwa: 0.7.19-r1273
+cat: '9.5'
+samtools: 1.22.1
+SAMPLESHEET_CHECK:
+  python: 3.12.12
+trimgalore: 2.1.0
+fastqc: 0.12.1
+mosdepth: 0.3.14
+CIRCLEMAP_READEXTRACTOR:
+  Circle-Map: 1.1.4
+eccsplorer: 0.1.0
+CIRCLEMAP_REALIGN:
+  Circle-Map: 1.1.4
+candidate_merge: '1.0'
+ecc_score: '1.0'
+Workflow:
+  nf-core/circdna: v3.2.0
+  Nextflow: !!nextflow.util.VersionNumber {}

@@ -1,0 +1,1 @@
+/Users/siyangming/nextflow_nf_core/circdna.nf/nextflow_work_eccdna/d6/5d9356c858b8ca5b6d7b79054b7d4f/circdna_3.trimmed_1.fastq.gz_trimming_report.txt
