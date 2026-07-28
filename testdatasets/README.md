@@ -39,7 +39,7 @@ rm -rf results_testdata nextflow_work
 # Run 1: Initial run (3 samples)
 nextflow run main.nf \
   -profile test_local \
-  --input testdatasets/samplesheet/test_3.csv \
+  --input samplesheets/test_3.csv \
   --outdir results_testdata/run1 \
   -work-dir ./nextflow_work \
   -with-trace results_testdata/trace_run1.txt
@@ -47,7 +47,7 @@ nextflow run main.nf \
 # Run 2: Incremental cache test (4 samples, resume)
 nextflow run main.nf \
   -profile test_local \
-  --input testdatasets/samplesheet/test_4.csv \
+  --input samplesheets/test_4.csv \
   --outdir results_testdata/run2 \
   -work-dir ./nextflow_work \
   -resume \
@@ -56,7 +56,7 @@ nextflow run main.nf \
 # Run 3: Decremental cache test (2 samples, resume)
 nextflow run main.nf \
   -profile test_local \
-  --input testdatasets/samplesheet/test_2.csv \
+  --input samplesheets/test_2.csv \
   --outdir results_testdata/run3 \
   -work-dir ./nextflow_work \
   -resume \
@@ -65,7 +65,7 @@ nextflow run main.nf \
 # Run 4: Mixed cache test (3 samples, -1+1, resume)
 nextflow run main.nf \
   -profile test_local \
-  --input testdatasets/samplesheet/test_mixed.csv \
+  --input samplesheets/test_mixed.csv \
   --outdir results_testdata/run4 \
   -work-dir ./nextflow_work \
   -resume \
