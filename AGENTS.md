@@ -2,6 +2,8 @@
 
 > **Purpose**: This document defines the complete architecture, data flow, and change management rules for the `nf-core/circdna` Nextflow pipeline. Any AI assistant making changes to this pipeline MUST follow these rules.
 
+> **UNIVERSAL RULES**: Before reading this document, first check `/Users/siyangming/nextflow_nf_core/AGENTS.md` for universal Nextflow pipeline conventions, CHANGELOG rules, and version bumping policies. This document is the pipeline-specific supplement.
+
 ---
 
 ## 1. Pipeline Overview
