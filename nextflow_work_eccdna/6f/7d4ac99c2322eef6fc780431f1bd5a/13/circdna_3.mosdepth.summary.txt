@@ -1,1 +1,0 @@
-/Users/siyangming/nextflow_nf_core/circdna.nf/nextflow_work_eccdna/7a/e0791c447e8202cf78259f4cd2f135/circdna_3.mosdepth.summary.txt

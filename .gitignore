@@ -1,13 +1,11 @@
 .nextflow*
-work/
 data/
-results/
 .DS_Store
-testing/
 testing*
 *.pyc
 null
 .vscode
-/nextflow_work
-/results_testdata
+/nextflow_work*
+/work*
+/results*
 server.txt
