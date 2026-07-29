@@ -25,8 +25,8 @@ include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/amplicona
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
 
 workflow CIRCDNA {
-    if (params.fasta) { 
-        ch_fasta = channel.fromPath(params.fasta) 
+    if (params.containsKey('fasta') && params.fasta) {
+        ch_fasta = channel.fromPath(params.fasta)
     } else {
         def genome_fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
         if (genome_fasta) {
@@ -58,8 +58,7 @@ workflow CIRCDNA {
     def bwa_index_exists = false
     def ch_bwa_index = channel.empty()
     if (params.bwa_index) {
-    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').collect()
-    ch_bwa_index = ch_bwa_index.map{ index -> ["bwa_index", index] }.collect()
+    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').map{ index -> ["bwa_index", index] }.first()
     bwa_index_exists = true
     } else {
     ch_bwa_index = channel.empty()
@@ -191,7 +190,7 @@ workflow CIRCDNA {
             BWA_INDEX (
                 ch_fasta_meta
             )
-            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }.collect()
+            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }.first()
             ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
         }
     } else if (params.input_format == "BAM") {
