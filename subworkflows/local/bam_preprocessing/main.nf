@@ -31,7 +31,6 @@ workflow BAM_PREPROCESSING {
     def ch_fasta_fai = fasta_meta
         .join(SAMTOOLS_FAIDX.out.fai)
         .map { meta, fasta, fai -> [meta, fasta, fai] }
-        .first()
 
     if (run_bwa) {
         // BWA MEM ALIGNMENT
