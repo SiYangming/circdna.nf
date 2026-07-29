@@ -1,13 +1,62 @@
 # 数据问题记录
 
-## SRR24335769 (Arabidopsis_thaliana) - 【已解决】
-- 状态: 已重新下载并恢复到 samplesheet
-- 问题: SRA 数据为 PAIRED (双端)，但首次下载后 R2 文件截断/损坏
-- 解决: 使用 `fasterq-dump --split-3` 重新下载，获得正确的双端文件
-- 重新下载时间: 2026-07-29 11:23-11:24
-- 文件大小: R1=345MB, R2=264MB
-- Pipeline 恢复命令: `nextflow run main.nf -profile server -resume <run_name>`
-- 验证方法: 见下方"双端数据质量检查"
-- 历史记录:
-  - 首次错误: 2026-07-29 10:46:49 TRIMGALORE 报错
-  - Work dir: /data1/users/siyangming/nextflow_nf_core/circdna.nf/work/49/5fc74eb9f1f7cb501d2265fafab81c
+## SRR24335769 (Arabidopsis_thaliana) - 【已解决 - 技术重复合并】
+
+### 问题诊断
+- **根因**: SRA 数据不是真正的双端测序数据，R1 和 R2 的 cluster ID 完全不重叠（来自测序仪上不同的物理位置）
+- **验证结果**:
+  - R1: 13,024,416 reads (3.26M), cluster IDs: tile:16133:1386, 15670:1408, ...
+  - R2:  7,989,340 reads (1.99M), cluster IDs: tile:15425:1372, 14335:1418, ...
+  - R1∩R2 cluster ID 交集 = **0** (完全不匹配)
+  - Read ID 格式: `@M00842:56:000000000-A5NTP:1:TILE:X:Y READ:NUM:0:INDEX`
+- **原始数据位置**: `POL4_n1F1_S3_L001_R1_001.fastq.gz` + `POL4_n1F1_S3_L001_R2_001.fastq.gz`
+- **原始测序**: MiSeq, Run ID: M00842-56-000000000-A5NTP
+
+### 解决方案
+将 R1 和 R2 作为**两个技术重复**在 samplesheet 中配置相同的 sample name，利用 Pipeline 的 CAT_FASTQ 模块自动合并：
+
+```csv
+SRR24335769,/data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769_1.fastq.gz,,eccDNA
+SRR24335769,/data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769_2.fastq.gz,,eccDNA
+```
+
+### 工作流程
+1. INPUT_CHECK 读取两行相同 sample name 的记录
+2. groupTuple(by: [0]) 按 sample name 合并为 `[SRR24335769, [file(_1), file(_2)]]`
+3. CAT_FASTQ (meta.single_end=true) 执行 `cat _1.fastq.gz _2.fastq.gz > merged.fastq.gz`
+4. 后续流程按单端数据处理（总 reads: 5.25M）
+
+### 影响分析
+- ✅ BWA 比对: 无影响
+- ✅ TRIMGALORE 修剪: 正确识别单端模式
+- ✅ Picard MarkDup: BAM-based，无影响
+- ✅ MOSDEPTH/ECCsplorer: BAM-based，无影响
+- ⚠️ Circle-Map Realign: 不可用（需要双端 discordant reads）
+- ✅ Circle-Map ReadExtractor: 仅检测 split reads，兼容单端
+
+### 修改的文件
+1. `samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv` - 改为两行技术重复
+2. `samplesheets/circdna_ngs_clean.csv` - 同上
+3. `samplesheets/data_issues.txt` - 本文件
+
+### 历史记录
+- 2026-07-29 10:46:49 TRIMGALORE 首次报错（R2截断）
+- 2026-07-29 11:23-11:31 重新下载 R1/R2 文件
+- 2026-07-29 17:13 下载原始数据 POL4_n1F1_S3_L001
+- 2026-07-29 诊断确认: 不是真正双端数据
+- 2026-07-29 方案确定: 技术重复合并为单端
+
+### Pipeline 恢复命令
+```bash
+cd /data1/users/siyangming/nextflow_nf_core/circdna.nf
+conda activate nextflow
+nextflow run main.nf -profile server -resume furious_lagrange
+```
+
+### 通用知识
+- **MiSeq 双端数据质量检查方法**:
+  1. 检查 R1/R2 行数是否相同
+  2. 检查 R1/R2 cluster ID 是否有交集（相同 tile:x:y 坐标）
+  3. Read ID 格式: `@INSTRUMENT:RUNID:FLOWCELLID:LANE:TILE:X:Y READ:NUM:0:INDEX`
+  4. 真正的双端数据: 同一 cluster ID 同时出现在 R1 和 R2 中（仅 READ:NUM 不同）
+  5. R1 `...READ:1:N:0:3` vs R2 `...READ:2:N:0:4` 中的 READ 编号应相同
