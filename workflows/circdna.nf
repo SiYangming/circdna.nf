@@ -39,7 +39,7 @@ workflow CIRCDNA {
     if (!(params.input_format == "FASTQ" | params.input_format == "BAM")) {
     exit 1, 'Please specifiy --input_format "FASTQ" or "BAM" in capital letters, depending on the input file format.'
     }
-    ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }.collect()
+    ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }.first()
 
     def branch = params.circle_identifier.split(",")
     def run_circexplorer2 = ("circexplorer2" in branch)
@@ -190,7 +190,7 @@ workflow CIRCDNA {
             BWA_INDEX (
                 ch_fasta_meta
             )
-            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }.first()
+            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }
             ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
         }
     } else if (params.input_format == "BAM") {
