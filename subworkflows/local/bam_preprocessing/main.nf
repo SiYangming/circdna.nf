@@ -28,9 +28,15 @@ workflow BAM_PREPROCESSING {
         channel.value(true)
     )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
+    // .first() is REQUIRED here: fasta_meta is value channel but SAMTOOLS_FAIDX.out.fai
+    // is a process output (queue channel), so value.join(queue) produces a queue channel.
+    // Without .first(), downstream processes with multiple queue inputs do one-to-one
+    // matching and silently skip all but the first sample.
+    // Nextflow may warn "first is useless on value channel" — this is a false positive.
     def ch_fasta_fai = fasta_meta
         .join(SAMTOOLS_FAIDX.out.fai)
         .map { meta, fasta, fai -> [meta, fasta, fai] }
+        .first()
 
     if (run_bwa) {
         // BWA MEM ALIGNMENT
