@@ -33,6 +33,16 @@
 ### Requirement: BAM_PREPROCESSING 子流程
 BAM_PREPROCESSING SHALL 将 SAMTOOLS_FAIDX 产出的 `fa` 与 `fai` 通过 `.first()` 转为 value channel，并通过新增的 `fasta_fai`（`[meta, fasta, fai]`）与 `fai` emit 暴露给下游子流程。BAM_STATS_SAMTOOLS SHALL 接收 value channel 形式的 `ch_fasta` 而非 queue channel 形式的 `ch_fasta_fai`。
 
+### Requirement: 主流程 CIRCDNA 的 ch_fasta_meta 与 ch_bwa_index 通道（追加）
+主流程 CIRCDNA SHALL 将 `ch_fasta_meta` 与 `ch_bwa_index` 通过 `.first()` 转为 value channel，确保它们被 BWA_MEM 等多个样本共享的 process 广播消费。
+
+**问题根因**：BWA_MEM 的输入签名为三个 `tuple val(meta), path(...)` 输入（reads/index/fasta）。当 `index`/`fasta` 为 queue channel（`.collect()` 产生）时，首个样本消费后 channel 即空，后续样本因无 index/fasta 被静默跳过。46 个样本的 Arabidopsis 运行只有 ERR9968690 产出完整结果即此问题。
+
+**修复**：
+- `ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }.first()`（原为 `.collect()`）
+- `ch_bwa_index = ch_bwa_index.map{ index -> ["bwa_index", index] }.first()`（原为 `.collect()`）
+- `ch_fasta_fai = fasta_meta.join(SAMTOOLS_FAIDX.out.fai).map{...}.first()`（原为 `.collect()`，spec 已要求但代码未生效）
+
 ### Requirement: CIRCLE_FINDER_PIPELINE 子流程
 CIRCLE_FINDER_PIPELINE SHALL 新增 `fasta_fai` 入参（value channel），并在调用 SAMTOOLS_SORT_QNAME_CF 时传入 `ch_fasta_fai`，替代原先的 `channel.empty()`。
 

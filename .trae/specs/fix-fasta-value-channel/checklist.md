@@ -17,3 +17,10 @@
 - [x] 修改保存于 master 分支
 - [x] 使用 `conf/test_local.config` 验证：不启用 unicycler、docker、nextflow 直接运行、不使用 `-resume`
 - [x] 一次性生成 `results_testdata` 中 circdna_1/2/3 全部样本结果
+
+# 追加检查点（2026-07-29：spec 修复未生效，主流程 channel 遗漏）
+
+- [x] `subworkflows/local/bam_preprocessing/main.nf` 第 34 行 `ch_fasta_fai` 使用 `.first()` 而非 `.collect()`
+- [x] `workflows/circdna.nf` 第 51 行 `ch_fasta_meta` 使用 `.first()` 而非 `.collect()`
+- [x] `workflows/circdna.nf` 第 82 行 `ch_bwa_index` 使用 `.first()`；第 215/222 行 BWA_INDEX 产出也使用 `.first()`
+- [ ] 服务器运行 46 样本 `circdna_Arabidopsis_thaliana_eccDNA.csv` 不使用 `-resume`，全部样本产出完整结果

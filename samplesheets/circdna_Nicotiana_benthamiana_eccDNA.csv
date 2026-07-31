@@ -1,4 +1,4 @@
 sample,fastq_1,fastq_2,data_type
-SRR32429746,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR32429746_1.fastq.gz,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR32429746_2.fastq.gz,eccDNA
-SRR32429747,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR32429747_1.fastq.gz,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR32429747_2.fastq.gz,eccDNA
-SRR32429748,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR32429748_1.fastq.gz,/data1/users/siyangming/eccDNA/Nicotiana_benthamiana/SRR32429748_2.fastq.gz,eccDNA
+SRR32429746,/data1/users/siyangming/PlanteccDNADB/eccDNA/Nicotiana_benthamiana/SRR32429746_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Nicotiana_benthamiana/SRR32429746_2.fastq.gz,eccDNA
+SRR32429747,/data1/users/siyangming/PlanteccDNADB/eccDNA/Nicotiana_benthamiana/SRR32429747_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Nicotiana_benthamiana/SRR32429747_2.fastq.gz,eccDNA
+SRR32429748,/data1/users/siyangming/PlanteccDNADB/eccDNA/Nicotiana_benthamiana/SRR32429748_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Nicotiana_benthamiana/SRR32429748_2.fastq.gz,eccDNA

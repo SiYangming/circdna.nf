@@ -1,0 +1,5 @@
+- [x] `bam_preprocessing/main.nf` 中 `ch_fasta_fai` 使用 `.first()` 构造为 value channel
+- [x] 不使用 `.first()` 在 value channel 上（无 "first is useless on value channel" 警告，WARN 计数 = 0）
+- [x] test_local 运行时 3 个样本全部通过 BWA_MEM、SAMTOOLS_SORT、PICARD_MARKDUPLICATES 等步骤（3 of 3 ✔）
+- [x] test_local 运行时 3 个样本全部通过 ECCDNA_MODE 下游步骤（MOSDEPTH、ECCSPLORER、CIRCLE_MAP、CANDIDATE_MERGE）（3 of 3 ✔）
+- [x] GitHub master 分支包含此修复（commit 32cdcbc）
