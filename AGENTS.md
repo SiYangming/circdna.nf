@@ -215,8 +215,8 @@ circdna.nf/
 ### 4.1 NGS (FASTQ) Format
 ```csv
 sample,fastq_1,fastq_2,data_type
-ERR1830502,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR1830502_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/ERR1830502_2.fastq.gz,eccDNA
-SRR5051136,/data1/users/siyangming/eccDNA/Oryza_sativa/SRR5051136_1.fastq.gz,/data1/users/siyangming/eccDNA/Oryza_sativa/SRR5051136_2.fastq.gz,eccDNA
+ERR1830502,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/ERR1830502_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/ERR1830502_2.fastq.gz,eccDNA
+SRR5051136,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051136_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051136_2.fastq.gz,eccDNA
 ```
 - **Required columns**: `sample`, `fastq_1`, `fastq_2`
 - **Optional columns**: `lane`, `datatype`, `platform`, `protocol`
@@ -224,7 +224,7 @@ SRR5051136,/data1/users/siyangming/eccDNA/Oryza_sativa/SRR5051136_1.fastq.gz,/da
 - **`datatype` values**: `eccdna` or `gdna` (used by `check_samplesheet.py` for validation)
 - **`platform` values**: `illumina`, `pacbio`, `ont`
 - **`protocol` values**: `short_read`, `long_read`
-- **File path convention**: `/data1/users/siyangming/eccDNA/{Species}/{sample}_{1,2}.fastq.gz`
+- **File path convention**: `/data1/users/siyangming/PlanteccDNADB/eccDNA/{Species}/{sample}_{1,2}.fastq.gz`
 
 ### 4.2 TGS (BAM) Format
 ```csv
@@ -515,7 +515,7 @@ This pipeline is part of a three-project system:
 
 | Project | Path | Purpose |
 |---------|------|---------|
-| **circdna.nf** | `/Users/siyangming/nextflow_nf_core/circdna.nf` | eccDNA detection (main) |
+| **circdna.nf** | Local: `/Users/siyangming/nextflow_nf_core/circdna.nf` · Server: `/data1/users/siyangming/PlanteccDNADB/circdna.nf` | eccDNA detection (main) |
 | **circrna.nf** | `/Users/siyangming/nextflow_nf_core/circrna.nf` | circRNA detection |
 | **bio.nf** | `/Users/siyangming/nextflow_nf_core/bio.nf` | General bioinformatics |
 

@@ -123,7 +123,7 @@ Command error:
         at picard.cmdline.PicardCommandLine.main(PicardCommandLine.java:115)
 
 Work dir:
-  /data1/users/siyangming/nextflow_nf_core/circdna.nf/work/5b/315a7cb385f029f923f809849291db
+  /data1/users/siyangming/PlanteccDNADB/circdna.nf/work/5b/315a7cb385f029f923f809849291db
 
 Container:
   community.wave.seqera.io/library/picard:3.4.0--e9963040df0a9bf6

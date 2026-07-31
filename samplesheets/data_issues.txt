@@ -16,8 +16,8 @@
 将 R1 和 R2 作为**两个技术重复**在 samplesheet 中配置相同的 sample name，利用 Pipeline 的 CAT_FASTQ 模块自动合并：
 
 ```csv
-SRR24335769,/data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769_1.fastq.gz,,eccDNA
-SRR24335769,/data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769_2.fastq.gz,,eccDNA
+SRR24335769,/data1/users/siyangming/PlanteccDNADB/eccDNA/Arabidopsis_thaliana/SRR24335769_1.fastq.gz,,eccDNA
+SRR24335769,/data1/users/siyangming/PlanteccDNADB/eccDNA/Arabidopsis_thaliana/SRR24335769_2.fastq.gz,,eccDNA
 ```
 
 ### 工作流程
@@ -48,7 +48,7 @@ SRR24335769,/data1/users/siyangming/eccDNA/Arabidopsis_thaliana/SRR24335769_2.fa
 
 ### Pipeline 恢复命令
 ```bash
-cd /data1/users/siyangming/nextflow_nf_core/circdna.nf
+cd /data1/users/siyangming/PlanteccDNADB/circdna.nf
 conda activate nextflow
 nextflow run main.nf -profile server -resume furious_lagrange
 ```
