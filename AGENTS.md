@@ -541,5 +541,51 @@ This pipeline is part of a three-project system:
 
 ---
 
-*Last updated: 2026-07-28*
+## 12. `.trae` Documentation Ownership Rules
+
+> **Purpose**: 统一规范 `.trae/` 文档（documents / specs / changes / rules）的归属位置，避免文档散落在仓库根目录，便于按项目检索与维护。
+
+### 12.1 归属判定原则
+
+| 文档类型 | 归属位置 | 判定依据 |
+|----------|----------|----------|
+| **单一项目相关** | 对应项目的 `.trae/` 目录 | 文档内容仅涉及一个项目（如 circdna.nf、circrna.nf、riboseq.nf、nextflow.app、FLTranslatORF 等） |
+| **综合性文档** | `/Users/siyangming/nextflow_nf_core/bio.nf/.trae/` | 跨多个项目、流程通用规范、跨流程审计报告等（如 Docker 用户映射 A+B+C 方案、跨流程权限审计、跨流程模块迁移等） |
+
+### 12.2 各项目 `.trae/` 目录位置
+
+| 项目 | `.trae/` 路径 | 用途 |
+|------|---------------|------|
+| circdna.nf | `circdna.nf/.trae/` | circdna 流程相关文档、specs、changes、rules |
+| circrna.nf | `circrna.nf/.trae/` | circrna 流程相关文档 |
+| bio.nf | `bio.nf/.trae/` | **综合性文档默认归属** + bio.nf 模块集合自身文档 |
+| riboseq.nf | `riboseq.nf/.trae/` | riboseq 流程相关文档 |
+| nanoseq.nf | `nanoseq.nf/.trae/` | nanoseq 流程相关文档 |
+| isoseq.nf | `isoseq.nf/.trae/` | isoseq 流程相关文档 |
+| fetchngs.nf | `fetchngs.nf/.trae/` | fetchngs 流程相关文档 |
+| rnaseq | `rnaseq/.trae/` | rnaseq 流程相关文档 |
+| nextflow.app | `nextflow.app/.trae/` | Tauri 桌面客户端相关文档 |
+| FLTranslatORF | `FLTranslatORF/.trae/` | FLTranslatORF 上游/下游流程相关文档 |
+
+### 12.3 `.trae/` 标准子目录结构
+
+```
+{project}/.trae/
+├── documents/      # 自由格式的设计文档、计划、分析报告
+├── specs/          # 规格驱动开发（Spec-Driven Development）的 spec / checklist / tasks
+├── changes/        # 变更记录（按日期或主题）
+└── rules/          # 项目专属规则（如 git commit 规范等）
+```
+
+### 12.4 操作规则
+
+1. **创建新文档时**：先判定文档归属范围（单一项目 vs 综合性），再决定 `.trae/` 目录位置
+2. **综合性判定标准**：文档同时涉及 ≥2 个项目，或为所有流程的通用规范 → 归 `bio.nf/.trae/`
+3. **禁止在仓库根目录 `/Users/siyangming/nextflow_nf_core/.trae/` 创建或保留文档**：根目录 `.trae/` 不再作为文档存放点
+4. **跨项目引用**：在文档中使用相对路径或绝对路径引用其他项目的文档时，需明确标注归属项目
+5. **移动已有文档**：当发现根目录 `.trae/` 中残留文档时，应按本规则迁移到对应项目
+
+---
+
+*Last updated: 2026-08-02*
 *Generated based on actual pipeline structure and verified conventions*

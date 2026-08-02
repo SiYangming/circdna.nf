@@ -86,6 +86,13 @@
                     "description": "Path to EDTA/RepeatMasker GFF3 or BED file for TE repeat annotation",
                     "help_text": "TE repeat annotation file passed to reference mode.",
                     "fa_icon": "fas fa-file-code"
+                },
+                "eccsplorer_trim_reads": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable Trimmomatic quality filtering in ECCsplorer",
+                    "help_text": "When enabled, ECCsplorer will perform read trimming using Trimmomatic before mapping. Requires Trimmomatic and RepeatExplorer2 to be available in the container.",
+                    "fa_icon": "fas fa-cut"
                 }
             }
         },

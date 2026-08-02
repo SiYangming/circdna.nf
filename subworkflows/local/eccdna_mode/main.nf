@@ -2,6 +2,9 @@
 // eccDNA Mode Subworkflow (Illumina eccDNA detection)
 // Contains: BAM preprocessing + mosdepth + ECCsplorer + Circle-Map
 //
+// Note: ECCsplorer 使用 FASTQ 作为输入（内部调用 segemehl 比对），
+//       不接受预比对的 BAM，因此直接消费原始 reads 通道。
+//
 
 include { BAM_PREPROCESSING  } from '../bam_preprocessing/main'
 include { MOSDEPTH           } from '../../../modules/nf-core/mosdepth/main'
@@ -39,12 +42,16 @@ workflow ECCDNA_MODE {
     )
     ch_versions = ch_versions.mix(MOSDEPTH.out.versions_mosdepth)
 
+    // ECCsplorer 接收 FASTQ reads（非 BAM）+ 参考基因组 FASTA
+    // 使用 reads 通道（与 BAM_PREPROCESSING 共享同一输入源）
+    // reads 通道结构: [meta, [r1, r2]]，combine fasta 后形成 [meta, [r1, r2], fasta]
+    ch_eccsplorer_fasta = fasta_meta.map { meta, fasta -> fasta }.first()
+
     if (run_eccsplorer) {
         ECCSPLORER (
-            ch_bam_bai,
-            fasta_meta.map { meta, fasta -> fasta }
+            reads.combine(ch_eccsplorer_fasta)
         )
-        ch_versions = ch_versions.mix(ECCSPLORER.out.versions_eccsplorer)
+        ch_versions = ch_versions.mix(ECCSPLORER.out.versions)
         ch_eccsplorer_bed = ECCSPLORER.out.candidates_bed
     } else {
         ch_eccsplorer_bed = channel.empty()
