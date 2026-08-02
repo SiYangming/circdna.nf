@@ -1,13 +1,12 @@
 //
 // eccDNA Mode Subworkflow (Illumina eccDNA detection)
-// Contains: BAM preprocessing + mosdepth + ECCsplorer + Circle-Map + Candidate Merge
+// Contains: BAM preprocessing + mosdepth + ECCsplorer + Circle-Map
 //
 
 include { BAM_PREPROCESSING  } from '../bam_preprocessing/main'
 include { MOSDEPTH           } from '../../../modules/nf-core/mosdepth/main'
 include { ECCSPLORER         } from '../../../modules/local/eccsplorer/main'
 include { CIRCLE_MAP_PIPELINE } from '../circle_map_pipeline/main'
-include { CANDIDATE_MERGE    } from '../../../modules/local/candidate_merge/main'
 
 workflow ECCDNA_MODE {
     take:
@@ -65,13 +64,6 @@ workflow ECCDNA_MODE {
         ch_circle_map_bed = channel.empty()
     }
 
-    ch_merge_input = ch_eccsplorer_bed
-        .join(ch_circle_map_bed, failOnMismatch: false)
-        .map { meta, ecc_bed, cm_bed -> [meta, ecc_bed, cm_bed] }
-
-    CANDIDATE_MERGE (ch_merge_input)
-    ch_versions = ch_versions.mix(CANDIDATE_MERGE.out.versions_merge)
-
     emit:
     bam_sorted        = BAM_PREPROCESSING.out.bam_sorted
     bam_sorted_bai    = BAM_PREPROCESSING.out.bam_sorted_bai
@@ -80,7 +72,6 @@ workflow ECCDNA_MODE {
     mosdepth_dist     = MOSDEPTH.out.global_dist
     eccsplorer_bed    = ch_eccsplorer_bed
     circle_map_bed    = ch_circle_map_bed
-    merged_bed        = CANDIDATE_MERGE.out.merged_bed
     fasta_fai         = BAM_PREPROCESSING.out.fasta_fai
     versions          = ch_versions
 }

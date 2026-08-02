@@ -65,13 +65,27 @@
             "type": "object",
             "fa_icon": "fas fa-circle-notch",
             "description": "Options to adjust inital circular DNA identifier",
-            "required": ["circle_identifier"],
             "properties": {
+                "mode": {
+                    "type": "string",
+                    "default": "eccdna",
+                    "description": "Pipeline mode: 'reference' (gDNA background) or 'eccdna' (eccDNA detection)",
+                    "help_text": "Specify which mode to run. Reference mode runs QC + alignment + depth analysis. eccDNA mode runs full eccDNA detection.",
+                    "fa_icon": "fas fa-cogs",
+                    "enum": ["reference", "eccdna"]
+                },
                 "circle_identifier": {
                     "type": "string",
                     "description": "Specifies the circular DNA identification algorithm to use - available 'circle_map_realign', 'circle_map_repeats', 'circle_finder', 'circexplorer2', and 'ampliconarchitect'. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`.",
                     "help_text": "Specify the circle_identifier branch used. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`.",
                     "fa_icon": "fas fa-circle-notch"
+                },
+                "repeat_gff": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to EDTA/RepeatMasker GFF3 or BED file for TE repeat annotation",
+                    "help_text": "TE repeat annotation file passed to reference mode.",
+                    "fa_icon": "fas fa-file-code"
                 }
             }
         },

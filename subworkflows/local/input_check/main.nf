@@ -34,6 +34,9 @@ def create_fastq_channels(LinkedHashMap row) {
     if (row.containsKey('lane') && row.lane) {
         meta.lane = row.lane
     }
+    meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    meta.platform     = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
+    meta.protocol     = row.containsKey('protocol') ? (row.protocol ? row.protocol : 'short_read') : 'short_read'
 
     def array = []
     if (!file(row.fastq_1).exists()) {

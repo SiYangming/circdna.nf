@@ -34,4 +34,14 @@ process CIRCLEMAP_REALIGN {
         Circle-Map: \$(echo \$(circle_map.py --help 2<&1 | grep -o "version=[0-9].[0-9].[0-9]" | sed 's/version=//g'))
     END_VERSIONS
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}_circularDNA_coordinates.bed
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        Circle-Map: 1.1.4
+    END_VERSIONS
+    """
 }

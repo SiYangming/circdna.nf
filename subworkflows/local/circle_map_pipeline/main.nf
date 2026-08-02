@@ -47,23 +47,28 @@ workflow CIRCLE_MAP_PIPELINE {
     ch_re_sorted_bam = SAMTOOLS_SORT_RE.out.bam
     ch_re_sorted_bai = SAMTOOLS_SORT_RE.out.index
 
+    ch_bed = channel.empty()
+
     if (run_repeats) {
         CIRCLEMAP_REPEATS (
             ch_re_sorted_bam.join(ch_re_sorted_bai)
         )
         ch_versions = ch_versions.mix(CIRCLEMAP_REPEATS.out.versions)
+        ch_bed = ch_bed.mix(CIRCLEMAP_REPEATS.out.bed)
     }
 
     if (run_realign) {
-        ch_cm_realign_in = ch_re_sorted_bam.join(ch_re_sorted_bai).join(ch_qname_sorted_bam).join(ch_qname_sorted_bai).join(bam_sorted).join(bam_sorted_bai)
+        ch_cm_realign_in = ch_re_sorted_bam.join(ch_re_sorted_bai).join(ch_qname_sorted_bam).join(bam_sorted).join(bam_sorted_bai)
 
         CIRCLEMAP_REALIGN (
             ch_cm_realign_in,
             fasta_fai.map { _meta, fasta, _fai -> fasta }
         )
         ch_versions = ch_versions.mix(CIRCLEMAP_REALIGN.out.versions)
+        ch_bed = ch_bed.mix(CIRCLEMAP_REALIGN.out.bed)
     }
 
     emit:
-    ch_versions.map { v -> v }
+    bed = ch_bed
+    versions = ch_versions.map { v -> v }
 }

@@ -22,20 +22,20 @@ WARN: Access to undefined parameter `fasta` -- Initialise it to a default value 
 [-        ] NFCORE_CIRCDNA:CIRCDNA:CIRCLE_FINDER_PIPELINE:CIRCLEFINDER          -
 Plus 7 more processes waiting for tasks…
 ERROR ~ ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!
-/data1/users/siyangming/eccDNA/Oryza_sativa/ERR1830502_1.fastq.gz
+/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/ERR1830502_1.fastq.gz
 
  -- Check '.nextflow.log' file for details
 
-(nextflow) [siyangming@localhost circdna.nf]$ ll /data1/users/siyangming/eccDNA/A
+(nextflow) [siyangming@localhost circdna.nf]$ ll /data1/users/siyangming/PlanteccDNADB/eccDNA/A
 Alopecurus_myosuroides/ Amaranthus_palmeri/     Arabidopsis_thaliana/   Artemisia_annua/
-(nextflow) [siyangming@localhost circdna.nf]$ ll /data1/users/siyangming/eccDNA/Arabidopsis_thaliana/ERR1830
+(nextflow) [siyangming@localhost circdna.nf]$ ll /data1/users/siyangming/PlanteccDNADB/eccDNA/Arabidopsis_thaliana/ERR1830
 ERR1830498_1.fastq.gz  ERR1830500_2.fastq.gz  ERR1830503_1.fastq.gz  ERR1830505_2.fastq.gz  ERR1830508_1.fastq.gz
 ERR1830498_2.fastq.gz  ERR1830501_1.fastq.gz  ERR1830503_2.fastq.gz  ERR1830506_1.fastq.gz  ERR1830508_2.fastq.gz
 ERR1830499_1.fastq.gz  ERR1830501_2.fastq.gz  ERR1830504_1.fastq.gz  ERR1830506_2.fastq.gz
 ERR1830499_2.fastq.gz  ERR1830502_1.fastq.gz  ERR1830504_2.fastq.gz  ERR1830507_1.fastq.gz
 ERR1830500_1.fastq.gz  ERR1830502_2.fastq.gz  ERR1830505_1.fastq.gz  ERR1830507_2.fastq.gz
-(nextflow) [siyangming@localhost circdna.nf]$ tree /data1/users/siyangming/eccDNA/
-/data1/users/siyangming/eccDNA/
+(nextflow) [siyangming@localhost circdna.nf]$ tree /data1/users/siyangming/PlanteccDNADB/eccDNA/
+/data1/users/siyangming/PlanteccDNADB/eccDNA/
 ├── Alopecurus_myosuroides
 │   ├── SRR26069818.fastq.gz
 │   ├── SRR26069819.fastq.gz
