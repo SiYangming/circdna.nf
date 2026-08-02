@@ -1,7 +1,13 @@
 # nf-core/circdna: Changelog
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0/).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## v3.2.1 - [2026-08-02]
+
+### Enhancements & fixes
+
+- **CIRCLEFINDER 空结果处理优化**: 参照 suda-huanglab/circlehunter 最佳实践，将"未检测到 eccDNA"从误导性 "ERROR" 改为 "INFO" 提示，并产生空 `microDNA-JT.txt` 文件以保证下游通道完整性。原版 Circle-Finder 工具本身就静默产生空文件，circdna.nf 之前自定义的 `file_exists` 检查过度报错。移除 7 处中间 `file_exists` 检查，仅保留 2 处早期检查（split 文件为空、concordant.id-freq3.txt 为空）
 
 ## v3.2.0 - [2026-07-27]
 
