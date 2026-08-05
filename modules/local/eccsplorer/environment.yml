@@ -1,8 +1,0 @@
-name: eccsplorer
-channels:
-  - conda-forge
-  - bioconda
-  - siyangming
-  - defaults
-dependencies:
-  - siyangming::eccsplorer=2022.01.1.1

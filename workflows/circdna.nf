@@ -280,14 +280,11 @@ workflow CIRCDNA {
             ch_versions = ch_versions.mix(REFERENCE_MODE.out.versions)
             ch_mosdepth_multiqc = REFERENCE_MODE.out.mosdepth_summary.map { _meta, summary -> summary }
         } else if (params.mode == 'eccdna') {
-            def run_eccsplorer_new = true
-            def run_circle_map_new = true
             ECCDNA_MODE (
                 ch_trimmed_reads,
                 ch_bwa_index,
                 ch_fasta_meta,
-                run_eccsplorer_new,
-                run_circle_map_new
+                true
             )
             ch_versions = ch_versions.mix(ECCDNA_MODE.out.versions)
             ch_mosdepth_multiqc = ECCDNA_MODE.out.mosdepth_summary.map { _meta, summary -> summary }

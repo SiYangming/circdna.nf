@@ -182,12 +182,14 @@ nextflow run ./circdna.nf/main.nf \
     -profile server
 ```
 
-### 婆罗门参 (Tragopogon_porrifolius)
+### 婆罗门参 (Tragopogon_porrifolius) — hap1/hap2
+
+> 该物种有两个单倍型：`Tragopogon_porrifolius_hap1` 和 `Tragopogon_porrifolius_hap2`（后者将 `--genome` 换为 `Tragopogon_porrifolius_hap2` 即可）
 
 ```bash
 nextflow run ./circdna.nf/main.nf \
     --input circdna.nf/samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
-    --genome Tragopogon_porrifolius \
+    --genome Tragopogon_porrifolius_hap1 \
     --outdir eccDNA_results/Tragopogon_porrifolius \
     -profile server
 ```
@@ -212,12 +214,14 @@ nextflow run ./circdna.nf/main.nf \
     -profile server
 ```
 
-### 苋 (Amaranthus_palmeri)
+### 苋 (Amaranthus_palmeri) — hap1/hap2
+
+> 该物种有两个单倍型：`Amaranthus_palmeri_hap1` 和 `Amaranthus_palmeri_hap2`（后者将 `--genome` 换为 `Amaranthus_palmeri_hap2` 即可）
 
 ```bash
 nextflow run ./circdna.nf/main.nf \
     --input circdna.nf/samplesheets/circdna_Amaranthus_palmeri_eccDNA.csv \
-    --genome Amaranthus_palmeri \
+    --genome Amaranthus_palmeri_hap1 \
     --outdir eccDNA_results/Amaranthus_palmeri \
     -profile server
 ```
@@ -306,7 +310,7 @@ nextflow run ./circdna.nf/main.nf \
 
 - **必须执行 `conda activate nextflow`**：`nextflow` 命令仅在 `nextflow` conda 环境中可用
 - **`-resume` 必须指定 run name**：使用 `-resume`（不带参数）会恢复最近一次运行，可能不是你想要的
-- **FASTA 文件**：需已上传至 `/data1/users/siyangming/FASTA/`
+- **参考基因组文件**：需已存在于 `/data1/users/siyangming/PublicDB/reference/<species>/` 目录下
 - **样本数据**：需存在于 `eccDNA/` 目录
 - **大基因组**（小麦、日本柳杉、黑麦草）需添加 `-c circdna.nf/conf/large_genome.config`
 - **`circle_identifier`、`input_format`** 等参数已在 `circdna.nf/conf/server.config` 中配置，无需在命令中指定
