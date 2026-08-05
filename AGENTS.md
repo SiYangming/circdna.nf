@@ -8,14 +8,16 @@
 
 ## 1. Pipeline Overview
 
-**Pipeline**: `nf-core/circdna` v3.2.0  
+**Pipeline**: `nf-core/circdna` v4.4.0  
 **Main Entry**: `main.nf` → `workflows/circdna.nf`  
 **Three Modes**:
 | Mode | Description |
 |------|-------------|
 | `reference` | gDNA/WGS variant detection only |
 | `eccdna` | eccDNA (circular DNA) detection (legacy + new) |
-| `integrated` | Joint gDNA + eccDNA analysis with ECC_SCORE integration |
+| `analysis` | Downstream analysis of existing detection results (distribution, DEG, visualization) |
+
+> **Note**: The `integrated` mode was removed in v4.0.0. ECC_SCORE scoring was moved to `eccdna.smk` (independent post-processing layer). The `analysis` mode (added in v4.4.0) provides downstream analysis capabilities and can consume scored BED from eccdna.smk.
 
 ---
 
@@ -36,7 +38,7 @@ circdna.nf/
 │   ├── bam_preprocessing/main.nf    #   FASTQC → TrimGalore → BWA → Picard → SAMtools
 │   ├── eccdna_mode/main.nf          #   eccDNA mode: BAM prep + mosdepth + ECCsplorer + Circle-Map + merge
 │   ├── reference_mode/main.nf       #   Reference mode: BAM prep + mosdepth only
-│   ├── integrated_mode/main.nf      #   Integrated mode: ECC_SCORE calculation
+│   ├── downstream_analysis/main.nf  #   Analysis mode: distribution + HOMER + gene burden + DEG + visualization
 │   ├── circle_finder_pipeline/main.nf  # Legacy: Circle-Finder (SAMBLASTER → BEDTools → CircleFinder)
 │   ├── circle_map_pipeline/main.nf     # Legacy/Active: Circle-Map (ReadExtractor → Repeats → Realign)
 │   ├── ampliconarchitect_pipeline/main.nf  # Legacy: AmpliconArchitect + CNVkit
@@ -50,8 +52,10 @@ circdna.nf/
 │
 ├── modules/local/                   # CUSTOM MODULES
 │   ├── eccsplorer/main.nf           #   ECCsplorer: eccDNA candidate detection
-│   ├── ecc_score/main.nf            #   ECC_SCORE: eccDNA grading (w1*junction + w2*depth - w3*TE)
-│   ├── candidate_merge/main.nf      #   Merge ECCsplorer + Circle-Map BED outputs
+│   ├── ecc_distribution/main.nf     #   Distribution analysis + HOMER annotation (analysis mode)
+│   ├── ecc_gene_burden/main.nf      #   Gene burden matrix via bedtools intersect (analysis mode)
+│   ├── ecc_deg/main.nf              #   DEG: ecc_perm + R-based (DESeq2/edgeR/limma) + enrichment + volcano (analysis mode)
+│   ├── ecc_visualize/main.nf        #   Circlize visualization (analysis mode)
 │   ├── circlefinder/main.nf         #   CircleFinder: circular DNA detection
 │   ├── circlemap/                   #     Circle-Map sub-modules
 │   │   ├── readextractor/main.nf
@@ -89,7 +93,7 @@ circdna.nf/
 │   ├── server.config                #   Server execution profile
 │   ├── test.config                  #   GitHub CI test profile (smallest)
 │   ├── test_local.config            #   Local test profile (4 CPU, 8GB)
-│   ├── test_integrated.config       #   Integrated mode test
+│   ├── test_analysis.config         #   Analysis mode test profile
 │   ├── test_AA.config               #   AmpliconArchitect test
 │   ├── test_AA_local.config         #   AmpliconArchitect local test
 │   └── test_full.config             #   Full test profile
@@ -101,9 +105,9 @@ circdna.nf/
 │   ├── circdnalr_{species}_long_read.csv # Per-species TGS files
 │   ├── circrna_*.csv               #   circRNA samplesheets (cross-project)
 │   ├── SraRunInfo_eccDNA_all2.csv   #   SRA Run Info metadata (TaxID, ScientificName, download_path)
-│   ├── samplesheet.csv              #   Default test samplesheet
-│   ├── samplesheet_local.csv        #   Local test samplesheet
-│   ├── samplesheet_integrated.csv   #   Integrated mode test (has "datatype" column)
+│   ├── test_online.csv              #   Default test samplesheet
+│   ├── test_local_eccdna.csv        #   Local test samplesheet
+│   ├── test_group.txt               #   Analysis mode DEG group file
 │   ├── test_*.csv                   #   Additional test samplesheets
 │   ├── data_issues.txt              #   Known data issues log
 │   └── fastq_stats.tsv              #   FASTQ file statistics
@@ -119,16 +123,26 @@ circdna.nf/
 │   ├── check_samplesheet.py         #   VALIDATOR: samplesheet format checker
 │   ├── Coverage.py                  #   Coverage calculation
 │   ├── bam2bam.py                   #   BAM format conversion
-│   ├── calculate_ecc_score.py       #   ECC_SCORE calculation
 │   ├── circle_map.py                #   Circle-Map integration
 │   ├── extract_circle_SV_reads.py   #   SV read extraction
-│   ├── merge_candidates.py          #   Candidate merging
 │   ├── realigner.py                 #   Read realignment
 │   ├── repeats.py                   #   Repeat analysis
 │   ├── scrape_software_versions.py  #   Version scraping
 │   ├── simulations.py               #   Simulation utilities
 │   ├── summarise_aa.py              #   AmpliconArchitect summary
-│   └── utils.py                     #   Shared utilities
+│   ├── utils.py                     #   Shared utilities
+│   ├── ecc_distribution.py          #   Distribution analysis (analysis mode)
+│   ├── ecc_homer_anno.py            #   HOMER annotation (analysis mode)
+│   ├── ecc_gene_burden.py           #   Gene burden matrix (analysis mode)
+│   ├── ecc_merge_burden.py          #   Merge burden CSVs for R DEG (analysis mode)
+│   ├── ecc_perm.py                  #   ecc_perm permutation test (analysis mode)
+│   ├── ecc_volcano.py               #   Volcano plot (analysis mode)
+│   ├── ecc_circlize_prep.py         #   Circlize preprocessing (analysis mode)
+│   ├── deseq2.R                     #   DESeq2 R DEG script (analysis mode)
+│   ├── edger.R                      #   edgeR R DEG script (analysis mode)
+│   ├── limma.R                      #   limma R DEG script (analysis mode)
+│   ├── clusterprofile.R             #   GO/KEGG/GSEA enrichment (analysis mode)
+│   └── ecc_circlize.R               #   Circlize R visualization (analysis mode)
 │
 ├── lib/                             # GROOVY LIBRARY
 │   ├── WorkflowMain.groovy          #   Main workflow helpers (citation, initialise, getGenomeAttribute)
@@ -163,7 +177,7 @@ circdna.nf/
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        INPUT LAYER                                  │
 │                                                                     │
-│  samplesheet.csv ──► INPUT_CHECK ──► ch_fastq ──► CAT_FASTQ        │
+│  test_online.csv ──► INPUT_CHECK ──► ch_fastq ──► CAT_FASTQ        │
 │  (sample,fastq_1, │  (validate +   (meta, reads)  (merge lanes)    │
 │   fastq_2,        │  add metadata)                                │
 │   data_type)      │                                                │
@@ -195,17 +209,20 @@ circdna.nf/
          ┌───────────────────┼───────────────────┐
          ▼                   ▼                   ▼
 ┌───────────────┐  ┌───────────────┐  ┌───────────────────┐
-│ REFERENCE_MODE │  │  ECCDNA_MODE  │  │  INTEGRATED_MODE   │
-│               │  │               │  │                   │
-│ MOSDEPTH      │  │ MOSDEPTH      │  │ ECC_SCORE         │
-│ (gDNA depth)  │  │ ECCSPLORER    │  │  w1*junction_reads│
-│               │  │ CIRCLE_MAP    │  │  w2*depth_ratio   │
-│               │  │ CANDIDATE_MERGE│  │  w3*TE_penalty    │
+│ REFERENCE_MODE │  │  ECCDNA_MODE  │  │ DOWNSTREAM_ANALYSIS│
+│               │  │               │  │ (analysis mode)    │
+│ MOSDEPTH      │  │ MOSDEPTH      │  │ ECC_DISTRIBUTION   │
+│ (gDNA depth)  │  │ ECCSPLORER    │  │ ECC_HOMER_ANNO     │
+│               │  │ CIRCLE_MAP    │  │ ECC_GENE_BURDEN    │
+│               │  │ CANDIDATE_MERGE│  │ ECC_DEG (perm/R)   │
+│               │  │               │  │ ECC_ENRICHMENT     │
+│               │  │               │  │ ECC_VOLCANO        │
+│               │  │               │  │ ECC_VISUALIZE      │
 └───────┬───────┘  └───────┬───────┘  └─────────┬─────────┘
         │                  │                     │
         ▼                  ▼                     ▼
-  mosdepth_bed      merged_bed            scored_bed
-  (gDNA)            (eccDNA candidates)  (final eccDNA calls)
+  mosdepth_bed      merged_bed         distribution/DEG/
+  (gDNA)            (eccDNA candidates) visualization plots
 ```
 
 ---
@@ -220,7 +237,7 @@ SRR5051136,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051136_
 ```
 - **Required columns**: `sample`, `fastq_1`, `fastq_2`
 - **Optional columns**: `lane`, `datatype`, `platform`, `protocol`
-- **`data_type` values**: `eccDNA` or `gDNA` (used by integrated mode to split channels)
+- **`data_type` values**: `eccDNA` or `gDNA` (used by eccdna mode to split channels for ECCsplorer control analysis)
 - **`datatype` values**: `eccdna` or `gdna` (used by `check_samplesheet.py` for validation)
 - **`platform` values**: `illumina`, `pacbio`, `ont`
 - **`protocol` values**: `short_read`, `long_read`
@@ -241,8 +258,8 @@ SAMPLE_A,/path/to/SAMPLE_A.bam
 | `circdna_{species}_eccDNA.csv` | Per-species NGS | Auto-generated by `update_samplesheets.py` |
 | `circdnalr_{species}_long_read.csv` | Per-species TGS | Hand-maintained |
 | `SraRunInfo_eccDNA_all2.csv` | SRA metadata | TaxID, ScientificName, download_path |
-| `samplesheet_local.csv` | Local test | Small test dataset |
-| `samplesheet_integrated.csv` | Integrated test | Has `datatype` column |
+| `test_local_eccdna.csv` | Local test | Small test dataset |
+| `test_group.txt` | Analysis mode test | DEG group file |
 
 ### 4.4 Data Consistency Rules
 
@@ -278,7 +295,7 @@ SAMPLE_A,/path/to/SAMPLE_A.bam
 3. `assets/schema_input.json` (if input schema changes)
 4. `conf/modules.config` (if new process needs resource/publishDir config)
 5. `conf/test_local.config` (update test params)
-6. `conf/test_integrated.config` (update integrated mode params)
+6. `conf/test_analysis.config` (update analysis mode params)
 
 ### 5.3 When Adding/Modifying Modules
 
@@ -317,18 +334,17 @@ SAMPLE_A,/path/to/SAMPLE_A.bam
 1. `subworkflows/local/bam_preprocessing/main.nf`
 2. `subworkflows/local/eccdna_mode/main.nf` (uses BAM_PREPROCESSING)
 3. `subworkflows/local/reference_mode/main.nf` (uses BAM_PREPROCESSING)
-4. `subworkflows/local/integrated_mode/main.nf` (uses both)
-5. `subworkflows/local/circle_finder_pipeline/main.nf` (legacy path)
-6. `subworkflows/local/circle_map_pipeline/main.nf` (legacy path)
-7. `conf/modules.config` (update resource/publishDir for affected processes)
+4. `subworkflows/local/circle_finder_pipeline/main.nf` (legacy path)
+5. `subworkflows/local/circle_map_pipeline/main.nf` (legacy path)
+6. `conf/modules.config` (update resource/publishDir for affected processes)
 
 ### 5.7 When Changing the Check Script
 
 **Files to update (MANDATORY)**:
 1. `bin/check_samplesheet.py` — update validation logic
 2. `subworkflows/local/input_check/main.nf` — verify compatibility
-3. `samplesheets/samplesheet_local.csv` — ensure test samplesheet passes validation
-4. Run: `python bin/check_samplesheet.py samplesheets/samplesheet_local.csv /tmp/test_out.csv FASTQ`
+3. `samplesheets/test_local_eccdna.csv` — ensure test samplesheet passes validation
+4. Run: `python bin/check_samplesheet.py samplesheets/test_local_eccdna.csv /tmp/test_out.csv FASTQ`
 
 ---
 
@@ -336,9 +352,9 @@ SAMPLE_A,/path/to/SAMPLE_A.bam
 
 ### Mode Selection (in `workflows/circdna.nf`)
 ```groovy
-params.mode == 'reference'   → REFERENCE_MODE
-params.mode == 'eccdna'      → ECCDNA_MODE (+ optional legacy branches)
-params.mode == 'integrated'  → REFERENCE_MODE + ECCDNA_MODE + INTEGRATED_MODE
+params.mode == 'reference'  → REFERENCE_MODE
+params.mode == 'eccdna'     → ECCDNA_MODE (+ optional legacy branches)
+params.mode == 'analysis'   → DOWNSTREAM_ANALYSIS (independent of detection)
 ```
 
 ### Legacy Circle Identifiers (only when `mode='eccdna'` + `circle_identifier` is set)
@@ -356,7 +372,7 @@ params.mode == 'integrated'  → REFERENCE_MODE + ECCDNA_MODE + INTEGRATED_MODE
 |------|-----------------|
 | `reference` | BAM_PREPROCESSING → MOSDEPTH |
 | `eccdna` | BAM_PREPROCESSING → MOSDEPTH + ECCSPLORER + CIRCLE_MAP → CANDIDATE_MERGE |
-| `integrated` | gDNA: REFERENCE_MODE; eccDNA: ECCDNA_MODE; then INTEGRATED_MODE (ECC_SCORE) |
+| `analysis` | DOWNSTREAM_ANALYSIS (ECC_DISTRIBUTION + ECC_HOMER + ECC_GENE_BURDEN + ECC_DEG + ECC_ENRICHMENT + ECC_VOLCANO + ECC_VISUALIZE) |
 
 ---
 
@@ -383,31 +399,30 @@ params.mode == 'integrated'  → REFERENCE_MODE + ECCDNA_MODE + INTEGRATED_MODE
 
 ### 7.3 Samplesheet Column Names
 - **Production files** (`circdna_ngs_clean.csv`): `data_type` (camelCase)
-- **Test files** (`samplesheet_integrated.csv`): `datatype` (lowercase)
-- **`check_samplesheet.py`** validates: `datatype` column name (lowercase), accepts values `eccdna`/`gdna`
+- **`check_samplesheet.py`** validates: accepts both `data_type` and `datatype` column names, values normalized to lowercase (`eccdna`/`gdna`)
 - **Both conventions work**: `check_samplesheet.py` reads by column name, and `data_type` is accepted as a valid column name via `OPTIONAL_FIELDS`
 
 ### 7.4 Data Type Values
 | Column Name | Valid Values | Usage |
 |------------|-------------|-------|
-| `data_type` | `eccDNA`, `gDNA` | Production files, filter in `workflows/circdna.nf` |
-| `datatype` | `eccdna`, `gdna` | Test files, validation in `check_samplesheet.py` |
+| `data_type` | `eccDNA`, `gDNA` | Production files, filter in `workflows/circdna.nf`, ECCsplorer control analysis |
+| `datatype` | `eccdna`, `gdna` | Test files, validation in `check_samplesheet.py` (normalized to lowercase) |
 
 ### 7.5 Pipeline Modes
 - `reference` → gDNA/WGS only (mosdepth)
 - `eccdna` → eccDNA detection (ECCsplorer + Circle-Map + merge)
-- `integrated` → gDNA + eccDNA joint analysis (ECC_SCORE with configurable weights)
+- `analysis` → Downstream analysis of existing detection BED results (distribution, HOMER, DEG, enrichment, visualization)
 
 ### 7.6 Circle Identifier
 - Only active when `mode='eccdna'` AND `circle_identifier` is explicitly set
 - Values: `circexplorer2`, `circle_map_realign`, `circle_map_repeats`, `circle_finder`, `ampliconarchitect`, `unicycler`
 - New mode path (no `circle_identifier`): uses ECCDNA_MODE subworkflow by default
 
-### 7.7 ECC_SCORE Weights
-- `ecc_score_w1`: Junction reads weight (default: 1.0)
-- `ecc_score_w2`: Depth ratio weight (default: 1.0)
-- `ecc_score_w3`: TE repeat penalty weight (default: 0.5)
-- Score formula: `score = w1 * junction_reads + w2 * depth_ratio - w3 * TE_penalty`
+### 7.7 ECC_SCORE (moved to eccdna.smk)
+- ECC_SCORE scoring was moved to `eccdna.smk` (independent post-processing layer) in v4.0.0
+- `eccdna.smk` consumes circdna.nf detection outputs (mosdepth bed, eccsplorer bed, circle_map bed)
+- The `analysis` mode can optionally consume eccdna.smk's scored BED as input
+- Data flow: `circdna.nf (detection) → eccdna.smk (scoring) → circdna.nf analysis mode (downstream)`
 
 ### 7.8 Platform Values
 - `illumina`: Short-read sequencing (NGS)
@@ -433,7 +448,7 @@ nf-core schema build
 ```bash
 # Validate a samplesheet
 conda activate nextflow
-python bin/check_samplesheet.py samplesheets/samplesheet.csv /tmp/test_out.csv FASTQ
+python bin/check_samplesheet.py samplesheets/test_online.csv /tmp/test_out.csv FASTQ
 
 # Validate with data_type column
 python bin/check_samplesheet.py samplesheets/circdna_ngs_clean.csv /tmp/test_out.csv FASTQ
@@ -451,8 +466,8 @@ python scripts/update_samplesheets.py
 conda activate nextflow
 nextflow run main.nf -profile test_local
 
-# Run integrated mode test
-nextflow run main.nf -profile test_integrated
+# Run analysis mode test
+nextflow run main.nf -profile test_analysis
 ```
 
 ### 8.5 Full Pipeline Run (Example)
@@ -467,17 +482,17 @@ nextflow run main.nf \
     --circle_identifier circexplorer2,circle_map_realign,circle_map_repeats \
     --outdir results
 
-# Integrated mode with custom weights
+# Analysis mode (downstream analysis of existing detection results)
 nextflow run main.nf \
     -profile docker \
-    --input samplesheets/samplesheet_integrated.csv \
-    --input_format FASTQ \
-    --genome GRCh38 \
-    --mode integrated \
-    --ecc_score_w1 1.0 \
-    --ecc_score_w2 1.0 \
-    --ecc_score_w3 0.5 \
-    --outdir results
+    --mode analysis \
+    --analysis_input results/eccdna/circlemap/ \
+    --detect_type circlemap \
+    --gene_bed reference/genes.bed \
+    --group_file samplesheets/test_group.txt \
+    --deg_method ecc_perm \
+    --annotation_db hg38 \
+    --outdir results/analysis
 ```
 
 ---

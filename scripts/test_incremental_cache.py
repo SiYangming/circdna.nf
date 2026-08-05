@@ -15,7 +15,7 @@ from pathlib import Path
 BASE_DIR = Path("/Users/siyangming/nextflow_nf_core/circdna.nf")
 TEST_DIR = BASE_DIR / "testdatasets"
 SAMPLESHEET_DIR = TEST_DIR / "samplesheet"
-ORIGINAL_SAMPLESHEET = SAMPLESHEET_DIR / "samplesheet_local.csv"
+ORIGINAL_SAMPLESHEET = SAMPLESHEET_DIR / "test_local_eccdna.csv"
 WORK_DIR = BASE_DIR / "nextflow_work"
 RESULTS_DIR = BASE_DIR / "results_cache_test"
 
@@ -128,7 +128,7 @@ def main():
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     WORK_DIR.mkdir(parents=True, exist_ok=True)
     
-    backup = SAMPLESHEET_DIR / "samplesheet_local.csv.bak"
+    backup = SAMPLESHEET_DIR / "test_local_eccdna.csv.bak"
     shutil.copy2(ORIGINAL_SAMPLESHEET, backup)
     
     try:

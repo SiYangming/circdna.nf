@@ -1,0 +1,10 @@
+- [x] `subworkflows/local/circle_map_pipeline/main.nf` 第 46 行 `ch_qname_sorted_bai` 已删除
+- [x] `subworkflows/local/eccdna_mode/main.nf` 第 39 行闭包参数为 `_meta`（非 `meta`）
+- [x] `subworkflows/local/eccdna_mode/main.nf` 第 50 行闭包参数为 `_meta`（非 `meta`）
+- [x] `subworkflows/local/input_check/main.nf` 第 12、16、20 行均使用 `channel.fromPath`（小写，非 `Channel`）
+- [x] `subworkflows/local/reference_mode/main.nf` 第 14 行 take 参数为 `_repeat_gff`（非 `repeat_gff`）
+- [x] `subworkflows/local/reference_mode/main.nf` 第 31 行闭包参数为 `_meta`（非 `meta`）
+- [x] CHANGELOG.md 顶部新增 v4.2.3 条目，描述 lint 警告清理
+- [x] nextflow.config manifest.version === CHANGELOG 顶部版本号（均为 4.2.3）
+- [x] `nextflow lint .` 输出中不出现 "Variable was declared but not used"、"Parameter was not used"、"Channel deprecated" 三类警告（输出 `✅ 77 files had no errors`，0 条 Warn）
+- [x] `nextflow run main.nf -profile test_local,docker --mode eccdna -resume` 正常完成（`Pipeline completed successfully`），ECCSPLORER 处理 `3 of 3` 样本，无 ERROR

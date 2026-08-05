@@ -1,0 +1,7 @@
+sample,fastq_1,fastq_2,data_type,group
+circdna_1,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_1_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_1_R2.fastq.gz,eccDNA,A
+circdna_2,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_2_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_2_R2.fastq.gz,eccDNA,B
+circdna_3,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_3_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_3_R2.fastq.gz,eccDNA,C
+gdna_1,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/gdna_1_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/gdna_1_R2.fastq.gz,gDNA,A
+gdna_2,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/gdna_2_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/gdna_2_R2.fastq.gz,gDNA,B
+gdna_3,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/gdna_3_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/gdna_3_R2.fastq.gz,gDNA,C

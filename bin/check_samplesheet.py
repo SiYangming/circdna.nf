@@ -55,7 +55,7 @@ def check_samplesheet(file_in, file_out, input_format):
     """
 
     sample_mapping_dict = {}
-    OPTIONAL_FIELDS = ["lane", "datatype", "platform", "protocol"]
+    OPTIONAL_FIELDS = ["lane", "datatype", "data_type", "platform", "protocol", "group"]
     VALID_DATATYPES = ["gdna", "eccdna"]
     VALID_PLATFORMS = ["illumina", "pacbio", "ont"]
     VALID_PROTOCOLS = ["short_read", "long_read"]
@@ -68,9 +68,11 @@ def check_samplesheet(file_in, file_out, input_format):
             header = [x.strip('"') for x in fin.readline().strip().split(",")]
 
             has_lane = "lane" in header
-            has_datatype = "datatype" in header
+            has_datatype = "datatype" in header or "data_type" in header
             has_platform = "platform" in header
             has_protocol = "protocol" in header
+            has_group = "group" in header
+            datatype_col = "data_type" if "data_type" in header else ("datatype" if "datatype" in header else None)
 
             if header[:3] != HEADER:
                 print("ERROR: Please check samplesheet header -> first 3 columns must be sample,fastq_1,fastq_2")
@@ -113,14 +115,18 @@ def check_samplesheet(file_in, file_out, input_format):
                         print_error("Lane entry has not been specified!", "Line", line)
 
                 datatype = ""
-                if has_datatype:
-                    datatype = row["datatype"].strip().lower()
+                if has_datatype and datatype_col:
+                    datatype = row.get(datatype_col, "").strip().lower()
                     if datatype and datatype not in VALID_DATATYPES:
                         print_error(
                             "Invalid datatype '{}'! Must be one of: {}".format(datatype, ", ".join(VALID_DATATYPES)),
                             "Line",
                             line,
                         )
+
+                group = ""
+                if has_group:
+                    group = row.get("group", "").strip()
 
                 platform = ""
                 if has_platform:
@@ -154,15 +160,15 @@ def check_samplesheet(file_in, file_out, input_format):
                                 line,
                             )
                 ## Auto-detect paired-end/single-end
-                sample_info = []  ## [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol]
+                sample_info = []  ## [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group]
                 if sample and fastq_1 and fastq_2:  ## Paired-end short reads
-                    sample_info = ["0", fastq_1, fastq_2, lane, datatype, platform, protocol]
+                    sample_info = ["0", fastq_1, fastq_2, lane, datatype, platform, protocol, group]
                 elif sample and fastq_1 and not fastq_2:  ## Single-end short reads
-                    sample_info = ["1", fastq_1, fastq_2, lane, datatype, platform, protocol]
+                    sample_info = ["1", fastq_1, fastq_2, lane, datatype, platform, protocol, group]
                 else:
                     print_error("Invalid combination of columns provided!", "Line", line)
 
-                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2, lane, datatype, platform, protocol ] }
+                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group ] }
                 if sample not in sample_mapping_dict:
                     sample_mapping_dict[sample] = [sample_info]
                 else:
@@ -239,11 +245,13 @@ def check_samplesheet(file_in, file_out, input_format):
                     if has_lane:
                         out_header.append("lane")
                     if has_datatype:
-                        out_header.append("datatype")
+                        out_header.append(datatype_col)
                     if has_platform:
                         out_header.append("platform")
                     if has_protocol:
                         out_header.append("protocol")
+                    if has_group:
+                        out_header.append("group")
                     fout.write(",".join(out_header) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
                         ## Check that multiple runs of the same sample are of the same datatype
@@ -254,7 +262,7 @@ def check_samplesheet(file_in, file_out, input_format):
                             )
 
                         for idx, val in enumerate(sample_mapping_dict[sample]):
-                            ## val = [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol]
+                            ## val = [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group]
                             row_vals = [sample, val[0], val[1], val[2]]
                             if has_lane:
                                 row_vals.append(val[3])
@@ -264,6 +272,8 @@ def check_samplesheet(file_in, file_out, input_format):
                                 row_vals.append(val[5])
                             if has_protocol:
                                 row_vals.append(val[6])
+                            if has_group:
+                                row_vals.append(val[7])
                             if not has_lane:
                                 row_vals[0] = "{}_T{}".format(sample, idx + 1)
                             fout.write(",".join(row_vals) + "\n")

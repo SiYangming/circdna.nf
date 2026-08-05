@@ -1,0 +1,52 @@
+name: "eccsplorer_clu_prepare"
+description: "Skeleton prepare stage for ECCsplorer clu/all mode integration. Generates a placeholder working directory and input manifest so the stage can be wired safely before the real implementation lands."
+keywords:
+  - eccsplorer
+  - eccdna
+  - cluster
+  - prepare
+tools:
+  - "eccsplorer":
+      description: "Detection of extrachromosomal circular DNA (eccDNA) from paired-end sequencing data"
+      homepage: "https://github.com/crimBubble/ECCsplorer"
+      documentation: "https://github.com/crimBubble/ECCsplorer"
+      tool_dev_url: "https://github.com/crimBubble/ECCsplorer"
+      licence: ["MIT"]
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information
+    - reads:
+        type: file
+        description: Input sequencing reads for the clu/all skeleton entrypoint
+        pattern: "*.{fastq,fq,fastq.gz,fq.gz,bam,BAM,Bam}"
+    - fasta:
+        type: file
+        description: Reference genome in FASTA format
+        pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
+output:
+  - prepare_dir:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_clu_prepare":
+          type: directory
+          description: Placeholder directory representing the clu prepare work area
+          pattern: "*_clu_prepare"
+  - reads_manifest:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_reads_manifest.tsv":
+          type: file
+          description: TSV manifest of staged input reads
+          pattern: "*_reads_manifest.tsv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

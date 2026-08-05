@@ -9,15 +9,15 @@ workflow INPUT_CHECK {
     ch_versions = SAMPLESHEET_CHECK.out.versions
 
     if ( params.input_format == "FASTQ" ) {
-        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
+        channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
             .map { it -> create_fastq_channels(it) }
             .set { reads }
     } else if ( params.input_format == "BAM" ) {
-        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
+        channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
             .map { it -> create_bam_channels(it) }
             .set { reads }
     } else if ( params.protocol in ["pacbio", "ont"] ) {
-        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
+        channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
             .map { it -> create_long_read_channels(it) }
             .set { reads }
     }
@@ -34,9 +34,19 @@ def create_fastq_channels(LinkedHashMap row) {
     if (row.containsKey('lane') && row.lane) {
         meta.lane = row.lane
     }
-    meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    // Support both 'data_type' and 'datatype' column names
+    def dt_value = ''
+    if (row.containsKey('data_type') && row.data_type) {
+        dt_value = row.data_type.toLowerCase()
+    } else if (row.containsKey('datatype') && row.datatype) {
+        dt_value = row.datatype.toLowerCase()
+    }
+    meta.datatype = dt_value ?: 'eccdna'
+    meta.data_type = meta.datatype
     meta.platform     = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
     meta.protocol     = row.containsKey('protocol') ? (row.protocol ? row.protocol : 'short_read') : 'short_read'
+    // Support optional 'group' column for eccDNA/gDNA pairing
+    meta.group = row.containsKey('group') ? (row.group ?: '') : ''
 
     def array = []
     if (!file(row.fastq_1).exists()) {
@@ -57,6 +67,10 @@ def create_bam_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id             = row.sample
     meta.single_end     = false
+    meta.data_type = row.containsKey('data_type') ? (row.data_type ? row.data_type.toLowerCase() : 'eccdna') :
+                     (row.containsKey('datatype') ? (row.datatype ? row.datatype.toLowerCase() : 'eccdna') : 'eccdna')
+    meta.datatype = meta.data_type
+    meta.group = row.containsKey('group') ? (row.group ?: '') : ''
 
     def array = []
     if (!file(row.bam).exists()) {

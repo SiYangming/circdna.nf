@@ -1,0 +1,48 @@
+name: "eccsplorer_clu_core"
+description: "Skeleton core stage for ECCsplorer clu/all mode integration. Consumes the prepare directory and emits placeholder candidate tables and cluster result directories."
+keywords:
+  - eccsplorer
+  - eccdna
+  - cluster
+  - core
+tools:
+  - "eccsplorer":
+      description: "Detection of extrachromosomal circular DNA (eccDNA) from paired-end sequencing data"
+      homepage: "https://github.com/crimBubble/ECCsplorer"
+      documentation: "https://github.com/crimBubble/ECCsplorer"
+      tool_dev_url: "https://github.com/crimBubble/ECCsplorer"
+      licence: ["MIT"]
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information
+    - prepare_dir:
+        type: directory
+        description: Placeholder prepare directory produced by ECCSPLORER_CLU_PREPARE
+        pattern: "*_clu_prepare"
+output:
+  - candidates:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_cluster_candidates.tsv":
+          type: file
+          description: Placeholder candidate table for the clu core stage
+          pattern: "*_cluster_candidates.tsv"
+  - cluster_results:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_clu_core":
+          type: directory
+          description: Placeholder directory representing clu core results
+          pattern: "*_clu_core"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

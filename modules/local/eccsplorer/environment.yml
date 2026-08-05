@@ -2,7 +2,7 @@ name: eccsplorer
 channels:
   - conda-forge
   - bioconda
-  - siyangming
+  - yangmingsi
   - defaults
 dependencies:
-  - siyangming::eccsplorer=2022.01.1.1
+  - yangmingsi::eccsplorer=2022.01.1.1

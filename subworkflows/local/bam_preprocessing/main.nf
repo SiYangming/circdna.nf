@@ -58,9 +58,16 @@ workflow BAM_PREPROCESSING {
         )
         ch_versions = ch_versions.mix(SAMTOOLS_INDEX_BAM.out.versions_samtools)
     } else {
+        // BAM input mode: input is already sorted, just index it
         ch_bam_sorted = trimmed_reads
         ch_full_bam_sorted = trimmed_reads
         ch_bwa_sorted = trimmed_reads
+
+        // SAMTOOLS INDEX pre-sorted BAM (needed for downstream BAI channel)
+        SAMTOOLS_INDEX_BAM (
+            ch_bam_sorted
+        )
+        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_BAM.out.versions_samtools)
     }
 
     ch_bam_sorted_bai       = SAMTOOLS_INDEX_BAM.out.index

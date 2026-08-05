@@ -267,10 +267,10 @@ workflow CIRCDNA {
     // NEW MODE WORKFLOWS
     // Reference Mode, eccDNA Mode
     //
-    if (!use_legacy_mode && params.input_format == "FASTQ") {
+    if (!use_legacy_mode) {
         def ch_repeat_gff = params.repeat_gff ? file(params.repeat_gff) : channel.empty()
 
-        if (params.mode == 'reference') {
+        if (params.mode == 'reference' && params.input_format == "FASTQ") {
             REFERENCE_MODE (
                 ch_trimmed_reads,
                 ch_bwa_index,
@@ -280,14 +280,22 @@ workflow CIRCDNA {
             ch_versions = ch_versions.mix(REFERENCE_MODE.out.versions)
             ch_mosdepth_multiqc = REFERENCE_MODE.out.mosdepth_summary.map { _meta, summary -> summary }
         } else if (params.mode == 'eccdna') {
-            def run_eccsplorer_new = true
+            def run_eccsplorer_new = params.eccsplorer_map_core
             def run_circle_map_new = true
+
+            // Split reads by data_type: eccDNA samples for analysis, gDNA samples for control
+            def ch_all_reads = params.input_format == "FASTQ" ? ch_trimmed_reads : ch_bam_sorted
+            ch_eccdna_reads = ch_all_reads.filter { meta, reads -> meta.data_type != 'gdna' }
+            ch_gdna_reads = ch_all_reads.filter { meta, reads -> meta.data_type == 'gdna' }
+
             ECCDNA_MODE (
-                ch_trimmed_reads,
+                ch_eccdna_reads,
                 ch_bwa_index,
                 ch_fasta_meta,
                 run_eccsplorer_new,
-                run_circle_map_new
+                run_circle_map_new,
+                params.input_format,
+                ch_gdna_reads
             )
             ch_versions = ch_versions.mix(ECCDNA_MODE.out.versions)
             ch_mosdepth_multiqc = ECCDNA_MODE.out.mosdepth_summary.map { _meta, summary -> summary }

@@ -14,7 +14,7 @@ This branch contains test data to be used for automated testing with the [nf-cor
 
 | File | Description |
 |------|-------------|
-| `samplesheet_local.csv` | Default local test input (3 samples) |
+| `test_local_eccdna.csv` | Default local test input (3 samples) |
 | `test_3.csv` | 3 samples - baseline test |
 | `test_4.csv` | 4 samples - incremental cache test (+1 sample) |
 | `test_2.csv` | 2 samples - decremental cache test (-1 sample) |

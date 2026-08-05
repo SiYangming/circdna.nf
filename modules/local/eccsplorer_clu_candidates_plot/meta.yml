@@ -1,0 +1,48 @@
+name: "eccsplorer_clu_candidates_plot"
+description: "Skeleton plotting stage for ECCsplorer clu/all mode integration. Converts the placeholder candidate table into placeholder plotting outputs so downstream include wiring can be tested safely."
+keywords:
+  - eccsplorer
+  - eccdna
+  - cluster
+  - plotting
+tools:
+  - "eccsplorer":
+      description: "Detection of extrachromosomal circular DNA (eccDNA) from paired-end sequencing data"
+      homepage: "https://github.com/crimBubble/ECCsplorer"
+      documentation: "https://github.com/crimBubble/ECCsplorer"
+      tool_dev_url: "https://github.com/crimBubble/ECCsplorer"
+      licence: ["MIT"]
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information
+    - candidates_tsv:
+        type: file
+        description: Placeholder clu candidate table produced by ECCSPLORER_CLU_CORE
+        pattern: "*_cluster_candidates.tsv"
+output:
+  - plot_pdf:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_cluster_candidates_plot.pdf":
+          type: file
+          description: Placeholder clu candidate plot PDF
+          pattern: "*_cluster_candidates_plot.pdf"
+  - plot_tsv:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_cluster_candidates_plot.tsv":
+          type: file
+          description: Placeholder plotting metadata table
+          pattern: "*_cluster_candidates_plot.tsv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

@@ -43,7 +43,6 @@ workflow CIRCLE_MAP_PIPELINE {
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_RE.out.versions_samtools)
 
     ch_qname_sorted_bam = SAMTOOLS_SORT_QNAME_CM.out.bam
-    ch_qname_sorted_bai = SAMTOOLS_SORT_QNAME_CM.out.index
     ch_re_sorted_bam = SAMTOOLS_SORT_RE.out.bam
     ch_re_sorted_bai = SAMTOOLS_SORT_RE.out.index
 
