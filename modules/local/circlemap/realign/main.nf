@@ -8,7 +8,7 @@ process CIRCLEMAP_REALIGN {
         'quay.io/biocontainers/circle-map:1.1.4--pyh5e36f6f_2' }"
 
     input:
-    tuple val(meta), path(re_bam), path(re_bai), path(qname), path(sbam), path(sbai)
+    tuple val(meta), path(re_bam), path(re_bai), path(qname), path(qname_bai), path(sbam), path(sbai)
     path fasta
 
     output:
@@ -19,6 +19,8 @@ process CIRCLEMAP_REALIGN {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
+    samtools faidx $fasta
+
     circle_map.py \\
         Realign \\
         $args \\
