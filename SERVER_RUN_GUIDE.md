@@ -142,16 +142,6 @@ nextflow run ./circdna.nf/main.nf \
     -profile server
 ```
 
-### 向日葵 (Helianthus_annuus)
-
-```bash
-nextflow run ./circdna.nf/main.nf \
-    --input circdna.nf/samplesheets/circdna_Helianthus_annuus_eccDNA.csv \
-    --genome Helianthus_annuus \
-    --outdir eccDNA_results/Helianthus_annuus \
-    -profile server
-```
-
 ### 本氏烟草 (Nicotiana_benthamiana)
 
 ```bash
@@ -182,13 +172,25 @@ nextflow run ./circdna.nf/main.nf \
     -profile server
 ```
 
-### 婆罗门参 (Tragopogon_porrifolius)
+### 婆罗门参 (Tragopogon_porrifolius) — 双单倍型 (hap1/hap2)，hap1 为大基因组
+
+> 该物种存在 hap1、hap2 两个单倍型基因组，需分别运行；`--genome` 值必须为 `Tragopogon_porrifolius_hap1` / `Tragopogon_porrifolius_hap2`（对应 server.config 中的 genome 键）
+> hap1 参考序列长度超过 BAI 索引上限（约 512 Mb/染色体），**必须**附加 `-c circdna.nf/conf/large_genome.config`（启用 CSI 索引）；hap2 无需附加
 
 ```bash
+# hap1 (大基因组，需 CSI 索引)
 nextflow run ./circdna.nf/main.nf \
     --input circdna.nf/samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
-    --genome Tragopogon_porrifolius \
-    --outdir eccDNA_results/Tragopogon_porrifolius \
+    --genome Tragopogon_porrifolius_hap1 \
+    --outdir eccDNA_results/Tragopogon_porrifolius_hap1 \
+    -profile server \
+    -c circdna.nf/conf/large_genome.config
+
+# hap2
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
+    --genome Tragopogon_porrifolius_hap2 \
+    --outdir eccDNA_results/Tragopogon_porrifolius_hap2 \
     -profile server
 ```
 
@@ -212,27 +214,6 @@ nextflow run ./circdna.nf/main.nf \
     -profile server
 ```
 
-### 苋 (Amaranthus_palmeri)
-
-```bash
-nextflow run ./circdna.nf/main.nf \
-    --input circdna.nf/samplesheets/circdna_Amaranthus_palmeri_eccDNA.csv \
-    --genome Amaranthus_palmeri \
-    --outdir eccDNA_results/Amaranthus_palmeri \
-    -profile server
-```
-
-### 黑麦草 (Alopecurus_myosuroides) — 大基因组
-
-```bash
-nextflow run ./circdna.nf/main.nf \
-    --input circdna.nf/samplesheets/circdna_Alopecurus_myosuroides_eccDNA.csv \
-    --genome Alopecurus_myosuroides \
-    --outdir eccDNA_results/Alopecurus_myosuroides \
-    -profile server \
-    -c circdna.nf/conf/large_genome.config
-```
-
 ### 日本柳杉 (Cryptomeria_japonica) — 大基因组
 
 ```bash
@@ -251,6 +232,51 @@ nextflow run ./circdna.nf/main.nf \
     --input circdna.nf/samplesheets/circdna_Triticum_aestivum_eccDNA.csv \
     --genome Triticum_aestivum \
     --outdir eccDNA_results/Triticum_aestivum \
+    -profile server \
+    -c circdna.nf/conf/large_genome.config
+```
+
+## 三代长读长物种 (circdnalr) — 占位
+
+> 以下物种仅有 long_read 长读长 samplesheet（`circdnalr_*_long_read.csv`），circdnalr 流程尚未就绪，命令为占位，待后续实现
+
+### 向日葵 (Helianthus_annuus)
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Helianthus_annuus_long_read.csv \
+    --genome Helianthus_annuus \
+    --outdir eccDNA_results/Helianthus_annuus \
+    -profile server
+```
+
+### 苋 (Amaranthus_palmeri) — 双单倍型 (hap1/hap2)
+
+> 该物种存在 hap1、hap2 两个单倍型基因组，需分别运行；`--genome` 值必须为 `Amaranthus_palmeri_hap1` / `Amaranthus_palmeri_hap2`（对应 server.config 中的 genome 键）
+
+```bash
+# hap1
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Amaranthus_palmeri_long_read.csv \
+    --genome Amaranthus_palmeri_hap1 \
+    --outdir eccDNA_results/Amaranthus_palmeri_hap1 \
+    -profile server
+
+# hap2
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Amaranthus_palmeri_long_read.csv \
+    --genome Amaranthus_palmeri_hap2 \
+    --outdir eccDNA_results/Amaranthus_palmeri_hap2 \
+    -profile server
+```
+
+### 黑麦草 (Alopecurus_myosuroides) — 大基因组
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Alopecurus_myosuroides_long_read.csv \
+    --genome Alopecurus_myosuroides \
+    --outdir eccDNA_results/Alopecurus_myosuroides \
     -profile server \
     -c circdna.nf/conf/large_genome.config
 ```
@@ -308,7 +334,7 @@ nextflow run ./circdna.nf/main.nf \
 - **`-resume` 必须指定 run name**：使用 `-resume`（不带参数）会恢复最近一次运行，可能不是你想要的
 - **FASTA 文件**：需已上传至 `/data1/users/siyangming/FASTA/`
 - **样本数据**：需存在于 `eccDNA/` 目录
-- **大基因组**（小麦、日本柳杉、黑麦草）需添加 `-c circdna.nf/conf/large_genome.config`
+- **大基因组**（小麦、日本柳杉、Tragopogon_porrifolius hap1）需添加 `-c circdna.nf/conf/large_genome.config`；三代长读长中黑麦草同为大型基因组，章节内已单独标注
 - **`circle_identifier`、`input_format`** 等参数已在 `circdna.nf/conf/server.config` 中配置，无需在命令中指定
 - **清理旧 work 目录**：root 权限文件需用 Docker 删除
 

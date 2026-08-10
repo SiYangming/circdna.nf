@@ -16,6 +16,9 @@ Special thanks to the following for their input and contributions:
 - **ECCsplorer 参数入口集中化**: 在 `nextflow.config` 中新增 `eccsplorer_input_normalize`、`eccsplorer_map_core`、`eccsplorer_map_extract`、`eccsplorer_clu`、`eccsplorer_all` 作为主入口语义，并将原有 `eccsplorer_trim_reads` 保留为兼容别名，避免旧命令失效
 - **ECCsplorer 运行时拼参收敛**: `conf/modules.config` 的 `ECCSPLORER` 与 `ECCSPLORER_WITH_CONTROL` 统一复用集中化参数拼装逻辑，仅保留当前已落地的 map 路径；`clu/all` 重型能力默认关闭且不改变现有输出结构
 - **Schema 最小一致性更新**: `nextflow_schema.json` 同步新增 ECCsplorer 新参数入口与 `eccsplorer_database` 描述，并将旧参数标记为隐藏兼容入口，帮助命令行帮助信息迁移到新语义
+- **大基因组 CSI 索引匹配修复**: `conf/large_genome.config` 的 `SAMTOOLS_INDEX` 匹配改为正则 `.*SAMTOOLS_INDEX.*`，使 `-c`（CSI 索引）覆盖全部 SAMTOOLS_INDEX 实例（含 alias 的 `SAMTOOLS_INDEX_BAM`/`SAMTOOLS_INDEX_FILTERED`/`SAMTOOLS_INDEX_RE`），修复参考序列超过 BAI 上限（约 512 Mb/染色体）时 `samtools index` 报 `Numerical result out of range` 的问题
+- **Tragopogon_porrifolius hap1 标注大基因组**: `SERVER_RUN_GUIDE.md` 中 hap1 命令附加 `-c circdna.nf/conf/large_genome.config` 并标注大基因组（hap2 不变）
+- **README 大基因组 CSI 用法说明**: `README.md` Usage 部分新增大基因组物种附加 `-c conf/large_genome.config` 的提示（小麦、日本柳杉、Tragopogon_porrifolius hap1）
 
 ### Notes
 
