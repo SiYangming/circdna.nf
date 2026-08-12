@@ -1,0 +1,4 @@
+sample,fastq_1,fastq_2,platform,protocol
+pacbio_eccdna_smoke,/data1/users/siyangming/PlanteccDNADB/circdna.nf/testdatasets/pacbio/pacbio_eccdna_smoke.fastq.gz,,pacbio,long_read
+pacbio_eccdna_regular,/data1/users/siyangming/PlanteccDNADB/circdna.nf/testdatasets/pacbio/pacbio_eccdna_regular.fastq.gz,,pacbio,long_read
+pacbio_eccdna_consistency,/data1/users/siyangming/PlanteccDNADB/circdna.nf/testdatasets/pacbio/pacbio_eccdna_consistency.fastq.gz,,pacbio,long_read

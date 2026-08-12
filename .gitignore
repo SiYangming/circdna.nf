@@ -9,3 +9,7 @@ null
 /work*
 /results*
 server.txt
+
+# Long-read consistency test data (large, generated locally by extract_test_data.sh)
+testdatasets/ont/*consistency.fastq.gz
+testdatasets/pacbio/*consistency.fastq.gz

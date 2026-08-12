@@ -170,3 +170,93 @@ Minimap2 generates a `paf` file from the unicycler output. Here are the number o
 | circdna_3 | 64    |
 
 These are just guidelines and will change with the use of different software, and with any restructuring of the pipeline away from the current defaults.
+
+
+---
+
+## Long-Read Test Datasets (v4.1+)
+
+真实 ONT 和 PacBio 长读长 eccDNA 测试数据，用于验证长读长流水线模块（minimap2 比对、TideHunter/Genrich 串联重复检测、cd-hit 聚类等）。
+
+### 数据来源
+
+| 平台 | 样本 | 物种 | 基因组大小 | 来源 SRA | 实验类型 |
+|------|------|------|-----------|----------|----------|
+| ONT | SRR24335762 | *Arabidopsis thaliana* | ~135 Mb | PRJNA961124 | mobilome-seq eccDNA |
+| PacBio | SRR16958690 | *Amaranthus palmeri* | ~700 Mb | PRJNA780915 | CIDER-seq eccDNA |
+
+两个样本均为 eccDNA 富集实验（RCA 扩增后测序），适合验证 eccDNA 检测流程。
+
+### 三档测试数据
+
+基于本地环境（macOS arm64 + Docker 仿真 amd64，性能约降 2-3 倍）与长读长工具特性（minimap2 快、TideHunter/Genrich 中等、cd-hit 快）设计三档：
+
+#### ONT 测试数据
+
+| 档位 | 文件名 | 提取量 | 文件大小 | 本地预计耗时 | 用途 |
+|------|--------|--------|----------|-------------|------|
+| 冒烟 | `ont/ont_eccdna_smoke.fastq.gz` | 1,500 条 | ~6.5 MB | 5-15 分钟 | 验证流水线跑通、模块接线、输出非空 |
+| 常规验证 | `ont/ont_eccdna_regular.fastq.gz` | 7,500 条 | ~32 MB | 30-90 分钟 | 验证能检出串联重复候选 |
+| 一致性对比 | `ont/ont_eccdna_consistency.fastq.gz` | 30,000 条 | ~127 MB | 2-6 小时 | 完整版产物对比（本地生成） |
+
+源文件: 196,317 reads, avg 4,587 bp, max 115 kb
+
+#### PacBio 测试数据
+
+| 档位 | 文件名 | 提取量 | 文件大小 | 本地预计耗时 | 用途 |
+|------|--------|--------|----------|-------------|------|
+| 冒烟 | `pacbio/pacbio_eccdna_smoke.fastq.gz` | 1,500 条 | ~4.8 MB | 5-15 分钟 | 验证流水线跑通、模块接线、输出非空 |
+| 常规验证 | `pacbio/pacbio_eccdna_regular.fastq.gz` | 7,500 条 | ~24 MB | 30-90 分钟 | 验证能检出串联重复候选 |
+| 一致性对比 | `pacbio/pacbio_eccdna_consistency.fastq.gz` | 25,000 条 | ~79 MB | 2-6 小时 | 完整版产物对比（本地生成） |
+
+源文件: 56,035 reads, avg 6,913 bp, max 27 kb
+
+### 提取方式
+
+使用 `seqkit sample` 从源文件中随机抽样，保留整条 read，按条数控制规模。固定随机种子 `-s 42` 保证可重现。
+
+```bash
+# 重新提取（如需调整档位）
+bash circdna.nf/testdatasets/extract_test_data.sh
+```
+
+脚本 [`extract_test_data.sh`](extract_test_data.sh) 包含完整提取逻辑，支持跳过已存在的文件。
+
+### 样本表 (Samplesheet)
+
+| 文件 | 描述 |
+|------|------|
+| `samplesheets/test_ont.csv` | ONT 三档测试样本表（单端 long_read） |
+| `samplesheets/test_pacbio.csv` | PacBio 三档测试样本表（单端 long_read） |
+
+格式兼容 `check_samplesheet.py`，自动检测 `single_end=1`（fastq_2 为空）。
+
+```csv
+sample,fastq_1,fastq_2,platform,protocol
+ont_eccdna_smoke,/path/to/ont_eccdna_smoke.fastq.gz,,ont,long_read
+```
+
+### 本地测试命令
+
+```bash
+# ONT 冒烟测试（推荐起步）
+nextflow run main.nf \
+  -profile test_local \
+  --input samplesheets/test_ont.csv \
+  --outdir results_ont_smoke \
+  --mode eccdna
+
+# PacBio 冒烟测试
+nextflow run main.nf \
+  -profile test_local \
+  --input samplesheets/test_pacbio.csv \
+  --outdir results_pacbio_smoke \
+  --mode eccdna
+```
+
+### 注意事项
+
+- 完整版 map-ont 对 read 有最小长度过滤（`-q/-a` 默认 200 bp），真实 ONT/PacBio read 全长均满足，无需预处理
+- 样本量过小（<500 条）可能因串联重复 reads 太少而检不出候选，建议至少 1,000 条起步
+- PacBio CIDER-seq reads 来自 Amaranthus palmeri（基因组 ~700 Mb），比 Arabidopsis 大，但 eccDNA circles 大小不受基因组限制
+- 若需对照 WGS 背景，可使用已有的 Illumina 短读测试数据（`testdata/` 目录下 `gdna_1` 样本）
