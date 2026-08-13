@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "ECC_FINDER_PIPELINE"
+description: Subworkflow routing ecc_finder detection to the correct process based on platform (sr/ont) and method (map/asm). Currently activates SR modes; ONT modes reserved for circdnalr branch.
+keywords:
+  - eccdna
+  - circular dna
+  - ecc_finder
+  - de novo assembly
+  - reference-guided
+components:
+  - ecc_finder
+input:
+  - reads:
+      description: Paired-end FASTQ or single-end ONT reads channel [ val(meta), reads ]
+  - bwa_index:
+      description: BWA index for SR mode [ val(meta), path(idx) ]
+  - fasta_meta:
+      description: Reference genome [ val(meta), path(fasta) ]
+  - run_map:
+      type: boolean
+      description: Enable mapping-based detection
+  - run_asm:
+      type: boolean
+      description: Enable assembly-based detection
+  - platform:
+      type: string
+      description: "'sr' for Illumina, 'ont' for Nanopore (reserved)"
+output:
+  - versions:
+      description: Software versions
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

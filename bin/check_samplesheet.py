@@ -55,7 +55,7 @@ def check_samplesheet(file_in, file_out, input_format):
     """
 
     sample_mapping_dict = {}
-    OPTIONAL_FIELDS = ["lane", "datatype", "data_type", "platform", "protocol", "group"]
+    OPTIONAL_FIELDS = ["lane", "datatype", "data_type", "platform", "protocol", "group", "pair"]
     VALID_DATATYPES = ["gdna", "eccdna"]
     VALID_PLATFORMS = ["illumina", "pacbio", "ont"]
     VALID_PROTOCOLS = ["short_read", "long_read"]
@@ -72,6 +72,7 @@ def check_samplesheet(file_in, file_out, input_format):
             has_platform = "platform" in header
             has_protocol = "protocol" in header
             has_group = "group" in header
+            has_pair = "pair" in header
             datatype_col = "data_type" if "data_type" in header else ("datatype" if "datatype" in header else None)
 
             if header[:3] != HEADER:
@@ -128,6 +129,10 @@ def check_samplesheet(file_in, file_out, input_format):
                 if has_group:
                     group = row.get("group", "").strip()
 
+                pair = ""
+                if has_pair:
+                    pair = row.get("pair", "").strip()
+
                 platform = ""
                 if has_platform:
                     platform = row["platform"].strip().lower()
@@ -160,15 +165,15 @@ def check_samplesheet(file_in, file_out, input_format):
                                 line,
                             )
                 ## Auto-detect paired-end/single-end
-                sample_info = []  ## [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group]
+                sample_info = []  ## [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group, pair]
                 if sample and fastq_1 and fastq_2:  ## Paired-end short reads
-                    sample_info = ["0", fastq_1, fastq_2, lane, datatype, platform, protocol, group]
+                    sample_info = ["0", fastq_1, fastq_2, lane, datatype, platform, protocol, group, pair]
                 elif sample and fastq_1 and not fastq_2:  ## Single-end short reads
-                    sample_info = ["1", fastq_1, fastq_2, lane, datatype, platform, protocol, group]
+                    sample_info = ["1", fastq_1, fastq_2, lane, datatype, platform, protocol, group, pair]
                 else:
                     print_error("Invalid combination of columns provided!", "Line", line)
 
-                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group ] }
+                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group, pair ] }
                 if sample not in sample_mapping_dict:
                     sample_mapping_dict[sample] = [sample_info]
                 else:
@@ -252,6 +257,8 @@ def check_samplesheet(file_in, file_out, input_format):
                         out_header.append("protocol")
                     if has_group:
                         out_header.append("group")
+                    if has_pair:
+                        out_header.append("pair")
                     fout.write(",".join(out_header) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
                         ## Check that multiple runs of the same sample are of the same datatype
@@ -262,7 +269,7 @@ def check_samplesheet(file_in, file_out, input_format):
                             )
 
                         for idx, val in enumerate(sample_mapping_dict[sample]):
-                            ## val = [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group]
+                            ## val = [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol, group, pair]
                             row_vals = [sample, val[0], val[1], val[2]]
                             if has_lane:
                                 row_vals.append(val[3])
@@ -274,6 +281,8 @@ def check_samplesheet(file_in, file_out, input_format):
                                 row_vals.append(val[6])
                             if has_group:
                                 row_vals.append(val[7])
+                            if has_pair:
+                                row_vals.append(val[8])
                             if not has_lane:
                                 row_vals[0] = "{}_T{}".format(sample, idx + 1)
                             fout.write(",".join(row_vals) + "\n")

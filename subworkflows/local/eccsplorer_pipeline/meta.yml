@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "ECCSPLORER_PIPELINE"
+description: Unified eccDNA analysis pipeline handling both reference (gDNA background) and eccDNA detection modes. Contains BAM preprocessing, mosdepth, ECCsplorer, Circle-Map, ecc_finder, and ampliconsuite.
+keywords:
+  - eccdna
+  - circular dna
+  - eccsplorer
+  - circle-map
+  - ecc_finder
+  - ampliconsuite
+  - mosdepth
+components:
+  - bam_preprocessing
+  - eccsplorer
+  - circle_map_pipeline
+  - ecc_finder_pipeline
+  - ampliconsuite
+  - mosdepth
+input:
+  - reads:
+      description: Paired-end FASTQ reads channel [ val(meta), [path(r1), path(r2)] ]
+  - bwa_index:
+      description: BWA index channel [ val(meta), path(index_dir) ]
+  - fasta_meta:
+      description: Reference genome channel [ val(meta), path(fasta) ]
+  - run_eccsplorer:
+      type: boolean
+      description: Enable ECCsplorer detection
+  - run_eccsplorer_clu:
+      type: boolean
+      description: Enable ECCsplorer CLU mode
+  - run_ecc_finder_map_sr:
+      type: boolean
+      description: Enable ecc_finder MAP_SR
+  - run_ecc_finder_asm_sr:
+      type: boolean
+      description: Enable ecc_finder ASM_SR
+  - run_ampliconsuite:
+      type: boolean
+      description: Enable ampliconsuite
+  - run_circle_map:
+      type: boolean
+      description: Enable Circle-Map detection
+  - input_format:
+      type: string
+      description: Input format (FASTQ or BAM)
+  - control_reads:
+      description: Control/gDNA reads for paired analysis
+output:
+  - versions:
+      description: Software versions
+  - mosdepth_summary:
+      description: Mosdepth coverage summary
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

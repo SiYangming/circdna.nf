@@ -1,0 +1,6 @@
+- [x] `circdna.nf/conf/server.config` 中服务器 profile 的参考基因组路径已统一切换到 `/data1/users/siyangming/PublicDB/reference/<species>/`
+- [x] `circdna.nf/conf/server.config` 中每个 genome 键都映射到用户提供清单中实际存在的 `.fa.gz` 文件
+- [x] 多单倍型物种在配置与文档中的 genome 键命名保持一致，不再出现文档示例与配置键失配
+- [x] `circdna.nf/SERVER_RUN_GUIDE.md` 已移除 `/data1/users/siyangming/FASTA/` 的旧说明
+- [x] `circdna.nf/SERVER_RUN_GUIDE.md` 中所有物种运行命令的 `--genome` 示例都能在 `params.genomes` 中找到对应键
+- [x] 参考目录变更后，指南中的环境准备、注意事项和常见错误章节仍保持自洽

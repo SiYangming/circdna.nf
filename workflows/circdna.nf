@@ -25,6 +25,11 @@ include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/amplicona
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
 include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
 include { ECCDNA_MODE                   } from '../subworkflows/local/eccdna_mode/main'
+include { ECCSPLORER_SLIM_PIPELINE       } from '../subworkflows/local/eccsplorer_slim_pipeline/main'
+include { ECCSPLORER_CLU_SLIM            } from '../subworkflows/local/eccsplorer_clu_slim/main'
+include { ECCSPLORER_ALL_SLIM            } from '../subworkflows/local/eccsplorer_all_slim/main'
+include { ECC_FINDER_SLIM_PIPELINE       } from '../subworkflows/local/ecc_finder_slim_pipeline/main'
+include { ECC_FINDER_ONT_SLIM            } from '../subworkflows/local/ecc_finder_ont_slim/main'
 
 workflow CIRCDNA {
     // Mode validation
@@ -58,7 +63,6 @@ workflow CIRCDNA {
     def run_unicycler = false
 
     if (params.mode == 'eccdna' && params.circle_identifier) {
-        use_legacy_mode = true
         def branch = params.circle_identifier.split(",")
         run_circexplorer2 = ("circexplorer2" in branch)
         run_circle_map_realign = ("circle_map_realign" in branch)
@@ -66,7 +70,11 @@ workflow CIRCDNA {
         run_circle_finder = ("circle_finder" in branch)
         run_ampliconarchitect = ("ampliconarchitect" in branch)
         run_unicycler = ("unicycler" in branch)
-        if (!(run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)) {
+        def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)
+        // slim 标识符（原子化链，不走 legacy 路径）
+        def use_slim_any = branch.any { it in ['eccsplorer_map_slim','eccsplorer_clu_slim','eccsplorer_all_slim','ecc_finder_map_sr_slim','ecc_finder_asm_sr_slim','ecc_finder_map_ont_slim','ecc_finder_asm_ont_slim'] }
+        use_legacy_mode = use_legacy_any
+        if (!use_legacy_any && !use_slim_any) {
             exit 1, 'circle_identifier param not valid. Please check!'
         }
         if (run_unicycler && !params.input_format == "FASTQ") {
@@ -288,6 +296,72 @@ workflow CIRCDNA {
             )
             ch_versions = ch_versions.mix(ECCDNA_MODE.out.versions)
             ch_mosdepth_multiqc = ECCDNA_MODE.out.mosdepth_summary.map { _meta, summary -> summary }
+
+            // ================================================================
+            // SLIM 原子化链（circle_identifier 含 *_slim 触发，与 legacy 并行）
+            // ================================================================
+            if (params.circle_identifier) {
+                def identifiers = params.circle_identifier.split(",")
+                def use_eccsplorer_slim = identifiers.contains('eccsplorer_map_slim')
+                def use_ecc_finder_map_sr_slim = identifiers.contains('ecc_finder_map_sr_slim')
+                def use_ecc_finder_asm_sr_slim = identifiers.contains('ecc_finder_asm_sr_slim')
+                def use_eccsplorer_clu_slim = identifiers.contains('eccsplorer_clu_slim')
+                def use_ecc_finder_map_ont_slim = identifiers.contains('ecc_finder_map_ont_slim')
+                def use_ecc_finder_asm_ont_slim = identifiers.contains('ecc_finder_asm_ont_slim')
+                def use_eccsplorer_all_slim = identifiers.contains('eccsplorer_all_slim')
+                def use_slim_any = (use_eccsplorer_slim | use_ecc_finder_map_sr_slim | use_ecc_finder_asm_sr_slim |
+                    use_eccsplorer_clu_slim | use_ecc_finder_map_ont_slim | use_ecc_finder_asm_ont_slim | use_eccsplorer_all_slim)
+
+                if (use_slim_any) {
+                    // datatype 分流（samplesheet 需含 datatype 列：eccdna / gdna）
+                    def ch_eccdna_reads = INPUT_CHECK.out.reads.filter { meta, reads -> meta.data_type != 'gdna' }
+                    def ch_gdna_reads = INPUT_CHECK.out.reads.filter { meta, reads -> meta.data_type == 'gdna' }
+
+                    if (use_eccsplorer_all_slim) {
+                        def taxon_val = params.eccsplorer_taxon ?: 'vir'
+                        ECCSPLORER_ALL_SLIM ( ch_eccdna_reads, ch_fasta_meta, ch_gdna_reads, taxon_val )
+                        ch_versions = ch_versions.mix(ECCSPLORER_ALL_SLIM.out.versions)
+                    }
+                    if (use_eccsplorer_slim) {
+                        ECCSPLORER_SLIM_PIPELINE ( ch_eccdna_reads, ch_fasta_meta, ch_gdna_reads )
+                        ch_versions = ch_versions.mix(ECCSPLORER_SLIM_PIPELINE.out.versions)
+                    }
+                    if (use_eccsplorer_clu_slim) {
+                        def ch_pair_treatment = ch_eccdna_reads.map { meta, reads -> [ meta.pair, meta, reads ] }
+                        def ch_pair_control  = ch_gdna_reads.map { meta, reads -> [ meta.pair, meta, reads ] }
+                        def ch_clu_paired = ch_pair_treatment.join(ch_pair_control, remainder: false)
+                            .map { pair, e_meta, e_reads, c_meta, c_reads -> [ e_meta, e_reads[0], e_reads[1] ] }
+                        def ch_clu_control = ch_pair_treatment.join(ch_pair_control, remainder: false)
+                            .map { pair, e_meta, e_reads, c_meta, c_reads -> [ e_meta, c_reads[0], c_reads[1] ] }
+                        def taxon_val = params.eccsplorer_taxon ?: 'vir'
+                        ECCSPLORER_CLU_SLIM ( ch_clu_paired, ch_clu_control, taxon_val )
+                        ch_versions = ch_versions.mix(ECCSPLORER_CLU_SLIM.out.versions)
+                    }
+                    if (use_ecc_finder_map_sr_slim || use_ecc_finder_asm_sr_slim) {
+                        def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)
+                        if (!use_legacy_any) {
+                            // slim-only：生成 sorted BAM（复用 BAM_PREPROCESSING）
+                            BAM_PREPROCESSING ( ch_eccdna_reads, ch_bwa_index, ch_fasta_meta, true )
+                            ch_versions = ch_versions.mix(BAM_PREPROCESSING.out.versions)
+                        }
+                        def ch_slim_bam = use_legacy_any ? ch_bam_sorted : BAM_PREPROCESSING.out.bam_sorted
+                        def ch_slim_bai = use_legacy_any ? ch_bam_sorted_bai : BAM_PREPROCESSING.out.bam_sorted_bai
+                        ECC_FINDER_SLIM_PIPELINE (
+                            ch_slim_bam, ch_slim_bai, ch_fasta_meta, ch_eccdna_reads,
+                            use_ecc_finder_map_sr_slim, use_ecc_finder_asm_sr_slim
+                        )
+                        ch_versions = ch_versions.mix(ECC_FINDER_SLIM_PIPELINE.out.versions)
+                    }
+                    if (use_ecc_finder_map_ont_slim || use_ecc_finder_asm_ont_slim) {
+                        def ch_ont_reads = ch_eccdna_reads.map { meta, reads ->
+                            def rlist = reads instanceof List ? reads : [reads]
+                            [ meta, rlist[0] ]
+                        }
+                        ECC_FINDER_ONT_SLIM ( ch_ont_reads, ch_fasta_meta, use_ecc_finder_map_ont_slim, use_ecc_finder_asm_ont_slim )
+                        ch_versions = ch_versions.mix(ECC_FINDER_ONT_SLIM.out.versions)
+                    }
+                }
+            }
         }
     }
 

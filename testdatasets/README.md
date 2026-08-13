@@ -92,6 +92,91 @@ done
 | Run 3 | -1 sample | circdna_1/2 tasks | Summary tasks |
 | Run 4 | -1+1 samples | circdna_1 tasks | circdna_3/4 + summary tasks |
 
+## Slim Mode Testing (ECCsplorer_slim + ecc_finder_slim)
+
+Slim 模式将 ECCsplorer 和 ecc_finder 拆分为原子化模块（Docker 独立），外部工具（bwa/samtools/segemehl/genrich/tidehunter/unicycler）使用 nf-core 标准镜像，专有逻辑脚本使用最小化 slim 镜像。
+
+### Docker 镜像
+
+| 镜像 | 大小 | 用途 |
+|------|------|------|
+| `quay.io/bioinfortools/eccsplorer_slim:1.0.0` | 1.25 GB | ECCsplorer 6 个专有分析脚本（Python+R） |
+| `quay.io/bioinfortools/ecc_finder_slim:1.0.0` | 1.06 GB | ecc_finder merge_score + asm_filter 脚本 |
+| `quay.io/biocontainers/genrich:0.6.1--h577a1d6_5` | ~6 MB | Genrich peak calling |
+| `quay.io/biocontainers/tidehunter:1.5.6--h7f5d12c_0` | ~15 MB | TideHunter split-read 检测 |
+| `quay.io/biocontainers/segemehl:0.3.4--hc2ea5fd_5` | ~50 MB | Segemehl + haarz（共用镜像） |
+
+### Conda 包
+
+```bash
+conda install -c yangmingsi eccsplorer_slim=1.0.0 ecc_finder_slim=1.0.0
+```
+
+### circle_identifier 参数
+
+| 值 | 含义 |
+|------|------|
+| `eccsplorer_map_slim` | ECCsplorer MAP 模式（segemehl → haarz → peak_detect → 完整分析链） |
+| `ecc_finder_map_sr_slim` | ecc_finder MAP_SR 模式（Genrich → TideHunter → merge_score） |
+| `ecc_finder_asm_sr_slim` | ecc_finder ASM_SR 模式（unicycler → asm_filter） |
+
+可逗号组合，例如 `--circle_identifier 'eccsplorer_map_slim,ecc_finder_map_sr_slim,ecc_finder_asm_sr_slim'`
+
+### Docker 测试命令
+
+```bash
+cd /Users/siyangming/nextflow_nf_core/circdna.nf
+
+# 确保所有镜像已拉取
+docker pull quay.io/bioinfortools/eccsplorer_slim:1.0.0
+docker pull quay.io/bioinfortools/ecc_finder_slim:1.0.0
+docker pull quay.io/biocontainers/genrich:0.6.1--h577a1d6_5
+docker pull quay.io/biocontainers/tidehunter:1.5.6--h7f5d12c_0
+
+# 运行 slim 完整测试
+nextflow run main.nf \
+  -profile test_local,docker \
+  --input samplesheets/test_3.csv \
+  --circle_identifier 'eccsplorer_map_slim,ecc_finder_map_sr_slim,ecc_finder_asm_sr_slim' \
+  --outdir results_testdata/slim_run
+```
+
+### Stub 验证命令
+
+```bash
+# 快速编译验证（无需工具安装）
+nextflow run main.nf \
+  -profile test_local -stub \
+  --input samplesheets/test_3.csv \
+  --circle_identifier 'eccsplorer_map_slim,ecc_finder_map_sr_slim,ecc_finder_asm_sr_slim'
+
+# 验证 slim 进程是否正确创建（预期 16 个）
+grep "Creating process.*SLIM" .nextflow.log | awk -F"'" '{print $2}' | awk -F":" '{print $NF}' | sort -u
+```
+
+预期输出 16 个进程：`ECCSPLORER_PEAK_DETECT`, `ECCSPLORER_CANDIDATE_EXTRACT`, `ECCSPLORER_COVERAGE_PROFILE`, `ECCSPLORER_NORMALIZE`, `ECCSPLORER_VISUALIZE`, `ECCSPLORER_HTML_REPORT`, `ECC_FINDER_MERGE_SCORE`, `ECC_FINDER_ASM_FILTER`, `GENRICH`, `TIDEHUNTER`, `HAARZ`, `SEGEMEHL_INDEX`, `SEGEMEHL_ALIGN`, `SAMTOOLS_SORT_NAME`, `SAMTOOLS_INDEX`, `UNICYCLER`
+
+### 模块位置
+
+Slim 自定义模块位于 `circdna.nf/modules/local/`：
+
+```
+modules/local/
+├── genrich/           # Genrich peak calling
+├── tidehunter/        # TideHunter split-read
+├── haarz/             # HaarZ split-read (segemehl 子工具)
+├── ecc_finder_slim/
+│   ├── merge_score/   # 富集+split-read 合并打分
+│   └── asm_filter/    # 组装过滤
+└── eccsplorer_slim/
+    ├── peak_detect/   # scipy 峰检测
+    ├── candidate_extract/  # bedtools 候选区求交
+    ├── coverage_profile/   # per-base 覆盖度
+    ├── normalize/     # RPM + fold enrichment (R)
+    ├── visualize/     # Manhattan + candidate plots (R)
+    └── html_report/   # HTML 报告
+```
+
 ## Minimal test dataset origin
 
 The data set was generated using Circle-Map Simulate (see [Circle-Map](https://github.com/iprada/Circle-Map). Circle-Map simulated 400,000 paired-end reads originated from circle-seq data of the reference genome.

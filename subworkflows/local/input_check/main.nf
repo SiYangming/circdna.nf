@@ -47,6 +47,8 @@ def create_fastq_channels(LinkedHashMap row) {
     meta.protocol     = row.containsKey('protocol') ? (row.protocol ? row.protocol : 'short_read') : 'short_read'
     // Support optional 'group' column for eccDNA/gDNA pairing
     meta.group = row.containsKey('group') ? (row.group ?: '') : ''
+    // Support optional 'pair' column for eccDNA/gDNA pairing
+    meta.pair = row.containsKey('pair') ? (row.pair ?: '') : ''
 
     def array = []
     if (!file(row.fastq_1).exists()) {
@@ -71,6 +73,7 @@ def create_bam_channels(LinkedHashMap row) {
                      (row.containsKey('datatype') ? (row.datatype ? row.datatype.toLowerCase() : 'eccdna') : 'eccdna')
     meta.datatype = meta.data_type
     meta.group = row.containsKey('group') ? (row.group ?: '') : ''
+    meta.pair = row.containsKey('pair') ? (row.pair ?: '') : ''
 
     def array = []
     if (!file(row.bam).exists()) {
