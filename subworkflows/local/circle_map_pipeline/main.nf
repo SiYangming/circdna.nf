@@ -57,7 +57,7 @@ workflow CIRCLE_MAP_PIPELINE {
     }
 
     if (run_realign) {
-        ch_cm_realign_in = ch_re_sorted_bam.join(ch_re_sorted_bai).join(ch_qname_sorted_bam).join(bam_sorted).join(bam_sorted_bai)
+        ch_cm_realign_in = ch_re_sorted_bam.join(ch_re_sorted_bai).join(ch_qname_sorted_bam).join(ch_qname_sorted_bai).join(bam_sorted).join(bam_sorted_bai)
 
         CIRCLEMAP_REALIGN (
             ch_cm_realign_in,

@@ -1,0 +1,3 @@
+- [x] `subworkflows/local/circle_map_pipeline/main.nf` 中 `ch_cm_realign_in` 包含 `ch_qname_sorted_bai`
+- [x] `modules/local/circlemap/realign/main.nf` 的 `input:` tuple 包含 `path(qname_bai)`
+- [x] `modules/local/circlemap/realign/main.nf` 的 `script:` 块在 Circle-Map 调用前执行 `samtools faidx $fasta`
