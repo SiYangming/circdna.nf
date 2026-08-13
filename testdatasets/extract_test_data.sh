@@ -13,7 +13,7 @@ SEED=42
 
 # ---- 源文件路径 ----
 ONT_SRC="/data1/users/siyangming/PlanteccDNADB/eccDNA/Arabidopsis_thaliana/SRR24335762.fastq.gz"
-PACBIO_SRC="/data1/users/siyangming/PlanteccDNADB/eccDNA/Amaranthus_palmeri/SRR16958690.fastq.gz"
+PACBIO_SRC="/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/ERR11838731.fastq.gz"
 
 # ---- 输出目录 ----
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -51,14 +51,14 @@ extract_tier "${ONT_SRC}" "${ONT_DIR}/ont_eccdna_regular.fastq.gz"   7500  "regu
 extract_tier "${ONT_SRC}" "${ONT_DIR}/ont_eccdna_consistency.fastq.gz" 30000 "consistency"
 
 # =============================================================================
-# PacBio (Amaranthus CIDER eccDNA, SRR16958690) — 56,035 reads, avg 6,913 bp
+# PacBio (Rice HiFi WGS, ERR11838731)
 # =============================================================================
 echo ""
-echo "========== PacBio (Amaranthus CIDER eccDNA) =========="
+echo "========== PacBio (Rice HiFi WGS) =========="
 
 extract_tier "${PACBIO_SRC}" "${PACBIO_DIR}/pacbio_eccdna_smoke.fastq.gz"     1500  "smoke"
-extract_tier "${PACBIO_SRC}" "${PACBIO_DIR}/pacbio_eccdna_regular.fastq.gz"   7500  "regular"
-extract_tier "${PACBIO_SRC}" "${PACBIO_DIR}/pacbio_eccdna_consistency.fastq.gz" 25000 "consistency"
+extract_tier "${PACBIO_SRC}" "${PACBIO_DIR}/pacbio_eccdna_regular.fastq.gz"   2500  "regular"
+extract_tier "${PACBIO_SRC}" "${PACBIO_DIR}/pacbio_eccdna_consistency.fastq.gz" 15000 "consistency"
 
 echo ""
 echo "========== 提取完毕 =========="

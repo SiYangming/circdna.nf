@@ -183,9 +183,9 @@ These are just guidelines and will change with the use of different software, an
 | 平台 | 样本 | 物种 | 基因组大小 | 来源 SRA | 实验类型 |
 |------|------|------|-----------|----------|----------|
 | ONT | SRR24335762 | *Arabidopsis thaliana* | ~135 Mb | PRJNA961124 | mobilome-seq eccDNA |
-| PacBio | SRR16958690 | *Amaranthus palmeri* | ~700 Mb | PRJNA780915 | CIDER-seq eccDNA |
+| PacBio | ERR11838731 | *Oryza sativa* | ~430 Mb | PRJEB59090 | HiFi WGS (reference) |
 
-两个样本均为 eccDNA 富集实验（RCA 扩增后测序），适合验证 eccDNA 检测流程。
+ONT 样本为 eccDNA 富集实验（RCA 扩增后测序）；PacBio 样本为水稻 HiFi WGS 背景数据，用于验证长读长比对/索引路径。
 
 ### 三档测试数据
 
@@ -205,11 +205,11 @@ These are just guidelines and will change with the use of different software, an
 
 | 档位 | 文件名 | 提取量 | 文件大小 | 本地预计耗时 | 用途 |
 |------|--------|--------|----------|-------------|------|
-| 冒烟 | `pacbio/pacbio_eccdna_smoke.fastq.gz` | 1,500 条 | ~4.8 MB | 5-15 分钟 | 验证流水线跑通、模块接线、输出非空 |
-| 常规验证 | `pacbio/pacbio_eccdna_regular.fastq.gz` | 7,500 条 | ~24 MB | 30-90 分钟 | 验证能检出串联重复候选 |
-| 一致性对比 | `pacbio/pacbio_eccdna_consistency.fastq.gz` | 25,000 条 | ~79 MB | 2-6 小时 | 完整版产物对比（本地生成） |
+| 冒烟 | `pacbio/pacbio_eccdna_smoke.fastq.gz` | 1,500 条 | ~25 MB | 5-15 分钟 | 验证流水线跑通、模块接线、输出非空 |
+| 常规验证 | `pacbio/pacbio_eccdna_regular.fastq.gz` | 2,500 条 | ~41 MB | 30-90 分钟 | 验证长读长比对/索引路径 |
+| 一致性对比 | `pacbio/pacbio_eccdna_consistency.fastq.gz` | 15,000 条 | ~246 MB | 2-6 小时 | 完整版产物对比（本地生成） |
 
-源文件: 56,035 reads, avg 6,913 bp, max 27 kb
+源文件: ERR11838731 (6.4 GB gzipped), PacBio HiFi WGS, avg ~18.6 kb
 
 ### 提取方式
 
