@@ -4,10 +4,10 @@ nextflow.enable.dsl = 2
 
 include { ECCSPLORER_CLU_PREPARE   } from '../../modules/local/eccsplorer_slim/clu_prepare/main'
 include { ECCSPLORER_CLU_CANDIDATES } from '../../modules/local/eccsplorer_slim/clu_candidates/main'
-include { REPEATEXPLORER2          } from '../../../bio.nf/modules/repeatexplorer2/main'
+include { REPEATEXPLORER2          } from '../../modules/local/repeatexplorer2/main'
 
 workflow {
-    def data_dir = "${projectDir}/../../testdatasets/testdata"
+    def data_dir = "${projectDir}/../../testdatasets/ngs"
 
     ch_treatment = Channel.of(
         [ [id: 'circdna_1', pair: 'p1'],

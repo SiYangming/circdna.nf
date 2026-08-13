@@ -17,10 +17,9 @@ include { BAM_PREPROCESSING  } from '../bam_preprocessing/main'
 include { MOSDEPTH           } from '../../../modules/nf-core/mosdepth/main'
 include { ECCSPLORER         } from '../../../modules/local/eccsplorer/main'
 include { ECCSPLORER_WITH_CONTROL } from '../../../modules/local/eccsplorer/main'
-include { ECCSPLORER_CLU     } from '../../../modules/local/eccsplorer/main'
 include { CIRCLE_MAP_PIPELINE } from '../circle_map_pipeline/main'
 include { ECC_FINDER_PIPELINE } from '../ecc_finder_pipeline/main'
-include { AMPLICONSUITE      } from '../../../../bio.nf/modules/ampliconsuite/main'
+include { AMPLICONSUITE      } from '../../../modules/local/ampliconsuite_ec/main'
 
 workflow ECCSPLORER_PIPELINE {
     take:
@@ -28,7 +27,6 @@ workflow ECCSPLORER_PIPELINE {
     bwa_index
     fasta_meta
     run_eccsplorer
-    run_eccsplorer_clu
     run_circle_map
     run_ecc_finder_map_sr
     run_ecc_finder_asm_sr
@@ -105,18 +103,6 @@ workflow ECCSPLORER_PIPELINE {
 
         ch_versions = ch_versions.mix(ECCSPLORER.out.versions, ECCSPLORER_WITH_CONTROL.out.versions)
         ch_eccsplorer_bed = ECCSPLORER.out.candidates_bed.mix(ECCSPLORER_WITH_CONTROL.out.candidates_bed)
-
-        // ECCsplorer CLU mode: RepeatExplorer2 clustering on paired eccDNA/gDNA samples
-        if (run_eccsplorer_clu) {
-            def taxon_val = params.eccsplorer_taxon ?: 'vir'
-            // Only paired samples (eccDNA + gDNA with same pair value) can run clu
-            ch_clu_paired = ch_eccdna_keyed.join(ch_gdna_keyed, remainder: false)
-                .map { pair, e_meta, e_reads, e_fasta, c_reads ->
-                    [e_meta, e_reads, c_reads, taxon_val]
-                }
-            ECCSPLORER_CLU ( ch_clu_paired )
-            ch_versions = ch_versions.mix(ECCSPLORER_CLU.out.versions)
-        }
     } else {
         ch_eccsplorer_bed = channel.empty()
     }

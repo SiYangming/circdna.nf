@@ -4,10 +4,10 @@
 // Currently only platform=sr is activated. platform=ont is reserved for circdnalr.
 //
 
-include { ECC_FINDER_MAP_SR  } from '../../../modules/local/ecc_finder/main'
-include { ECC_FINDER_ASM_SR  } from '../../../modules/local/ecc_finder/main'
-include { ECC_FINDER_MAP_ONT } from '../../../modules/local/ecc_finder/main'
-include { ECC_FINDER_ASM_ONT } from '../../../modules/local/ecc_finder/main'
+include { ECC_FINDER_MAP_SR  } from '../../../modules/local/ecc_finder/map_sr/main'
+include { ECC_FINDER_ASM_SR  } from '../../../modules/local/ecc_finder/asm_sr/main'
+include { ECC_FINDER_MAP_ONT } from '../../../modules/local/ecc_finder/map_ont/main'
+include { ECC_FINDER_ASM_ONT } from '../../../modules/local/ecc_finder/asm_ont/main'
 
 workflow ECC_FINDER_PIPELINE {
     take:
@@ -28,12 +28,12 @@ workflow ECC_FINDER_PIPELINE {
 
         if (run_map) {
             ECC_FINDER_MAP_SR ( bwa_index, ch_r1, ch_r2, fasta_meta )
-            ch_versions = ch_versions.mix(ECC_FINDER_MAP_SR.out.versions)
+            ch_versions = ch_versions.mix(ECC_FINDER_MAP_SR.out.versions_ecc_finder)
         }
 
         if (run_asm) {
             ECC_FINDER_ASM_SR ( ch_r1, ch_r2 )
-            ch_versions = ch_versions.mix(ECC_FINDER_ASM_SR.out.versions)
+            ch_versions = ch_versions.mix(ECC_FINDER_ASM_SR.out.versions_ecc_finder)
         }
 
     } else if (platform == 'ont') {

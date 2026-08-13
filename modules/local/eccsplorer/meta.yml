@@ -1,0 +1,106 @@
+name: "eccsplorer"
+description: "Detection of extrachromosomal circular DNA (eccDNA) from paired-end FASTQ or BAM sequencing data. Provides two process variants: ECCSPLORER (standard mode, no control) and ECCSPLORER_WITH_CONTROL (comparative mode with gDNA control as dataset B). Both variants produce identical outputs."
+keywords:
+  - eccdna
+  - circular dna
+  - extrachromosomal
+  - detection
+  - paired-end
+  - bam
+  - fastq
+tools:
+  - "eccsplorer":
+      description: "Detection of extrachromosomal circular DNA (eccDNA) from paired-end FASTQ or BAM sequencing data"
+      homepage: "https://github.com/crimBubble/ECCsplorer"
+      documentation: "https://github.com/crimBubble/ECCsplorer"
+      tool_dev_url: "https://github.com/crimBubble/ECCsplorer"
+      licence: ["MIT"]
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - reads:
+        type: file
+        description: |
+          Input sequencing reads (dataset A). Either:
+            - A list of paired-end FASTQ files [r1, r2] (FASTQ mode), or
+            - A single BAM file (BAM mode)
+          When a BAM file is provided, it is auto-converted to paired-end
+          FASTQ via `samtools fastq` before being passed to ECCsplorer.
+          Used by both ECCSPLORER and ECCSPLORER_WITH_CONTROL process variants.
+        pattern: "*.{fastq,fq,fastq.gz,fq.gz,bam,BAM,Bam}"
+    - fasta:
+        type: file
+        description: Reference genome in FASTA format
+        pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
+  - - control_r1:
+        type: file
+        description: |
+          gDNA control forward reads (R1) used as dataset B for comparative
+          analysis. Only required by the ECCSPLORER_WITH_CONTROL process
+          variant; not used by the standard ECCSPLORER process.
+        pattern: "*.{fastq,fq,fastq.gz,fq.gz}"
+  - - control_r2:
+        type: file
+        description: |
+          gDNA control reverse reads (R2) used as dataset B for comparative
+          analysis. Only required by the ECCSPLORER_WITH_CONTROL process
+          variant; not used by the standard ECCSPLORER process.
+        pattern: "*.{fastq,fq,fastq.gz,fq.gz}"
+output:
+  - candidates_bed:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - "*_candidates.bed":
+          type: file
+          description: Candidate eccDNA regions in BED format
+          pattern: "*_candidates.bed"
+  - junction_reads:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - "*_junction_reads.txt":
+          type: file
+          description: Junction read information in TXT format
+          pattern: "*_junction_reads.txt"
+  - lowconf_ecc_regions:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - "*_lowconf_ecc_regions.bed":
+          type: file
+          description: Low-confidence eccDNA regions in BED format
+          pattern: "*_lowconf_ecc_regions.bed"
+  - alignment_stats:
+      - "*_alignment_stats.txt":
+          type: file
+          description: Segemehl alignment statistics
+          pattern: "*_alignment_stats.txt"
+  - ecc_sequences:
+      - "*_ecc_sequences.fasta":
+          type: file
+          description: Extracted eccDNA sequences in FASTA format
+          pattern: "*_ecc_sequences.fasta"
+  - eccpipe_results:
+      - "*_eccpipe_results":
+          type: directory
+          description: Complete ECCsplorer results tree (mapping_results, visualizations, HTML report, per-candidate analysis)
+          pattern: "*_eccpipe_results"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

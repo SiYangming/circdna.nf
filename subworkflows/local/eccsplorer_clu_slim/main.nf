@@ -5,7 +5,7 @@
 
 include { ECCSPLORER_CLU_PREPARE   } from '../../../modules/local/eccsplorer_slim/clu_prepare/main'
 include { ECCSPLORER_CLU_CANDIDATES } from '../../../modules/local/eccsplorer_slim/clu_candidates/main'
-include { REPEATEXPLORER2          } from '../../../../bio.nf/modules/repeatexplorer2/main'
+include { REPEATEXPLORER2          } from '../../../modules/local/repeatexplorer2/main'
 
 workflow ECCSPLORER_CLU_SLIM {
     take:

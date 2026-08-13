@@ -1,7 +1,7 @@
 sample,fastq_1,fastq_2,datatype,pair
-gdna_1,testdatasets/testdata/gdna_1_R1.fastq.gz,testdatasets/testdata/gdna_1_R2.fastq.gz,gdna,p1
-circdna_1,testdatasets/testdata/circdna_1_R1.fastq.gz,testdatasets/testdata/circdna_1_R2.fastq.gz,eccdna,p1
-gdna_2,testdatasets/testdata/gdna_2_R1.fastq.gz,testdatasets/testdata/gdna_2_R2.fastq.gz,gdna,p2
-circdna_2,testdatasets/testdata/circdna_2_R1.fastq.gz,testdatasets/testdata/circdna_2_R2.fastq.gz,eccdna,p2
-gdna_3,testdatasets/testdata/gdna_3_R1.fastq.gz,testdatasets/testdata/gdna_3_R2.fastq.gz,gdna,p3
-circdna_3,testdatasets/testdata/circdna_3_R1.fastq.gz,testdatasets/testdata/circdna_3_R2.fastq.gz,eccdna,p3
+gdna_1,testdatasets/ngs/gdna_1_R1.fastq.gz,testdatasets/ngs/gdna_1_R2.fastq.gz,gdna,p1
+circdna_1,testdatasets/ngs/circdna_1_R1.fastq.gz,testdatasets/ngs/circdna_1_R2.fastq.gz,eccdna,p1
+gdna_2,testdatasets/ngs/gdna_2_R1.fastq.gz,testdatasets/ngs/gdna_2_R2.fastq.gz,gdna,p2
+circdna_2,testdatasets/ngs/circdna_2_R1.fastq.gz,testdatasets/ngs/circdna_2_R2.fastq.gz,eccdna,p2
+gdna_3,testdatasets/ngs/gdna_3_R1.fastq.gz,testdatasets/ngs/gdna_3_R2.fastq.gz,gdna,p3
+circdna_3,testdatasets/ngs/circdna_3_R1.fastq.gz,testdatasets/ngs/circdna_3_R2.fastq.gz,eccdna,p3

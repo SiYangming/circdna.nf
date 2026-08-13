@@ -3,6 +3,24 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.5.0 - [2026-08-06]
+
+### Credits
+
+Special thanks to the following for their input and contributions:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **新增 ECCSplorer 预处理子流程 `ecc_preprocessing`**: 将 `ECCsplorer/lib/eccPrepare.py` 中的 RepeatExplorer 预处理逻辑拆分为标准 Nextflow 子流程，包含 3 个自定义模块（`ECCSplorer_PREPARE_READ_LENGTH`、`ECCSplorer_PREPARE_READ_COUNT`、`ECCSplorer_PREPARE_PREXING`）+ 复用 nf-core 模块（`SEQTK_SEQ`、`SEQKIT_CONCAT`）。通过 `--run_eccprepare` 开关控制（默认 false），不影响现有流程。所有自定义模块共用 `quay.io/biocontainers/biopython:1.84` 镜像（106MB），scipy 依赖已用 numpy 替代
+- **新增 `seqkit/concat` nf-core 模块**: 从 modules 仓库拷贝到 `circdna.nf/modules/nf-core/seqkit/concat/`，用于子流程最终 FASTA 合并
+
+### Notes
+
+- 子流程输入独立于 BAM_PREPROCESSING 链，不改变已有数据流语义，`-resume` 时已有任务缓存不失效
+- 当前 `--run_eccprepare` 仅产出 `REPEATEXPLORER_READY.fa`，尚未接入下游 ECCSplorer `clu`/`all` 模式
+
 ## v4.4.1 - [2026-08-05]
 
 ### Credits

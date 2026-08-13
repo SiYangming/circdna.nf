@@ -25,11 +25,13 @@ include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/amplicona
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
 include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
 include { ECCDNA_MODE                   } from '../subworkflows/local/eccdna_mode/main'
+include { ECCSPLORER_PIPELINE            } from '../subworkflows/local/eccsplorer_pipeline/main'
 include { ECCSPLORER_SLIM_PIPELINE       } from '../subworkflows/local/eccsplorer_slim_pipeline/main'
 include { ECCSPLORER_CLU_SLIM            } from '../subworkflows/local/eccsplorer_clu_slim/main'
 include { ECCSPLORER_ALL_SLIM            } from '../subworkflows/local/eccsplorer_all_slim/main'
 include { ECC_FINDER_SLIM_PIPELINE       } from '../subworkflows/local/ecc_finder_slim_pipeline/main'
 include { ECC_FINDER_ONT_SLIM            } from '../subworkflows/local/ecc_finder_ont_slim/main'
+include { ECC_PREPROCESSING             } from '../subworkflows/local/ecc_preprocessing/main'
 
 workflow CIRCDNA {
     // Mode validation
@@ -61,6 +63,11 @@ workflow CIRCDNA {
     def run_circle_finder = false
     def run_ampliconarchitect = false
     def run_unicycler = false
+    def run_eccsplorer_blackbox = false
+    def run_ecc_finder_map_sr_blackbox = false
+    def run_ecc_finder_asm_sr_blackbox = false
+    def run_ecc_finder_map_ont_blackbox = false
+    def run_ecc_finder_asm_ont_blackbox = false
 
     if (params.mode == 'eccdna' && params.circle_identifier) {
         def branch = params.circle_identifier.split(",")
@@ -70,11 +77,17 @@ workflow CIRCDNA {
         run_circle_finder = ("circle_finder" in branch)
         run_ampliconarchitect = ("ampliconarchitect" in branch)
         run_unicycler = ("unicycler" in branch)
+        run_eccsplorer_blackbox = ("eccsplorer" in branch)
+        run_ecc_finder_map_sr_blackbox = ("ecc_finder_map_sr" in branch)
+        run_ecc_finder_asm_sr_blackbox = ("ecc_finder_asm_sr" in branch)
+        run_ecc_finder_map_ont_blackbox = ("ecc_finder_map_ont" in branch)
+        run_ecc_finder_asm_ont_blackbox = ("ecc_finder_asm_ont" in branch)
+        def use_blackbox_any = (run_eccsplorer_blackbox | run_ecc_finder_map_sr_blackbox | run_ecc_finder_asm_sr_blackbox | run_ecc_finder_map_ont_blackbox | run_ecc_finder_asm_ont_blackbox)
         def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)
         // slim 标识符（原子化链，不走 legacy 路径）
         def use_slim_any = branch.any { it in ['eccsplorer_map_slim','eccsplorer_clu_slim','eccsplorer_all_slim','ecc_finder_map_sr_slim','ecc_finder_asm_sr_slim','ecc_finder_map_ont_slim','ecc_finder_asm_ont_slim'] }
         use_legacy_mode = use_legacy_any
-        if (!use_legacy_any && !use_slim_any) {
+        if (!use_legacy_any && !use_slim_any && !use_blackbox_any) {
             exit 1, 'circle_identifier param not valid. Please check!'
         }
         if (run_unicycler && !params.input_format == "FASTQ") {
@@ -288,6 +301,14 @@ workflow CIRCDNA {
             ch_versions = ch_versions.mix(REFERENCE_MODE.out.versions)
             ch_mosdepth_multiqc = REFERENCE_MODE.out.mosdepth_summary.map { _meta, summary -> summary }
         } else if (params.mode == 'eccdna') {
+            // ECC preprocessing (eccPrepare.py)：FASTQ→FASTA→best_len→count→subsample→merge
+            if (params.run_eccprepare && params.mode == 'eccdna') {
+                ECC_PREPROCESSING (
+                    ch_trimmed_reads
+                )
+                ch_versions = ch_versions.mix(ECC_PREPROCESSING.out.versions)
+            }
+
             ECCDNA_MODE (
                 ch_trimmed_reads,
                 ch_bwa_index,
@@ -360,6 +381,29 @@ workflow CIRCDNA {
                         ECC_FINDER_ONT_SLIM ( ch_ont_reads, ch_fasta_meta, use_ecc_finder_map_ont_slim, use_ecc_finder_asm_ont_slim )
                         ch_versions = ch_versions.mix(ECC_FINDER_ONT_SLIM.out.versions)
                     }
+                }
+
+                // ================================================================
+                // 黑盒链（circle_identifier 含 eccsplorer / ecc_finder_map_sr / ecc_finder_asm_sr 触发）
+                // 与 slim 并存；ont 黑盒（map_ont/asm_ont）reserved 待 circdnalr
+                // ================================================================
+                def use_blackbox_sr_any = (run_eccsplorer_blackbox | run_ecc_finder_map_sr_blackbox | run_ecc_finder_asm_sr_blackbox)
+                if (use_blackbox_sr_any) {
+                    def ch_bb_eccdna = INPUT_CHECK.out.reads.filter { meta, reads -> meta.data_type != 'gdna' }
+                    def ch_bb_gdna = INPUT_CHECK.out.reads.filter { meta, reads -> meta.data_type == 'gdna' }
+                    ECCSPLORER_PIPELINE (
+                        ch_bb_eccdna,
+                        ch_bwa_index,
+                        ch_fasta_meta,
+                        run_eccsplorer_blackbox,
+                        false,
+                        run_ecc_finder_map_sr_blackbox,
+                        run_ecc_finder_asm_sr_blackbox,
+                        false,
+                        params.input_format,
+                        ch_bb_gdna
+                    )
+                    ch_versions = ch_versions.mix(ECCSPLORER_PIPELINE.out.versions)
                 }
             }
         }
