@@ -31,7 +31,6 @@ include { ECCSPLORER_CLU_SLIM            } from '../subworkflows/local/eccsplore
 include { ECCSPLORER_ALL_SLIM            } from '../subworkflows/local/eccsplorer_all_slim/main'
 include { ECC_FINDER_SLIM_PIPELINE       } from '../subworkflows/local/ecc_finder_slim_pipeline/main'
 include { ECC_FINDER_ONT_SLIM            } from '../subworkflows/local/ecc_finder_ont_slim/main'
-include { ECC_PREPROCESSING             } from '../subworkflows/local/ecc_preprocessing/main'
 
 workflow CIRCDNA {
     // Mode validation
@@ -301,14 +300,6 @@ workflow CIRCDNA {
             ch_versions = ch_versions.mix(REFERENCE_MODE.out.versions)
             ch_mosdepth_multiqc = REFERENCE_MODE.out.mosdepth_summary.map { _meta, summary -> summary }
         } else if (params.mode == 'eccdna') {
-            // ECC preprocessing (eccPrepare.py)：FASTQ→FASTA→best_len→count→subsample→merge
-            if (params.run_eccprepare && params.mode == 'eccdna') {
-                ECC_PREPROCESSING (
-                    ch_trimmed_reads
-                )
-                ch_versions = ch_versions.mix(ECC_PREPROCESSING.out.versions)
-            }
-
             ECCDNA_MODE (
                 ch_trimmed_reads,
                 ch_bwa_index,

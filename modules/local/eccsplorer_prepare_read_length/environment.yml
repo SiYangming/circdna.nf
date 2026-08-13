@@ -1,9 +1,0 @@
-name: eccsplorer_prepare_read_length
-channels:
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - conda-forge::python=3.12
-  - conda-forge::biopython=1.84
-  - conda-forge::numpy
