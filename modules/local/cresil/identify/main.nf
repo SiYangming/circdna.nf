@@ -26,11 +26,30 @@ process CRESIL_IDENTIFY {
     def trim_arg = trim ? "-trim ${trim}" : ''
 
     """
+    # CRESIL determines input type by file extension and pysam cannot open
+    # gzipped files, so decompress the reference and reads when needed.
+    if [[ "${reads}" == *.gz ]]; then
+        zcat "${reads}" > reads_input.fastq
+        READS_IN="reads_input.fastq"
+    else
+        READS_IN="${reads}"
+    fi
+
+    if [[ "${fasta}" == *.gz ]]; then
+        zcat "${fasta}" > reference.fa
+        FASTAIN="reference.fa"
+        samtools faidx \${FASTAIN}
+        FAIIN="reference.fa.fai"
+    else
+        FASTAIN="${fasta}"
+        FAIIN="${fai}"
+    fi
+
     cresil identify \\
         -t ${task.cpus} \\
-        -fa ${fasta} \\
-        -fai ${fai} \\
-        -fq ${reads} \\
+        -fa \${FASTAIN} \\
+        -fai \${FAIIN} \\
+        -fq \${READS_IN} \\
         ${trim_arg} \\
         $args
 
