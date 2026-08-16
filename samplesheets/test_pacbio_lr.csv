@@ -1,3 +1,2 @@
 sample,fastq_1,fastq_2
-pacbio_test_1,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_1_R1.fastq.gz,
-pacbio_test_2,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_2_R1.fastq.gz,
+pacbio_eccdna_smoke,/data1/users/siyangming/PlanteccDNADB/circdna.nf/testdatasets/pacbio/pacbio_eccdna_smoke.fastq.gz,

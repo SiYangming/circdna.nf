@@ -288,7 +288,12 @@ def check_samplesheet(file_in, file_out, input_format, protocol):
             out_dir = os.path.dirname(file_out)
             make_dir(out_dir)
             with open(file_out, "w") as fout:
-                if input_format == "FASTQ":
+                if protocol in ["pacbio", "ont"]:
+                    fout.write(",".join(["sample", "single_end", "fastq_1", "input_bam", "entrypoint"]) + "\n")
+                    for sample in sorted(sample_mapping_dict.keys()):
+                        for idx, val in enumerate(sample_mapping_dict[sample]):
+                            fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
+                elif input_format == "FASTQ":
                     out_header = ["sample", "single_end", "fastq_1", "fastq_2"]
                     if has_lane:
                         out_header.append("lane")
@@ -325,11 +330,6 @@ def check_samplesheet(file_in, file_out, input_format, protocol):
                     for sample in sorted(sample_mapping_dict.keys()):
                         for idx, val in enumerate(sample_mapping_dict[sample]):
                             fout.write(",".join(["{}".format(sample)] + val) + "\n")
-                elif protocol in ["pacbio", "ont"]:
-                    fout.write(",".join(["sample", "single_end", "fastq_1", "input_bam", "entrypoint"]) + "\n")
-                    for sample in sorted(sample_mapping_dict.keys()):
-                        for idx, val in enumerate(sample_mapping_dict[sample]):
-                            fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
 
         else:
             print_error("No entries to process!", "Samplesheet: {}".format(file_in))
