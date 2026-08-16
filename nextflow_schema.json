@@ -529,6 +529,12 @@
                     "description": "Suffix for trace report files.",
                     "hidden": true,
                     "fa_icon": "fas fa-file"
+                },
+                "use_csi_index": {
+                    "type": "boolean",
+                    "description": "Use CSI index format for large genomes (>512Mb chromosomes).",
+                    "hidden": true,
+                    "fa_icon": "fas fa-database"
                 }
             }
         }

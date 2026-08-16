@@ -26,7 +26,7 @@ workflow CIRCLE_MAP_PIPELINE {
     SAMTOOLS_SORT_QNAME_CM (
         bam_sorted,
         ch_fasta_fai,
-        'bai'
+        params.use_csi_index ? 'csi' : 'bai'
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_QNAME_CM.out.versions_samtools)
 
@@ -38,7 +38,7 @@ workflow CIRCLE_MAP_PIPELINE {
     SAMTOOLS_SORT_RE (
         CIRCLEMAP_READEXTRACTOR.out.bam,
         ch_fasta_fai,
-        'bai'
+        params.use_csi_index ? 'csi' : 'bai'
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_RE.out.versions_samtools)
 

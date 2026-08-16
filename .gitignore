@@ -1,6 +1,7 @@
 .nextflow*
 data/
 .DS_Store
+._*
 testing*
 *.pyc
 null

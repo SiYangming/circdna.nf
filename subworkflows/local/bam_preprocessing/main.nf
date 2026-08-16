@@ -103,7 +103,7 @@ workflow BAM_PREPROCESSING {
             SAMTOOLS_SORT_FILTERED (
                 SAMTOOLS_VIEW_FILTER.out.bam,
                 ch_fasta_fai,
-                'bai'
+                params.use_csi_index ? 'csi' : 'bai'
             )
             ch_versions = ch_versions.mix(SAMTOOLS_SORT_FILTERED.out.versions_samtools)
 
