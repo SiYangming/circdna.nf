@@ -98,6 +98,24 @@ ls -lat circdna.nf/work/ | head -5
 head -5 circdna.nf/.nextflow.log
 ```
 
+## 物种对照表（中文 ↔ 拉丁文）
+
+- 大穗看麦娘（Alopecurus_myosuroides）
+- 长芒苋（Amaranthus_palmeri）
+- 拟南芥（Arabidopsis_thaliana）
+- 黄花蒿（Artemisia_annua）
+- 甜菜（Beta_vulgaris）
+- 日本柳杉（Cryptomeria_japonica）
+- 狗牙根（Cynodon_dactylon）
+- 胡萝卜（Daucus_carota）
+- 向日葵（Helianthus_annuus）
+- 黑果枸杞（Lycium_ruthenicum）
+- 本氏烟草（Nicotiana_benthamiana）
+- 水稻（Oryza_sativa）
+- 番茄（Solanum_lycopersicum）
+- 婆罗门参（Tragopogon_porrifolius）
+- 普通小麦（Triticum_aestivum）
+
 ## 按物种运行命令
 
 > 假设已在 `PlanteccDNADB/` 目录内，且 `conda activate nextflow` 已执行
