@@ -15,9 +15,10 @@ workflow FLED_PIPELINE {
         fled_input.map { meta, fastq, fasta -> fasta }
     )
 
-    // Combine both junction outputs into a single candidates channel:
-    // [ val(meta), <prefix>.*Junction.out ]
-    FLED.out.junctions
+    // Both junction outputs feed into the single filtering step.
+    FLED.out.oneseg
+        .mix(FLED.out.multiseg)
+        .filter { it != null }
         .set { eccdna_candidates }
 
     emit:

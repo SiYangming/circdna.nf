@@ -12,8 +12,9 @@ process FLED {
     path genome_fasta
 
     output:
-    tuple val(meta), path("${prefix}.*Junction.out"), emit: junctions
-    tuple val(meta), path("${prefix}.*Junction.fa"), emit: sequences
+    tuple val(meta), path("${prefix}.DiGraph.OnesegJunction.out"), optional: true, emit: oneseg
+    tuple val(meta), path("${prefix}.DiGraph.MulsegFullJunction.out"), optional: true, emit: multiseg
+    tuple val(meta), path("${prefix}.DiGraph.*Junction.fa"), emit: sequences
     path "versions.yml", emit: versions
 
     when:
