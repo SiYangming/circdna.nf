@@ -178,15 +178,10 @@ workflow CIRCDNA {
         }
 
         if (run_fled) {
-            LONG_READ_MAPPING (
-                ch_preprocessed_fastq,
-                ch_fasta
-            )
-            .mapped_reads
-            .set { ch_long_read_mapped }
-
+            // FLED accepts FASTQ directly (it runs minimap2 internally),
+            // so pass the preprocessed long reads without pre-mapping.
             FLED_PIPELINE (
-                ch_long_read_mapped,
+                ch_preprocessed_fastq,
                 ch_fasta
             )
             .eccdna_candidates

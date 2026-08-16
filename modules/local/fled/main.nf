@@ -4,52 +4,57 @@ process FLED {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://quay.io/siyangming/fled:1.0.0' :
-        'quay.io/siyangming/fled:1.0.0' }"
+        'docker://quay.io/bioinfortools/fled:1.0.0' :
+        'quay.io/bioinfortools/fled:1.0.0' }"
 
     input:
-    val meta
-    path bam
-    path bai
+    tuple val(meta), path(fastq)
     path genome_fasta
 
     output:
-    path "${meta.id}.fled_circles.bed", emit: circles_bed
-    path "${meta.id}.fled_report.txt", emit: report
+    tuple val(meta), path("${prefix}.*Junction.out"), emit: junctions
+    tuple val(meta), path("${prefix}.*Junction.fa"), emit: sequences
     path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
+    def args = task.ext.args ?: ''
+    prefix = task.ext.prefix ?: "${meta.id}"
+
     """
-    mkdir -p fled_output
+    # FLED requires an indexed reference genome (.fai) and plain fasta.
+    # Gzipped inputs are decompressed since FLED detects format by extension.
+    if [[ "${genome_fasta}" == *.gz ]]; then
+        zcat "${genome_fasta}" > reference.fa
+        GENOME="reference.fa"
+    else
+        GENOME="${genome_fasta}"
+    fi
+    if [ ! -f \${GENOME}.fai ]; then
+        samtools faidx \${GENOME}
+    fi
 
-    python -m fled \\
-        --bam $bam \\
-        --ref $genome_fasta \\
-        --out fled_output \\
-        --threads 8
+    if [[ "${fastq}" == *.gz ]]; then
+        zcat "${fastq}" > reads_input.fastq
+        FQ="reads_input.fastq"
+    else
+        FQ="${fastq}"
+    fi
 
-    cp fled_output/circles.bed ${meta.id}.fled_circles.bed
-    cp fled_output/report.txt ${meta.id}.fled_report.txt
+    FLED Detection \\
+        -ref \${GENOME} \\
+        -fq \${FQ} \\
+        -o ${prefix} \\
+        -dir . \\
+        -t ${task.cpus} \\
+        $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        fled: \$(python -c "import fled; print(getattr(fled, '__version__', 'unknown'))" 2>/dev/null || echo 'unknown')
+        fled: \$(FLED 2>&1 | grep -oP 'version=\\K[\\d.]+' || echo 'unknown')
         samtools: \$(samtools --version 2>&1 | grep -oP 'samtools \\K[\\d.]+')
-        bedtools: \$(bedtools --version 2>&1 | grep -oP 'v[\\d.]+')
-    END_VERSIONS
-    """
-
-    stub:
-    """
-    touch ${meta.id}.fled_circles.bed
-    touch ${meta.id}.fled_report.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        fled: "stub"
     END_VERSIONS
     """
 }

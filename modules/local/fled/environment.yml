@@ -4,10 +4,19 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.8
-  - pysam>=0.19
-  - numpy>=1.21
-  - scipy>=1.7
-  - matplotlib>=3.4
-  - bedtools>=2.30.0
-  - samtools>=1.15
+  - python <3.10
+  - pysam==0.22
+  - networkx==2.5
+  - progressbar2
+  - biopython==1.76
+  - numpy>=1.19.1
+  - pyspoa==0.0.6
+  - scipy==1.5.3
+  - tqdm>=4.51.0
+  - minimap2
+  - samtools==1.10
+  - bedtools
+  - seqtk
+  - pip
+  - pip:
+      - progressbar==2.5
