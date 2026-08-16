@@ -27,12 +27,17 @@ process CRESIL_IDENTIFY {
 
     """
     # CRESIL determines input type by file extension and pysam cannot open
-    # gzipped files, so decompress the reference and reads when needed.
+    # gzipped files. The -fq input must also be FASTA (identify opens it
+    # with pysam.FastaFile), so convert FASTQ reads to FASTA.
     if [[ "${reads}" == *.gz ]]; then
         zcat "${reads}" > reads_input.fastq
         READS_IN="reads_input.fastq"
     else
         READS_IN="${reads}"
+    fi
+    if [[ "\${READS_IN}" == *.fastq || "\${READS_IN}" == *.fq ]]; then
+        awk 'NR%4==1 {print ">" substr(\$0,2)} NR%4==2 {print}' "\${READS_IN}" > reads_input.fasta
+        READS_IN="reads_input.fasta"
     fi
 
     if [[ "${fasta}" == *.gz ]]; then
