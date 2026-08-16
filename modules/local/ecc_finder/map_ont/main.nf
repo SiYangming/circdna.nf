@@ -8,9 +8,9 @@ process ECC_FINDER_MAP_ONT {
         'quay.io/bioinfortools/ecc_finder:1.0.0' }"
 
     input:
-    tuple val(meta), path(idx)
+    tuple val(meta), path(idx, stageAs: 'ecc_finder_idx.fa.gz')
     tuple val(meta2), path(query)
-    tuple val(meta3), path(ref)
+    tuple val(meta3), path(ref, stageAs: 'ecc_finder_ref.fa.gz')
 
     output:
     tuple val(meta), path("${prefix}.csv"), emit: csv
