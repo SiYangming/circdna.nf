@@ -23,6 +23,10 @@ process ECC_FINDER_ASM_SR {
     prefix = task.ext.prefix ?: "ecc.asm.sr"
 
     """
+    # ecc_finder.py dispatches subcommands via relative paths (e.g. 'python asm-sr.py'),
+    # so the sub-scripts must be available in the current working directory.
+    cp \$(dirname \$(command -v ecc_finder.py))/asm-sr.py . 2>/dev/null || true
+
     ecc_finder.py asm-sr \\
         ${query1} \\
         ${query2} \\

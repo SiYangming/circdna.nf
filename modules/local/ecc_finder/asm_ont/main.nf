@@ -22,6 +22,10 @@ process ECC_FINDER_ASM_ONT {
     prefix = task.ext.prefix ?: "ecc.asm.ont"
 
     """
+    # ecc_finder.py dispatches subcommands via relative paths (e.g. 'python asm-ont.py'),
+    # so the sub-scripts must be available in the current working directory.
+    cp \$(dirname \$(command -v ecc_finder.py))/asm-ont.py . 2>/dev/null || true
+
     ecc_finder.py asm-ont \\
         ${query} \\
         -t ${task.cpus} \\

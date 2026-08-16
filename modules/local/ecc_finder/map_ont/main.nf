@@ -25,6 +25,10 @@ process ECC_FINDER_MAP_ONT {
     prefix = task.ext.prefix ?: "ecc.ont"
 
     """
+    # ecc_finder.py dispatches subcommands via relative paths (e.g. 'python map-ont.py'),
+    # so the sub-scripts must be available in the current working directory.
+    cp \$(dirname \$(command -v ecc_finder.py))/map-ont.py . 2>/dev/null || true
+
     ecc_finder.py map-ont \\
         ${idx} \\
         ${query} \\

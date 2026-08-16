@@ -26,6 +26,10 @@ process ECC_FINDER_MAP_SR {
     prefix = task.ext.prefix ?: "ecc.sr"
 
     """
+    # ecc_finder.py dispatches subcommands via relative paths (e.g. 'python map-sr.py'),
+    # so the sub-scripts must be available in the current working directory.
+    cp \$(dirname \$(command -v ecc_finder.py))/map-sr.py . 2>/dev/null || true
+
     ecc_finder.py map-sr \\
         ${idx} \\
         ${query1} \\
