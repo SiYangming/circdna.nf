@@ -1,18 +1,18 @@
 # Tasks
 
-- [ ] Task 1: 在 circdnalr 分支合并 master 并解决冲突
-  - [ ] 1.1 切换到 circdnalr 分支，拉取最新 origin/master
-  - [ ] 1.2 执行 `git merge master`，列出冲突清单（预期约 31 处）
-  - [ ] 1.3 按类别逐一解决冲突：
+- [x] Task 1: 在 circdnalr 分支合并 master 并解决冲突
+  - [x] 1.1 切换到 circdnalr 分支，拉取最新 origin/master
+  - [x] 1.2 执行 `git merge master`，列出冲突清单（38 处冲突）
+  - [x] 1.3 按类别逐一解决冲突：
     - 核心工作流 `workflows/circdna.nf`（同时保留短读长 + 长读长分支）
-    - `nextflow.config` / `nextflow_schema.json`（合并参数：长读长 protocol/long_read_identifier + master 短读长参数）
-    - `conf/modules.config`（合并长读长与短读长模块配置）
+    - `nextflow.config` / `nextflow_schema.json`（合并参数：长读长 protocol/long_read_identifier + master 短读长参数，版本 v4.1.0）
+    - `conf/modules.config`（合并长读长与短读长模块配置，自动合并无冲突）
     - `bin/check_samplesheet.py` / `subworkflows/local/input_check/main.nf`（合并两套校验/解析逻辑）
     - `assets/schema_input.json`、`modules/local/samplesheet_check/main.nf`
-    - samplesheets：circdna_* 系列以 master 为准（含 data_type 列），circdnalr_* 长读系列合并两边改动；保留 master 的 ONT/PacBio 测试数据文件（ont/pacbio 目录）
+    - samplesheets：circdna_* 系列以 master 为准（含 data_type 列、PlanteccDNADB 路径），circdnalr_* 长读系列用 master 路径；保留 master 的 ONT/PacBio 测试数据文件（ont/pacbio 目录）；circdna_tgs_clean.csv 保留 HEAD 并修正路径
     - `.gitignore`、`CHANGELOG.md`、`SERVER_RUN_GUIDE.md` 合并两侧内容
-  - [ ] 1.4 验证合并结果：`git status` 无冲突标记；`nextflow config -profile test_local` 可解析；`python -m py_compile bin/check_samplesheet.py` 通过
-  - [ ] 1.5 提交合并（保留默认 merge commit message 风格，遵循仓库 git commit 规范）
+  - [x] 1.4 验证合并结果：`git status` 无冲突标记；`nextflow config -profile test_local` 可解析；`python -m py_compile bin/check_samplesheet.py` 通过
+  - [x] 1.5 提交合并（commit 33445d1）
 
 - [ ] Task 2: 准备长读长测试配置与样本表
   - [ ] 2.1 更新 `conf/test_nanopore_lr.config`：`long_read_identifier = 'cresil,fled,flye,eccfinder'`，输入指向服务器内置 `ont_eccdna_smoke.fastq.gz`，fasta 指向 `testdatasets/reference/genome.fa`
