@@ -12,8 +12,7 @@ process FLED {
     path genome_fasta
 
     output:
-    tuple val(meta), path("${prefix}.DiGraph.OnesegJunction.out"), optional: true, emit: oneseg
-    tuple val(meta), path("${prefix}.DiGraph.MulsegFullJunction.out"), optional: true, emit: multiseg
+    tuple val(meta), path("${prefix}.fled_junctions.txt"), emit: junctions
     tuple val(meta), path("${prefix}.DiGraph.*Junction.fa"), emit: sequences
     path "versions.yml", emit: versions
 
@@ -51,6 +50,9 @@ process FLED {
         -dir . \\
         -t ${task.cpus} \\
         $args
+
+    # Combine both junction outputs into a single candidates file.
+    cat ${prefix}.DiGraph.OnesegJunction.out ${prefix}.DiGraph.MulsegFullJunction.out > ${prefix}.fled_junctions.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
