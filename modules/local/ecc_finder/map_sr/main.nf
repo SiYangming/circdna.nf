@@ -39,9 +39,6 @@ process ECC_FINDER_MAP_SR {
         -o . \\
         -x ${prefix} \\
         $args
-
-    mv eccFinder_output/${prefix}.csv ${prefix}.csv
-    mv eccFinder_output/${prefix}.fasta ${prefix}.fasta
     """
 
     stub:
