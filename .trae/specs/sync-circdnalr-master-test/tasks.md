@@ -21,11 +21,11 @@
   - [x] 2.4 本地运行 `nextflow config -profile test_nanopore_lr` 与 `test_pacbio_lr` 验证参数解析；修复 check_samplesheet.py 长读输出分支顺序 bug（commit 07664d8）
   - [x] 2.5 提交本任务改动（commit 07664d8）
 
-- [ ] Task 3: 推送合并结果并同步到服务器
-  - [ ] 3.1 推送 `circdnalr` 到 `origin/circdnalr`
-  - [ ] 3.2 SSH 到服务器，在 `/data1/users/siyangming/PlanteccDNADB/circdna.nf` 执行 `git fetch origin` + `git checkout circdnalr`（确认本地未提交改动处理方式后再操作）
-  - [ ] 3.3 核对服务器上测试数据存在：`testdatasets/ont/ont_eccdna_smoke.fastq.gz`、`testdatasets/pacbio/pacbio_eccdna_smoke.fastq.gz`、`testdatasets/reference/genome.fa`
-  - [ ] 3.4 验证服务器 nextflow 环境可用（conda env `nextflow` 含 Java）
+- [x] Task 3: 推送合并结果并同步到服务器
+  - [x] 3.1 推送 `circdnalr` 到 `origin/circdnalr`（afb473c..e685e94）
+  - [x] 3.2 SSH 到服务器，在 `/data1/users/siyangming/PlanteccDNADB/circdna.nf` 执行 `git fetch origin` + `git checkout circdnalr`（服务器工作区原本干净）
+  - [x] 3.3 核对服务器上测试数据存在：`testdatasets/ont/ont_eccdna_smoke.fastq.gz`（6.5M）、`testdatasets/pacbio/pacbio_eccdna_smoke.fastq.gz`（25M）、参考基因组（拟南芥 32M、水稻 99M）
+  - [x] 3.4 验证服务器 nextflow 环境可用（conda env `nextflow` → nextflow 26.04.6；server.config docker.enabled=true）
 
 - [ ] Task 4: 服务器运行 ONT 长读长测试（四引擎）
   - [ ] 4.1 运行 `nextflow run main.nf -profile server,test_nanopore_lr --outdir ...`（或等价命令，含 -with-report/-with-trace/-resume）
