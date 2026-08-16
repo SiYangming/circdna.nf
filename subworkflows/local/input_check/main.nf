@@ -1,12 +1,8 @@
-//
-// Check input samplesheet and get read channels
-//
-
 include { SAMPLESHEET_CHECK } from '../../../modules/local/samplesheet_check/main'
 
 workflow INPUT_CHECK {
     take:
-    samplesheet // file: /path/to/samplesheet.csv
+    samplesheet
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
@@ -40,7 +36,13 @@ workflow INPUT_CHECK {
 def create_short_read_fastq_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
+    meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
+    if (row.containsKey('lane') && row.lane) {
+        meta.lane = row.lane
+    }
+    meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    meta.platform     = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
+    meta.protocol     = row.containsKey('protocol') ? (row.protocol ? row.protocol : 'short_read') : 'short_read'
 
     def array = []
     if (!file(row.fastq_1).exists()) {
@@ -75,7 +77,7 @@ def create_short_read_bam_channels(LinkedHashMap row) {
 def create_long_read_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
+    meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
     meta.entrypoint   = row.entrypoint ?: params.entrypoint
     meta.platform     = row.platform ?: params.protocol
 

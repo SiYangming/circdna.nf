@@ -58,21 +58,34 @@ def check_samplesheet(file_in, file_out, input_format, protocol):
     """
 
     sample_mapping_dict = {}
+    OPTIONAL_FIELDS = ["lane", "datatype", "platform", "protocol"]
+    VALID_DATATYPES = ["gdna", "eccdna"]
+    VALID_PLATFORMS = ["illumina", "pacbio", "ont"]
+    VALID_PROTOCOLS = ["short_read", "long_read"]
+
     with open(file_in, "r") as fin:
         if protocol == "short_read" and input_format == "FASTQ":
             MIN_COLS = 2
             HEADER = ["sample", "fastq_1", "fastq_2"]
             header = [x.strip('"') for x in fin.readline().strip().split(",")]
-            if header[: len(HEADER)] != HEADER:
-                print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
+
+            has_lane = "lane" in header
+            has_datatype = "datatype" in header
+            has_platform = "platform" in header
+            has_protocol = "protocol" in header
+
+            if header[:3] != HEADER:
+                print("ERROR: Please check samplesheet header -> first 3 columns must be sample,fastq_1,fastq_2")
                 sys.exit(1)
 
             for line in fin:
                 lspl = [x.strip().strip('"') for x in line.strip().split(",")]
 
-                if len(lspl) < len(HEADER):
+                # Check valid number of columns per row
+                min_cols = 3
+                if len(lspl) < min_cols:
                     print_error(
-                        "Invalid number of columns (minimum = {})!".format(len(HEADER)),
+                        "Invalid number of columns (minimum = {})!".format(min_cols),
                         "Line",
                         line,
                     )
@@ -84,11 +97,53 @@ def check_samplesheet(file_in, file_out, input_format, protocol):
                         line,
                     )
 
-                sample, fastq_1, fastq_2 = lspl[: len(HEADER)]
-                sample = sample.replace(" ", "_")
+                ## Parse row as dictionary
+                row = dict(zip(header, lspl + [''] * (len(header) - len(lspl))))
+
+                ## Check sample name entries
+                sample = row["sample"].replace(" ", "_")
+                fastq_1 = row["fastq_1"]
+                fastq_2 = row["fastq_2"]
                 if not sample:
                     print_error("Sample entry has not been specified!", "Line", line)
 
+                lane = ""
+                if has_lane:
+                    lane = row["lane"].strip()
+                    if not lane:
+                        print_error("Lane entry has not been specified!", "Line", line)
+
+                datatype = ""
+                if has_datatype:
+                    datatype = row["datatype"].strip().lower()
+                    if datatype and datatype not in VALID_DATATYPES:
+                        print_error(
+                            "Invalid datatype '{}'! Must be one of: {}".format(datatype, ", ".join(VALID_DATATYPES)),
+                            "Line",
+                            line,
+                        )
+
+                platform = ""
+                if has_platform:
+                    platform = row["platform"].strip().lower()
+                    if platform and platform not in VALID_PLATFORMS:
+                        print_error(
+                            "Invalid platform '{}'! Must be one of: {}".format(platform, ", ".join(VALID_PLATFORMS)),
+                            "Line",
+                            line,
+                        )
+
+                protocol = ""
+                if has_protocol:
+                    protocol = row["protocol"].strip().lower()
+                    if protocol and protocol not in VALID_PROTOCOLS:
+                        print_error(
+                            "Invalid protocol '{}'! Must be one of: {}".format(protocol, ", ".join(VALID_PROTOCOLS)),
+                            "Line",
+                            line,
+                        )
+
+                ## Check FastQ file extension
                 for fastq in [fastq_1, fastq_2]:
                     if fastq:
                         if fastq.find(" ") != -1:
@@ -99,15 +154,16 @@ def check_samplesheet(file_in, file_out, input_format, protocol):
                                 "Line",
                                 line,
                             )
-
-                sample_info = []
-                if sample and fastq_1 and fastq_2:
-                    sample_info = ["0", fastq_1, fastq_2]
-                elif sample and fastq_1 and not fastq_2:
-                    sample_info = ["1", fastq_1, fastq_2]
+                ## Auto-detect paired-end/single-end
+                sample_info = []  ## [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol]
+                if sample and fastq_1 and fastq_2:  ## Paired-end short reads
+                    sample_info = ["0", fastq_1, fastq_2, lane, datatype, platform, protocol]
+                elif sample and fastq_1 and not fastq_2:  ## Single-end short reads
+                    sample_info = ["1", fastq_1, fastq_2, lane, datatype, platform, protocol]
                 else:
                     print_error("Invalid combination of columns provided!", "Line", line)
 
+                ## Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2, lane, datatype, platform, protocol ] }
                 if sample not in sample_mapping_dict:
                     sample_mapping_dict[sample] = [sample_info]
                 else:
@@ -232,8 +288,17 @@ def check_samplesheet(file_in, file_out, input_format, protocol):
             out_dir = os.path.dirname(file_out)
             make_dir(out_dir)
             with open(file_out, "w") as fout:
-                if protocol == "short_read" and input_format == "FASTQ":
-                    fout.write(",".join(["sample", "single_end", "fastq_1", "fastq_2"]) + "\n")
+                if input_format == "FASTQ":
+                    out_header = ["sample", "single_end", "fastq_1", "fastq_2"]
+                    if has_lane:
+                        out_header.append("lane")
+                    if has_datatype:
+                        out_header.append("datatype")
+                    if has_platform:
+                        out_header.append("platform")
+                    if has_protocol:
+                        out_header.append("protocol")
+                    fout.write(",".join(out_header) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
                         if not all(x[0] == sample_mapping_dict[sample][0][0] for x in sample_mapping_dict[sample]):
                             print_error(
@@ -242,8 +307,20 @@ def check_samplesheet(file_in, file_out, input_format, protocol):
                             )
 
                         for idx, val in enumerate(sample_mapping_dict[sample]):
-                            fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
-                elif protocol == "short_read" and input_format == "BAM":
+                            ## val = [single_end, fastq_1, fastq_2, lane, datatype, platform, protocol]
+                            row_vals = [sample, val[0], val[1], val[2]]
+                            if has_lane:
+                                row_vals.append(val[3])
+                            if has_datatype:
+                                row_vals.append(val[4])
+                            if has_platform:
+                                row_vals.append(val[5])
+                            if has_protocol:
+                                row_vals.append(val[6])
+                            if not has_lane:
+                                row_vals[0] = "{}_T{}".format(sample, idx + 1)
+                            fout.write(",".join(row_vals) + "\n")
+                elif input_format == "BAM":
                     fout.write(",".join(["sample", "idx", "bam"]) + "\n")
                     for sample in sorted(sample_mapping_dict.keys()):
                         for idx, val in enumerate(sample_mapping_dict[sample]):

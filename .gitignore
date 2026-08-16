@@ -1,16 +1,16 @@
 .nextflow*
-work/
 data/
 results/
 results_test_*/
 .DS_Store
-testing/
+._*
 testing*
 *.pyc
 null
 .vscode
-/nextflow_work
-/results_testdata
+/nextflow_work*
+/work*
+/results*
 server.txt
 
 # Temporary capture files
@@ -22,3 +22,7 @@ scripts/reslts
 scripts/*_trace.txt
 scripts/命令.txt
 *.log
+
+# Long-read consistency test data (large, generated locally by extract_test_data.sh)
+testdatasets/ont/*consistency.fastq.gz
+testdatasets/pacbio/*consistency.fastq.gz

@@ -3,6 +3,112 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.1.0 - [2026-08-02]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **ECCsplorer 真实检测实现**: 替换 `modules/local/eccsplorer/main.nf` 占位模块（原仅产出硬编码假数据），改为调用真实 ECCsplorer v2022.01.1.1 软件进行 eccDNA 检测。模块从 [bio.nf/modules/eccsplorer/](https://github.com/SiYangming/bio.nf) 拷贝接入，遵循 nf-core 模块标准（main.nf、meta.yml、environment.yml）
+- **ECCSPLORER 输入接口变更**: ECCsplorer 内部使用 segemehl 自行比对，不接受预比对的 BAM。`subworkflows/local/eccdna_mode/main.nf` 中 ECCSPLORER 的输入从 `BAM + BAI` 调整为 `FASTQ R1 + R2 + FASTA`，直接消费 `reads` 通道（与 BAM_PREPROCESSING 共享同一输入源）
+- **新增 `--eccsplorer_trim_reads` 参数**: 启用 Trimmomatic 质量过滤（默认 false）。通过 `conf/modules.config` 的 `ext.args` 传递给 ECCsplorer
+- **ECCsplorer 资源配置**: `conf/modules.config` 添加 ECCSPLORER 的 `publishDir` 配置（输出至 `${params.outdir}/eccsplorer`）
+- **versions emit 标准化**: ECCSPLORER 模块的 versions emit 从旧的 tuple 模式（`val, val, val`）改为 nf-core 标准的 `path "versions.yml"` 模式，与 BAM_PREPROCESSING、MOSDEPTH 等模块一致
+- **大基因组 CSI 索引匹配修复**: `conf/large_genome.config` 的 `SAMTOOLS_INDEX` 匹配改为正则 `.*SAMTOOLS_INDEX.*`，使 `-c`（CSI 索引）覆盖全部 SAMTOOLS_INDEX 实例（含 alias 的 `SAMTOOLS_INDEX_BAM`/`SAMTOOLS_INDEX_FILTERED`/`SAMTOOLS_INDEX_RE`），修复参考序列超过 BAI 上限（约 512 Mb/染色体）时 `samtools index` 报 `Numerical result out of range` 的问题
+- **Tragopogon_porrifolius hap1 标注大基因组**: `SERVER_RUN_GUIDE.md` 中 hap1 命令附加 `-c circdna.nf/conf/large_genome.config` 并标注大基因组（hap2 不变）
+- **README 大基因组 CSI 用法说明**: `README.md` Usage 部分新增大基因组物种附加 `-c conf/large_genome.config` 的提示（小麦、日本柳杉、Tragopogon_porrifolius hap1）
+
+### Dependencies
+
+- **eccsplorer**: 新增（v2022.01.1.1）
+  - conda 包: `siyangming::eccsplorer=2022.01.1.1`（发布于 [anaconda.org/siyangming/eccsplorer](https://anaconda.org/siyangming/eccsplorer)）
+  - Docker 镜像: `quay.io/siyangming/eccsplorer:2022.01.1.1`
+  - 包含依赖: Python 3.7、numpy、biopython、scipy、pyRserve、R (ggplot2/ggrepel/gridExtra/dplyr)、blast+、segemehl、samtools≥1.9、bedtools≥2.28.0、RepeatExplorer2、Trimmomatic、seqtk
+
+### Notes
+
+- ECCsplorer 由 [crimBubble/ECCsplorer](https://github.com/crimBubble/ECCsplorer) 开发，引用: Mann, L., et al. BMC Bioinformatics 23, 40 (2022)
+- conda 包与 Docker 镜像版本号保持一致（`2022.01.1.1`），便于追溯
+- 构建流程遵循 [AGENTS.md](../AGENTS.md) 第 12 章 "第三方模块构建工作流程"
+
+## v4.0.0 - [2026-08-02]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### BREAKING CHANGES
+
+- **integrated 模式完全移除**: `params.mode` 不再接受 `integrated` 值，仅保留 `reference` 和 `eccdna` 两种模式。原 `integrated` 分支（workflows/circdna.nf）已删除。用户应使用独立的 [eccdna.smk](https://github.com/SiYangming/eccdna.smk) Snakemake 工作流执行综合评分分析
+- **CANDIDATE_MERGE 模块移除**: `modules/local/candidate_merge/` 目录及 `bin/merge_candidates.py` 已删除，迁移至 eccdna.smk 仓库。eccdna 模式现在产出原始 `eccsplorer_bed` + `circle_map_bed` 后即终止，不再产出 `merged_bed`
+- **ECC_SCORE 模块移除**: `modules/local/ecc_score/` 目录、`bin/calculate_ecc_score.py` 及 `subworkflows/local/integrated_mode/` 已删除，迁移至 eccdna.smk 仓库
+- **ecc_score_w1/w2/w3 参数移除**: 这三个参数仅被 ECC_SCORE 使用，ECC_SCORE 迁移后参数失去用途。用户应在 eccdna.smk 的 `config/config.yaml` 中配置这些权重
+- **test_integrated profile 移除**: `conf/test_integrated.config` 已删除，`nextflow.config` profiles 块中的 `test_integrated` 引用已移除
+
+### Enhancements & fixes
+
+- **探索性分析迁移至 Snakemake**: 将参数敏感的轻量 Python 步骤（CANDIDATE_MERGE、ECC_SCORE）从 Nextflow 迁移至独立的 Snakemake 工作流 eccdna.smk，解耦"重计算"与"轻探索"。调整 `--max-distance`、`w1/w2/w3` 等探索性参数时，不再需要重新触发上游 CIRCLEMAP_REALIGN（process_high, 96h）等重计算步骤
+- **契约接口定义**: Nextflow 产出 mosdepth_bed + eccsplorer_bed + circle_map_bed 作为契约接口，供 eccdna.smk Snakemake 工作流消费
+
+### Migration Guide
+
+从 v3.x 升级到 v4.0.0 的用户：
+1. `integrated` 模式不再可用，请改用 `reference` + `eccdna` 两种模式
+2. 综合评分分析请使用 [eccdna.smk](https://github.com/SiYangming/eccdna.smk) 仓库
+3. Nextflow 产出路径（mosdepth bed、eccsplorer bed、circle_map bed）作为 eccdna.smk 的输入
+
+## v3.2.1 - [2026-08-02]
+
+### Enhancements & fixes
+
+- **CIRCLEFINDER 空结果处理优化**: 参照 suda-huanglab/circlehunter 最佳实践，将"未检测到 eccDNA"从误导性 "ERROR" 改为 "INFO" 提示，并产生空 `microDNA-JT.txt` 文件以保证下游通道完整性。原版 Circle-Finder 工具本身就静默产生空文件，circdna.nf 之前自定义的 `file_exists` 检查过度报错。移除 7 处中间 `file_exists` 检查，仅保留 2 处早期检查（split 文件为空、concordant.id-freq3.txt 为空）
+
+## v3.2.0 - [2026-07-27]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **增量/减量缓存实现（方案3）**: 重构 `input_check/main.nf`，将 SAMPLESHEET_CHECK 验证步骤与 channel 创建解耦，使用 `Channel.fromPath(samplesheet).splitCsv()` 直接从原始 CSV 解析样本，实现样本级增量/减量缓存（增加或减少样本时，其他样本的任务缓存不受影响）
+- **自动检测单端/双端**: `create_fastq_channels` 和 `create_long_read_channels` 函数支持自动检测 `single_end` 列，兼容无 `single_end` 列的原始 CSV 格式
+- **移除冗余 `.first()` 操作符**: 移除 value channel 上多余的 `.first()` 调用，消除 Nextflow 警告 "The operator `first` is useless when applied to a value channel"
+- **配置优化**:
+  - `test_local.config` 添加 `fasta_base_path = null` 消除参数未定义警告
+  - 添加 `trace.overwrite`、`report.overwrite`、`timeline.overwrite` 配置，支持重复运行覆盖输出
+- **代码清理**:
+  - 恢复 `bam_preprocessing/main.nf` 到原始样式，移除 `SAMTOOLS_VIEW_DEDUP` 步骤
+  - 移除 `--READ_NAME_REGEX null` 参数，测试原生 Picard 处理能力
+  - 清理 `SAMTOOLS_VIEW_DEDUP` 相关配置和注释
+- **文档更新**: 更新 `testdatasets/README.md`，添加样本表说明、本地测试命令和缓存验证步骤
+- **测试文件清理**: 移除冗余测试文件（samplesheet.csv、test_AA_local.csv、test_backcompat.csv、test_incr_lane_*.csv、test_multilane.csv），保留核心缓存测试文件
+
+## v3.1.0 - [2026-07-27]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **样本级增量缓存**: samplesheet 支持可选 `lane` 列（`sample,fastq_1,fastq_2,lane`），使用 sample + lane 明确区分样本与 lane。有 lane 列时按 sample 列值直接分组，不再做隐式 `_T\d+` 归并，实现样本级增量/减量缓存（resume 时未变更样本的任务全部命中缓存）
+- **向后兼容**: 无 lane 列时保留原有 `sample_T1`/`sample_T2` 归并逻辑，旧格式 samplesheet 行为不变
+- **Picard MarkDuplicates 修复**: 在 BAM 预处理中新增 `SAMTOOLS_VIEW_DEDUP` 步骤（`-F 0x900`），过滤 secondary/supplementary alignments，避免多比对重复 read name 导致的 "Value was put into PairInfoMap more than once" 错误
+- **groupTuple 分组修复**: 按 `meta.id` 字段提取分组键，修复按完整 meta map 分组导致同 sample 不同 lane 被错误拆分的问题
+- **BWA_INDEX 资源配置**: test_local profile 中为 BWA_INDEX 单独配置内存（4GB），避免本地测试时 OOM kill
+>>>>>>> master
+
 ## v3.2.0 - [2026-07-24]
 
 ### Credits

@@ -82,6 +82,9 @@ Now, you can run the pipeline using:
    nextflow run nf-core/circdna --input samplesheet.csv --outdir <OUTDIR> --genome GRCh38 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --circle_identifier <CIRCLE_IDENTIFIER> --input_format <"FASTQ"/"BAM">
 ```
 
+> [!WARNING]
+> For species with reference sequences longer than the BAI index coordinate limit (~512 Mb per chromosome), `samtools index` will fail with `Numerical result out of range`. Such large-genome runs **must** append `-c conf/large_genome.config` to enable CSI indexing, e.g. `-profile server -c conf/large_genome.config`. Known affected: `Triticum_aestivum` (小麦), `Cryptomeria_japonica` (日本柳杉), `Tragopogon_porrifolius` hap1 (婆罗门参).
+
 ### Test AmpliconSuite-Pipeline with a test data-set
 
 To test the correct installation of the pipeline and the use of AmpliconArchitect inside the [AmpliconSuite-Pipeline](https://github.com/AmpliconSuite/AmpliconSuite-pipeline), a small WGS data set is uploaded to [AWS](https://aws.amazon.com/) and can be downloaded and used with the parameter `-profile test_AA_local`. You just need to specify your local paths to the `aa_data_repo` and the `mosek_license_dir`. See [AmpliconSuite-Pipeline](https://github.com/AmpliconSuite/AmpliconSuite-pipeline) for information about the data repository and the Mosek license. To note, the Mosek license file needs to be named `mosek.lic` inside the `mosek_license_dir`.

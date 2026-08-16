@@ -31,9 +31,17 @@ include { FLYE_PIPELINE                 } from '../subworkflows/local/flye_pipel
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_CRESIL } from '../subworkflows/local/long_read_filtering/main'
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_FLED   } from '../subworkflows/local/long_read_filtering/main'
 include { ECCFINDER_PIPELINE            } from '../subworkflows/local/eccfinder_pipeline/main'
+include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
+include { ECCDNA_MODE                   } from '../subworkflows/local/eccdna_mode/main'
 
 workflow CIRCDNA {
-    if (params.fasta) {
+    // Mode validation
+    def valid_modes = ['reference', 'eccdna']
+    if (!valid_modes.contains(params.mode)) {
+        exit 1, "Invalid mode: ${params.mode}. Valid modes: ${valid_modes.join(', ')}"
+    }
+
+    if (params.containsKey('fasta') && params.fasta) {
         ch_fasta = channel.fromPath(params.fasta).collect()
     } else {
         def genome_fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
@@ -47,17 +55,19 @@ workflow CIRCDNA {
     if (!(params.input_format == "FASTQ" | params.input_format == "BAM")) {
     exit 1, 'Please specifiy --input_format "FASTQ" or "BAM" in capital letters, depending on the input file format.'
     }
-    ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }.collect()
+    ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }.first()
 
-    // circle_identifier validation only applies to short-read protocol
+    def use_legacy_mode = false
     def run_circexplorer2 = false
     def run_circle_map_realign = false
     def run_circle_map_repeats = false
     def run_circle_finder = false
     def run_ampliconarchitect = false
     def run_unicycler = false
-    if (params.protocol == "short_read") {
-        def branch = params.circle_identifier ? params.circle_identifier.split(",") : []
+
+    if (params.mode == 'eccdna' && params.circle_identifier) {
+        use_legacy_mode = true
+        def branch = params.circle_identifier.split(",")
         run_circexplorer2 = ("circexplorer2" in branch)
         run_circle_map_realign = ("circle_map_realign" in branch)
         run_circle_map_repeats = ("circle_map_repeats" in branch)
@@ -65,18 +75,18 @@ workflow CIRCDNA {
         run_ampliconarchitect = ("ampliconarchitect" in branch)
         run_unicycler = ("unicycler" in branch)
         if (!(run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)) {
-            exit 1, 'circle_identifier param not valid. Please check! For short-read protocol, at least one valid identifier is required.'
+            exit 1, 'circle_identifier param not valid. Please check!'
         }
         if (run_unicycler && !params.input_format == "FASTQ") {
             exit 1, 'Unicycler needs FastQ input. Please specify input_format == "FASTQ", if possible, or don`t run unicycler.'
         }
     }
+
     if (!params.input) { exit 1, 'Input samplesheet not specified!' }
     def bwa_index_exists = false
     def ch_bwa_index = channel.empty()
     if (params.bwa_index) {
-    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').collect()
-    ch_bwa_index = ch_bwa_index.map{ index -> ["bwa_index", index] }.collect()
+    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').map{ index -> ["bwa_index", index] }.first()
     bwa_index_exists = true
     } else {
     ch_bwa_index = channel.empty()
@@ -126,6 +136,7 @@ workflow CIRCDNA {
     ch_fastqc_multiqc           = channel.empty()
     ch_trimgalore_multiqc       = channel.empty()
     ch_trimgalore_multiqc_log   = channel.empty()
+    ch_mosdepth_multiqc         = channel.empty()
 
     // Check protocol first - long-read analysis is independent
     if (params.protocol in ["pacbio", "ont"]) {
@@ -221,9 +232,18 @@ workflow CIRCDNA {
         .reads
         .map {
             meta, fastq ->
-                meta.id = meta.id.split('_')[0..-2].join('_')
-                [ meta, fastq ] }
+                if (!meta.containsKey('lane')) {
+                    def parts = meta.id.split('_')
+                    if (parts.size() > 1 && parts[-1] ==~ /T\d+/) {
+                        meta.id = parts[0..-2].join('_')
+                    }
+                }
+                [ meta.id, meta, fastq ] }
         .groupTuple(by: [0])
+        .map { id, meta_list, fastq_list ->
+            def merged_meta = meta_list[0].clone()
+            merged_meta.id = id
+            [ merged_meta, fastq_list ] }
         .branch {
             meta, fastq ->
                 single  : fastq.size() == 1 && meta.single_end
@@ -279,13 +299,20 @@ workflow CIRCDNA {
         //
         // MODULE: Run bwa index
         //
-        if (!bwa_index_exists & (run_ampliconarchitect | run_circexplorer2 |
+        if (!bwa_index_exists & (use_legacy_mode && (run_ampliconarchitect | run_circexplorer2 |
                                 run_circle_finder | run_circle_map_realign |
-                                run_circle_map_repeats)) {
+                                run_circle_map_repeats))) {
             BWA_INDEX (
                 ch_fasta_meta
             )
-            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }.collect()
+            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }
+            ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
+        }
+        if (!bwa_index_exists & !use_legacy_mode & params.mode in ['reference', 'eccdna']) {
+            BWA_INDEX (
+                ch_fasta_meta
+            )
+            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }
             ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
         }
     } else if (params.input_format == "BAM") {
@@ -308,8 +335,8 @@ workflow CIRCDNA {
         ch_trimgalore_multiqc_log   = channel.empty()
     }
 
-    if (run_ampliconarchitect | run_circexplorer2 | run_circle_finder |
-        run_circle_map_realign | run_circle_map_repeats) {
+    if (use_legacy_mode && (run_ampliconarchitect | run_circexplorer2 | run_circle_finder |
+        run_circle_map_realign | run_circle_map_repeats)) {
         BAM_PREPROCESSING (
             params.input_format == "FASTQ" ? ch_trimmed_reads : ch_bam_sorted,
             ch_bwa_index,
@@ -328,6 +355,34 @@ workflow CIRCDNA {
         ch_markduplicates_idxstats  = BAM_PREPROCESSING.out.markduplicates_idxstats
         ch_markduplicates_multiqc   = BAM_PREPROCESSING.out.markduplicates_multiqc
         ch_versions = ch_versions.mix(BAM_PREPROCESSING.out.versions)
+    }
+
+    //
+    // NEW MODE WORKFLOWS
+    // Reference Mode, eccDNA Mode
+    //
+    if (!use_legacy_mode && params.input_format == "FASTQ") {
+        def ch_repeat_gff = params.repeat_gff ? file(params.repeat_gff) : channel.empty()
+
+        if (params.mode == 'reference') {
+            REFERENCE_MODE (
+                ch_trimmed_reads,
+                ch_bwa_index,
+                ch_fasta_meta,
+                ch_repeat_gff
+            )
+            ch_versions = ch_versions.mix(REFERENCE_MODE.out.versions)
+            ch_mosdepth_multiqc = REFERENCE_MODE.out.mosdepth_summary.map { _meta, summary -> summary }
+        } else if (params.mode == 'eccdna') {
+            ECCDNA_MODE (
+                ch_trimmed_reads,
+                ch_bwa_index,
+                ch_fasta_meta,
+                true
+            )
+            ch_versions = ch_versions.mix(ECCDNA_MODE.out.versions)
+            ch_mosdepth_multiqc = ECCDNA_MODE.out.mosdepth_summary.map { _meta, summary -> summary }
+        }
     }
 
     if (run_ampliconarchitect) {
@@ -419,6 +474,7 @@ workflow CIRCDNA {
             .mix(ch_markduplicates_flagstat.map { _meta, flagstat -> flagstat })
             .mix(ch_markduplicates_idxstats.map { _meta, idxstats -> idxstats })
             .mix(ch_markduplicates_multiqc.map { _meta, metrics -> metrics })
+            .mix(ch_mosdepth_multiqc)
 
         MULTIQC (
             ch_multiqc_files.collect().ifEmpty([]),

@@ -1,0 +1,44 @@
+name: mosdepth
+description: Fast BAM/CRAM depth calculation for WGS, exome, or targeted sequencing
+keywords:
+  - depth
+  - coverage
+  - wgs
+  - exome
+tools:
+  - mosdepth:
+      description: Fast BAM/CRAM depth calculation for WGS, exome, or targeted sequencing
+      homepage: https://github.com/brentp/mosdepth
+      documentation: https://github.com/brentp/mosdepth
+      licence: ['MIT']
+input:
+  - meta:
+      type: map
+      description: Sample metadata
+  - bam:
+      type: file
+      description: Sorted BAM/CRAM file
+  - bai:
+      type: file
+      description: BAM index file
+  - fai:
+      type: file
+      description: FASTA index file
+output:
+  - meta:
+      type: map
+      description: Sample metadata
+  - regions_bed:
+      type: file
+      description: Per-region depth BED file (gz compressed)
+  - global_dist:
+      type: file
+      description: Global distribution of depths
+  - summary:
+      type: file
+      description: Summary of mean/median coverage
+  - versions_mosdepth:
+      type: file
+      description: File containing software version
+authors:
+  - "@siyangming"

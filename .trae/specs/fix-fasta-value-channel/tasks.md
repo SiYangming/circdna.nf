@@ -28,7 +28,23 @@
   - [x] SubTask 5.2: 运行 `nextflow run main.nf -c conf/test_local.config -profile docker --skip_unicycler`（或通过 circle_identifier 不含 unicycler 的方式跳过组装），不使用 `-resume`
   - [x] SubTask 5.3: 确认一次性生成 `results_testdata` 中 circdna_1/2/3 全部样本结果（73 tasks, 0 failed, 9m43s）
 
+# 追加任务（2026-07-29：spec 修复未生效，主流程 channel 遗漏）
+
+- [x] Task 6: 修正 `subworkflows/local/bam_preprocessing/main.nf` 的 `ch_fasta_fai` 通道类型
+  - [x] SubTask 6.1: 将第 34 行 `.collect()` 改为 `.first()`（spec 已要求但代码未生效）
+  - [x] SubTask 6.2: 确认 emit `fasta_fai` 输出的是 value channel
+
+- [x] Task 7: 修正 `workflows/circdna.nf` 主流程的 `ch_fasta_meta` 与 `ch_bwa_index` 通道类型
+  - [x] SubTask 7.1: 将第 51 行 `ch_fasta_meta = ch_fasta.map{...}.collect()` 改为 `.first()`
+  - [x] SubTask 7.2: 将第 82 行 `ch_bwa_index` 改为 `.first()`；第 215/222 行 BWA_INDEX 产出的 `ch_bwa_index` 也改为 `.first()`
+
+- [ ] Task 8: 服务器验证（46 样本 Arabidopsis samplesheet，不使用 -resume）
+  - [ ] SubTask 8.1: 在服务器运行 `circdna_Arabidopsis_thaliana_eccDNA.csv`（legacy_mode, 46 样本）
+  - [ ] SubTask 8.2: 确认所有 46 个样本均产出 BAM/BAI/stats/markduplicates 结果
+  - [ ] SubTask 8.3: 确认 Circle-Map/Circle-Finder/Circexplorer2 候选 BED 非空
+
 # Task Dependencies
 - [Task 2], [Task 3] 依赖 [Task 1]（需 BAM_PREPROCESSING 产出 fasta_fai emit）
 - [Task 4] 依赖 [Task 1], [Task 2], [Task 3]（调用签名需先对齐）
 - [Task 5] 依赖 [Task 1], [Task 2], [Task 3], [Task 4] 全部完成
+- [Task 8] 依赖 [Task 6], [Task 7]（主流程与子流程 channel 修复完成后才能验证）

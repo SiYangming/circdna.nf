@@ -3,14 +3,14 @@
 // Contains: BWA_MEM, SAMTOOLS_INDEX, BAM_STATS_SAMTOOLS, BAM_MARKDUPLICATES_PICARD
 //
 
-include { BWA_MEM                                   }   from '../../../modules/nf-core/bwa/mem/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BAM      }   from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FAIDX                            }   from '../../../modules/nf-core/samtools/faidx/main'
-include { BAM_MARKDUPLICATES_PICARD                 }   from '../../../subworkflows/nf-core/bam_markduplicates_picard/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER     }   from '../../../modules/nf-core/samtools/view/main'
-include { SAMTOOLS_SORT as SAMTOOLS_SORT_FILTERED   }   from '../../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_FILTERED }   from '../../../modules/nf-core/samtools/index/main'
-include { BAM_STATS_SAMTOOLS                        }   from '../../../subworkflows/nf-core/bam_stats_samtools/main'
+include { BWA_MEM                                   } from '../../../modules/nf-core/bwa/mem/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BAM      } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX                            } from '../../../modules/nf-core/samtools/faidx/main'
+include { BAM_MARKDUPLICATES_PICARD                 } from '../../../subworkflows/nf-core/bam_markduplicates_picard/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER     } from '../../../modules/nf-core/samtools/view/main'
+include { SAMTOOLS_SORT as SAMTOOLS_SORT_FILTERED   } from '../../../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_FILTERED } from '../../../modules/nf-core/samtools/index/main'
+include { BAM_STATS_SAMTOOLS                        } from '../../../subworkflows/nf-core/bam_stats_samtools/main'
 
 workflow BAM_PREPROCESSING {
     take:
@@ -28,9 +28,15 @@ workflow BAM_PREPROCESSING {
         channel.value(true)
     )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
-    def ch_fasta_fai = fasta_meta.join(SAMTOOLS_FAIDX.out.fai).map { meta, fasta, fai ->
-        [meta, fasta, fai]
-    }.first()
+    // .first() is REQUIRED here: fasta_meta is value channel but SAMTOOLS_FAIDX.out.fai
+    // is a process output (queue channel), so value.join(queue) produces a queue channel.
+    // Without .first(), downstream processes with multiple queue inputs do one-to-one
+    // matching and silently skip all but the first sample.
+    // Nextflow may warn "first is useless on value channel" — this is a false positive.
+    def ch_fasta_fai = fasta_meta
+        .join(SAMTOOLS_FAIDX.out.fai)
+        .map { meta, fasta, fai -> [meta, fasta, fai] }
+        .first()
 
     if (run_bwa) {
         // BWA MEM ALIGNMENT
@@ -97,7 +103,7 @@ workflow BAM_PREPROCESSING {
             SAMTOOLS_SORT_FILTERED (
                 SAMTOOLS_VIEW_FILTER.out.bam,
                 ch_fasta_fai,
-                'bai'
+                params.use_csi_index ? 'csi' : 'bai'
             )
             ch_versions = ch_versions.mix(SAMTOOLS_SORT_FILTERED.out.versions_samtools)
 
@@ -136,7 +142,7 @@ workflow BAM_PREPROCESSING {
     markduplicates_flagstat  = ch_markduplicates_flagstat
     markduplicates_idxstats  = ch_markduplicates_idxstats
     markduplicates_multiqc   = ch_markduplicates_multiqc
-    fai                      = SAMTOOLS_FAIDX.out.fai.first()
+    fai                      = SAMTOOLS_FAIDX.out.fai
     fasta_fai                = ch_fasta_fai
     versions                 = ch_versions
 }

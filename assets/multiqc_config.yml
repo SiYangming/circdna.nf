@@ -9,5 +9,19 @@ report_section_order:
     order: -1001
   "nf-core-circdna-summary":
     order: -1002
+  mosdepth_summary:
+    order: 100
+  eccdna_candidates:
+    order: 101
+
+custom_data:
+  mosdepth_summary:
+    file_format: 'tsv'
+    section_name: 'Mosdepth Depth Summary'
+    description: 'Sequencing depth summary from mosdepth'
+  eccdna_candidates:
+    file_format: 'tsv'
+    section_name: 'eccDNA Candidate Statistics'
+    description: 'Number of eccDNA candidates identified by each tool'
 
 export_plots: true

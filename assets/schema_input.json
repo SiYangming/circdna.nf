@@ -49,17 +49,37 @@
                         "type": "string",
                         "maxLength": 0
                     }
-                ]
+                ],
+                "help_text": "Optional raw BAM input for long-read (PacBio/ONT) samples when entrypoint is subreads or hifi_bam."
             },
             "entrypoint": {
                 "type": "string",
                 "enum": ["cleaned_fastq", "raw_fastq", "subreads", "hifi_bam"],
                 "errorMessage": "Entrypoint must be one of: cleaned_fastq, raw_fastq, subreads, hifi_bam"
             },
+            "lane": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Lane value cannot contain spaces",
+                "help_text": "Optional lane identifier used to distinguish multiple sequencing lanes for the same sample."
+            },
+            "datatype": {
+                "type": "string",
+                "enum": ["gdna", "eccdna"],
+                "errorMessage": "Datatype must be one of: gdna, eccdna",
+                "help_text": "Sample datatype. Required for Integrated Mode (mode=integrated) to distinguish gDNA (background) from eccDNA samples."
+            },
             "platform": {
                 "type": "string",
-                "enum": ["pacbio", "ont", "illumina"],
-                "errorMessage": "Platform must be one of: pacbio, ont, illumina"
+                "enum": ["illumina", "pacbio", "ont"],
+                "errorMessage": "Platform must be one of: illumina, pacbio, ont",
+                "help_text": "Sequencing platform."
+            },
+            "protocol": {
+                "type": "string",
+                "enum": ["short_read", "long_read"],
+                "errorMessage": "Protocol must be one of: short_read, long_read",
+                "help_text": "Sequencing protocol."
             }
         },
         "required": ["sample"]

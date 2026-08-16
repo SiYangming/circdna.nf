@@ -1,550 +1,400 @@
 # circdna.nf 服务器运行指南
 
-## 目录结构
+## Screen 会话管理
 
-```
-/data1/users/siyangming/
-├── FASTA/                           # 参考基因组FASTA文件（直接放在此目录下）
-│   ├── Arabidopsis_thaliana.TAIR10.dna.fa.gz
-│   ├── Oryza_sativa.IRGSP-1.0.dna.fa.gz
-│   ├── Triticum_aestivum.IWGSC.dna.fa.gz
-│   ├── Solanum_lycopersicum_gca000188115v5cm.SL4.0.dna.fa.gz
-│   ├── Daucus_carota.ASM162521v1.dna.fa.gz
-│   ├── Helianthus_annuus.HanXRQr2.0-SUNRISE.dna.fa.gz
-│   ├── Alopecurus_myosuroides_v1.fa.gz
-│   ├── Amaranthus_palmeri_hap1_v01.fa.gz       # 双单倍型1
-│   ├── Amaranthus_palmeri_hap2_v01.fa.gz       # 双单倍型2
-│   ├── Artemisia_annua_v1.fa.gz
-│   ├── Cryptomeria_japonica_1.0.fa.gz
-│   ├── Nicotiana_benthamiana_v1.fa.gz
-│   ├── Tragopogon_porrifolius_hap1.1.fa.gz     # 双单倍型1
-│   ├── Tragopogon_porrifolius_hap2.1.fa.gz     # 双单倍型2
-│   ├── Beta_vulgaris.RefBeet-1.2.2.dna.fa.gz
-│   ├── Lycium_ruthenicum_ASM4143038v1.fa.gz
-│   └── Cynodon_dactylon_ASM4686236v1.fa.gz
-├── GENE/                            # 基因注释文件（可选）
-├── circdna.nf/                      # Nextflow流程代码（通过GitHub获取）
-│   ├── samplesheets/                # 样本表文件
-│   └── conf/server.config           # 服务器配置
-└── eccDNA_results/                  # 分析结果输出目录
-```
-
-## 服务器配置信息
-
-| 配置项 | 值 |
-|--------|-----|
-| CPU | Intel Xeon Platinum 8352Y @ 2.20GHz, 128 cores |
-| 内存 | 503 GB |
-| 操作系统 | CentOS Linux 7 |
-| Docker | 26.1.4 |
-| 数据盘1 | /data1 (146T, 12T可用) |
-| 数据盘2 | /data2 (117T, 6.5T可用) |
-
-## 1. 连接服务器并准备环境
+> **首次使用 screen 只需配置一次**，后续通过 `screen -r eccdna` 恢复
 
 ```bash
-ssh siyangming@192.168.16.65
+# 创建 screen 会话 (首次)
+screen -S eccdna
+
+# 恢复 screen 会话 (每次登录服务器后)
+screen -r eccdna
+
+# 列出所有 screen 会话
+screen -ls
+
+# 从 screen 会话分离 (保持运行)
+# 快捷键: Ctrl+A+D
+
+# 重新连接到已分离的会话
+screen -r eccdna
+```
+
+## 环境先决条件
+
+> **每次进入 screen 会话后必须执行**，否则会出现 `nextflow: 未找到命令` 错误
+
+```bash
+# 1. 激活 conda 环境 (nextflow 命令仅在此环境中可用)
 conda activate nextflow
-cd /data1/users/siyangming/nextflow_nf_core/circdna.nf/
+
+# 2. 进入父目录 (所有操作在此目录下执行)
+cd /data1/users/siyangming/PlanteccDNADB/
+
+# 3. 验证环境
+which nextflow    # 应输出 conda 环境中的 nextflow 路径
+nextflow -version # 应显示 Nextflow 版本
+
+# 4. 确认目录结构
+ls
+# 应包含: circdna.nf/  eccDNA/  eccDNA_results/
 ```
 
-## 同步FASTA文件到服务器
+### 首次完整设置（仅需一次）
 
 ```bash
-rsync -avz --progress /Users/siyangming/nextflow_nf_core/circdnalr.nf/FASTA/*.fa.gz \
-    siyangming@192.168.16.65:/data1/users/siyangming/FASTA/
-```
+# Step 1: 创建并进入 screen
+screen -S eccdna
 
-## 3. 运行命令
-
-### 3.1 通用运行命令格式
-
-**使用 `--genome` 参数（推荐，简化）**：
-
-```bash
-screen -S circdna_Arabidopsis_thaliana
-cd nextflow_nf_core/circdna.nf/
+# Step 2: 激活环境并进入目录
 conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/<samplesheet.csv> \
-    --genome <genome_name> \
-    --outdir /data1/users/siyangming/eccDNA_results/<species> \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/<species>_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/<species>_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/<species>_trace.txt \
-    -resume
+cd /data1/users/siyangming/PlanteccDNADB/
+
+# Step 3: 保存环境变量到 screen 会话 (可选，避免每次重复)
+# conda env config set auto_activate_base false
+# echo 'conda activate nextflow' >> ~/.bashrc
+# echo 'cd /data1/users/siyangming/PlanteccDNADB/' >> ~/.bashrc
+
+# Step 4: 分离会话
+# Ctrl+A+D
+
+# Step 5: 验证恢复
+screen -r eccdna
+# 应该自动在 nextflow 环境和 PlanteccDNADB 目录中
 ```
 
-**使用 `--fasta` 参数（手动指定路径）**：
+## 路径约定
+
+所有命令在 `/data1/users/siyangming/PlanteccDNADB/` 父目录下执行，使用 `circdna.nf/` 前缀引用 pipeline 文件：
 
 ```bash
-screen -S circdna_Arabidopsis_thaliana
-nextflow run main.nf \
-    --input samplesheets/<samplesheet.csv> \
-    --input_format FASTQ \
-    --fasta /data1/users/siyangming/FASTA/<fasta_file> \
-    --outdir /data1/users/siyangming/eccDNA_results/<species> \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/<species>_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/<species>_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/<species>_trace.txt \
-    -resume
+# 父目录结构
+PlanteccDNADB/
+├── circdna.nf/          # Pipeline 代码 (nextflow run ./circdna.nf/main.nf)
+│   ├── main.nf
+│   ├── nextflow.config
+│   ├── samplesheets/    # circdna.nf/samplesheets/*.csv
+│   ├── conf/            # circdna.nf/conf/server.config
+│   └── ...
+├── eccDNA/              # 测序数据
+└── eccDNA_results/      # 输出结果
 ```
 
-**大基因组（>512Mb 染色体，如黑麦草、小麦）需追加 `-c conf/large_genome.config`**：
+## 恢复运行
 
 ```bash
-screen -S circdna_Arabidopsis_thaliana
-nextflow run main.nf \
-    --input samplesheets/<samplesheet.csv> \
-    --genome <genome_name> \
-    --outdir /data1/users/siyangming/eccDNA_results/<species> \
+# 必须指定具体的 run name，否则 -resume 会尝试恢复最近一次运行
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_<species>_eccDNA.csv \
+    --genome <species> \
+    --outdir eccDNA_results/<species> \
     -profile server \
-    -c conf/large_genome.config \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/<species>_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/<species>_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/<species>_trace.txt \
-    -resume
+    -resume <run_name>
+
+# 查看历史 run name
+ls -lat circdna.nf/work/ | head -5
+# 或查看 .nextflow.log 开头
+head -5 circdna.nf/.nextflow.log
 ```
 
-### 3.2 可用基因组列表
+## 按物种运行命令
 
-| Genome名称 | FASTA文件 | 物种 |
-|------------|-----------|------|
-| Arabidopsis_thaliana | Arabidopsis_thaliana.TAIR10.dna.fa.gz | 拟南芥 |
-| Oryza_sativa | Oryza_sativa.IRGSP-1.0.dna.fa.gz | 水稻 |
-| Triticum_aestivum ⚠️ | Triticum_aestivum.IWGSC.dna.fa.gz | 小麦 |
-| Solanum_lycopersicum | Solanum_lycopersicum_gca000188115v5cm.SL4.0.dna.fa.gz | 番茄 |
-| Daucus_carota | Daucus_carota.ASM162521v1.dna.fa.gz | 胡萝卜 |
-| Helianthus_annuus | Helianthus_annuus.HanXRQr2.0-SUNRISE.dna.fa.gz | 向日葵 |
-| Alopecurus_myosuroides ⚠️ | Alopecurus_myosuroides_v1.fa.gz | 黑麦草 |
-| Amaranthus_palmeri_hap1 | Amaranthus_palmeri_hap1_v01.fa.gz | 苋（单倍型1） |
-| Amaranthus_palmeri_hap2 | Amaranthus_palmeri_hap2_v01.fa.gz | 苋（单倍型2） |
-| Artemisia_annua | Artemisia_annua_v1.fa.gz | 青蒿 |
-| Cryptomeria_japonica | Cryptomeria_japonica_1.0.fa.gz | 日本柳杉 |
-| Nicotiana_benthamiana | Nicotiana_benthamiana_v1.fa.gz | 本氏烟草 |
-| Tragopogon_porrifolius_hap1 | Tragopogon_porrifolius_hap1.1.fa.gz | 婆罗门参（单倍型1） |
-| Tragopogon_porrifolius_hap2 | Tragopogon_porrifolius_hap2.1.fa.gz | 婆罗门参（单倍型2） |
-| Beta_vulgaris | Beta_vulgaris.RefBeet-1.2.2.dna.fa.gz | 甜菜 |
-| Lycium_ruthenicum | Lycium_ruthenicum_ASM4143038v1.fa.gz | 黑果枸杞 |
-| Cynodon_dactylon | Cynodon_dactylon_ASM4686236v1.fa.gz | 狗牙根 |
+> 假设已在 `PlanteccDNADB/` 目录内，且 `conda activate nextflow` 已执行
 
-> ⚠️ 标记为大基因组物种（染色体 >512Mb），运行时需追加 `-c conf/large_genome.config` 启用 CSI 索引。
-
-### 3.3 按物种运行命令（二代数据）
-
-#### Arabidopsis_thaliana (拟南芥)
+### 拟南芥 (Arabidopsis_thaliana)
 
 ```bash
-screen -S circdna_Arabidopsis_thaliana
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
     --genome Arabidopsis_thaliana \
-    --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_trace.txt \
-    -resume
+    --outdir eccDNA_results/Arabidopsis_thaliana \
+    -profile server
 ```
 
-#### Alopecurus_myosuroides (黑麦草) ⚠️ 大基因组
+### 水稻 (Oryza_sativa)
 
 ```bash
-screen -S circdna_Alopecurus_myosuroides
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Alopecurus_myosuroides_eccDNA.csv \
-    --genome Alopecurus_myosuroides \
-    --outdir /data1/users/siyangming/eccDNA_results/Alopecurus_myosuroides \
-    -profile server \
-    -c conf/large_genome.config \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Alopecurus_myosuroides_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Alopecurus_myosuroides_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Alopecurus_myosuroides_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Oryza_sativa_eccDNA.csv \
+    --genome Oryza_sativa \
+    --outdir eccDNA_results/Oryza_sativa \
+    -profile server
 ```
 
-#### Amaranthus_palmeri (苋) - 双单倍型
-
-**hap1（单倍型1）**：
+### 番茄 (Solanum_lycopersicum)
 
 ```bash
-screen -S circdna_Amaranthus_palmeri_hap1
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Amaranthus_palmeri_eccDNA.csv \
-    --genome Amaranthus_palmeri_hap1 \
-    --outdir /data1/users/siyangming/eccDNA_results/Amaranthus_palmeri_hap1 \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Amaranthus_palmeri_hap1_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Amaranthus_palmeri_hap1_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Amaranthus_palmeri_hap1_trace.txt \
-    -resume
-```
-
-**hap2（单倍型2）**：
-
-```bash
-screen -S circdna_Amaranthus_palmeri_hap2
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Amaranthus_palmeri_eccDNA.csv \
-    --genome Amaranthus_palmeri_hap2 \
-    --outdir /data1/users/siyangming/eccDNA_results/Amaranthus_palmeri_hap2 \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Amaranthus_palmeri_hap2_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Amaranthus_palmeri_hap2_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Amaranthus_palmeri_hap2_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Solanum_lycopersicum_eccDNA.csv \
+    --genome Solanum_lycopersicum \
+    --outdir eccDNA_results/Solanum_lycopersicum \
+    -profile server
 ```
 
 ### 胡萝卜 (Daucus_carota)
 
 ```bash
-screen -S circdna_Artemisia_annua
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Artemisia_annua_eccDNA.csv \
-    --genome Artemisia_annua \
-    --outdir /data1/users/siyangming/eccDNA_results/Artemisia_annua \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Artemisia_annua_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Artemisia_annua_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Artemisia_annua_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Daucus_carota_eccDNA.csv \
+    --genome Daucus_carota \
+    --outdir eccDNA_results/Daucus_carota \
+    -profile server
 ```
 
 ### 向日葵 (Helianthus_annuus)
 
 ```bash
-screen -S circdna_Beta_vulgaris
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Beta_vulgaris_eccDNA.csv \
-    --genome Beta_vulgaris \
-    --outdir /data1/users/siyangming/eccDNA_results/Beta_vulgaris \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Beta_vulgaris_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Beta_vulgaris_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Beta_vulgaris_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Helianthus_annuus_eccDNA.csv \
+    --genome Helianthus_annuus \
+    --outdir eccDNA_results/Helianthus_annuus \
+    -profile server
 ```
 
 ### 本氏烟草 (Nicotiana_benthamiana)
 
 ```bash
-screen -S circdna_Cryptomeria_japonica
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Cryptomeria_japonica_eccDNA.csv \
-    --genome Cryptomeria_japonica \
-    --outdir /data1/users/siyangming/eccDNA_results/Cryptomeria_japonica \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Cryptomeria_japonica_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Cryptomeria_japonica_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Cryptomeria_japonica_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Nicotiana_benthamiana_eccDNA.csv \
+    --genome Nicotiana_benthamiana \
+    --outdir eccDNA_results/Nicotiana_benthamiana \
+    -profile server
 ```
 
 ### 甜菜 (Beta_vulgaris)
 
 ```bash
-screen -S circdna_Cynodon_dactylon
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Cynodon_dactylon_eccDNA.csv \
-    --genome Cynodon_dactylon \
-    --outdir /data1/users/siyangming/eccDNA_results/Cynodon_dactylon \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Cynodon_dactylon_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Cynodon_dactylon_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Cynodon_dactylon_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Beta_vulgaris_eccDNA.csv \
+    --genome Beta_vulgaris \
+    --outdir eccDNA_results/Beta_vulgaris \
+    -profile server
 ```
 
 ### 黑果枸杞 (Lycium_ruthenicum)
 
 ```bash
-screen -S circdna_Daucus_carota
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Daucus_carota_eccDNA.csv \
-    --genome Daucus_carota \
-    --outdir /data1/users/siyangming/eccDNA_results/Daucus_carota \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Daucus_carota_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Daucus_carota_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Daucus_carota_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Lycium_ruthenicum_eccDNA.csv \
+    --genome Lycium_ruthenicum \
+    --outdir eccDNA_results/Lycium_ruthenicum \
+    -profile server
 ```
 
-### 婆罗门参 (Tragopogon_porrifolius)
+### 婆罗门参 (Tragopogon_porrifolius) — hap1/hap2，hap1 为大基因组
+
+> 该物种有两个单倍型：`Tragopogon_porrifolius_hap1` 和 `Tragopogon_porrifolius_hap2`（后者将 `--genome` 换为 `Tragopogon_porrifolius_hap2` 即可）
+> hap1 参考序列长度超过 BAI 索引上限（约 512 Mb/染色体），**必须**附加 `-c circdna.nf/conf/large_genome.config`（启用 CSI 索引）；hap2 无需附加
 
 ```bash
-screen -S circdna_Helianthus_annuus
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Helianthus_annuus_eccDNA.csv \
-    --genome Helianthus_annuus \
-    --outdir /data1/users/siyangming/eccDNA_results/Helianthus_annuus \
+# hap1 (大基因组，需 CSI 索引)
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
+    --genome Tragopogon_porrifolius_hap1 \
+    --outdir eccDNA_results/Tragopogon_porrifolius \
     -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Helianthus_annuus_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Helianthus_annuus_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Helianthus_annuus_trace.txt \
-    -resume
+    -c circdna.nf/conf/large_genome.config
+
+# hap2
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
+    --genome Tragopogon_porrifolius_hap2 \
+    --outdir eccDNA_results/Tragopogon_porrifolius \
+    -profile server \
+    -c circdna.nf/conf/large_genome.config
 ```
 
 ### 狗牙根 (Cynodon_dactylon)
 
 ```bash
-screen -S circdna_Lycium_ruthenicum
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Lycium_ruthenicum_eccDNA.csv \
-    --genome Lycium_ruthenicum \
-    --outdir /data1/users/siyangming/eccDNA_results/Lycium_ruthenicum \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Lycium_ruthenicum_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Lycium_ruthenicum_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Lycium_ruthenicum_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Cynodon_dactylon_eccDNA.csv \
+    --genome Cynodon_dactylon \
+    --outdir eccDNA_results/Cynodon_dactylon \
+    -profile server
 ```
 
 ### 青蒿 (Artemisia_annua)
 
 ```bash
-screen -S circdna_Nicotiana_benthamiana
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Nicotiana_benthamiana_eccDNA.csv \
-    --genome Nicotiana_benthamiana \
-    --outdir /data1/users/siyangming/eccDNA_results/Nicotiana_benthamiana \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Nicotiana_benthamiana_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Nicotiana_benthamiana_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Nicotiana_benthamiana_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Artemisia_annua_eccDNA.csv \
+    --genome Artemisia_annua \
+    --outdir eccDNA_results/Artemisia_annua \
+    -profile server
 ```
 
-### 苋 (Amaranthus_palmeri)
+### 苋 (Amaranthus_palmeri) — hap1/hap2
+
+> 该物种有两个单倍型：`Amaranthus_palmeri_hap1` 和 `Amaranthus_palmeri_hap2`（后者将 `--genome` 换为 `Amaranthus_palmeri_hap2` 即可）
 
 ```bash
-screen -S circdna_Oryza_sativa
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Oryza_sativa_eccDNA.csv \
-    --genome Oryza_sativa \
-    --outdir /data1/users/siyangming/eccDNA_results/Oryza_sativa \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Oryza_sativa_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Oryza_sativa_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Oryza_sativa_trace.txt \
-    -resume
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Amaranthus_palmeri_eccDNA.csv \
+    --genome Amaranthus_palmeri_hap1 \
+    --outdir eccDNA_results/Amaranthus_palmeri \
+    -profile server
 ```
 
 ### 黑麦草 (Alopecurus_myosuroides) — 大基因组
 
 ```bash
-screen -S circdna_Solanum_lycopersicum
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Solanum_lycopersicum_eccDNA.csv \
-    --genome Solanum_lycopersicum \
-    --outdir /data1/users/siyangming/eccDNA_results/Solanum_lycopersicum \
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Alopecurus_myosuroides_eccDNA.csv \
+    --genome Alopecurus_myosuroides \
+    --outdir eccDNA_results/Alopecurus_myosuroides \
     -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Solanum_lycopersicum_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Solanum_lycopersicum_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Solanum_lycopersicum_trace.txt \
-    -resume
+    -c circdna.nf/conf/large_genome.config
 ```
 
-#### Tragopogon_porrifolius (婆罗门参) - 双单倍型
-
-**hap1（单倍型1）**：
+### 日本柳杉 (Cryptomeria_japonica) — 大基因组
 
 ```bash
-screen -S circdna_Tragopogon_porrifolius_hap1
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
-    --genome Tragopogon_porrifolius_hap1 \
-    --outdir /data1/users/siyangming/eccDNA_results/Tragopogon_porrifolius_hap1 \
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Cryptomeria_japonica_eccDNA.csv \
+    --genome Cryptomeria_japonica \
+    --outdir eccDNA_results/Cryptomeria_japonica \
     -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_hap1_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_hap1_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_hap1_trace.txt \
-    -resume
+    -c circdna.nf/conf/large_genome.config
 ```
 
-**hap2（单倍型2）**：
+### 小麦 (Triticum_aestivum) — 大基因组
 
 ```bash
-screen -S circdna_Tragopogon_porrifolius_hap2
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
-    --genome Tragopogon_porrifolius_hap2 \
-    --outdir /data1/users/siyangming/eccDNA_results/Tragopogon_porrifolius_hap2 \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_hap2_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_hap2_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Tragopogon_porrifolius_hap2_trace.txt \
-    -resume
-```
-
-#### Triticum_aestivum (小麦) ⚠️ 大基因组
-
-```bash
-screen -S circdna_Triticum_aestivum
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Triticum_aestivum_eccDNA.csv \
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Triticum_aestivum_eccDNA.csv \
     --genome Triticum_aestivum \
-    --outdir /data1/users/siyangming/eccDNA_results/Triticum_aestivum \
+    --outdir eccDNA_results/Triticum_aestivum \
     -profile server \
-    -c conf/large_genome.config \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Triticum_aestivum_trace.txt \
-    -resume
+    -c circdna.nf/conf/large_genome.config
 ```
 
 ## 常用操作
 
+### Screen 会话
+
 ```bash
-screen -S circdna_Triticum_aestivum
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
+# 查看所有 screen 会话
+screen -ls
+
+# 恢复会话
+screen -r eccdna
+
+# 新建会话
+screen -S <name>
+
+# 从当前会话分离 (保持进程运行)
+# Ctrl+A+D
+
+# 终止会话 (在会话内执行)
+exit
+
+# 远程 detached 会话 (会话在后台)
+screen -d -r eccdna
 ```
 
-### 4.2 使用screen
+### Pipeline 操作
 
 ```bash
-screen -S circdna_Triticum_aestivum
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-nextflow run main.nf \
-    --input samplesheets/circdna_Arabidopsis_thaliana_eccDNA.csv \
-    --genome Arabidopsis_thaliana \
-    --outdir /data1/users/siyangming/eccDNA_results/Arabidopsis_thaliana \
-    -profile server \
-    -with-report /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_report.html \
-    -with-timeline /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_timeline.html \
-    -with-trace /data1/users/siyangming/eccDNA_results/reports/Arabidopsis_thaliana_trace.txt \
-    -resume
-# Ctrl+A+D 退出screen
+# 查看运行日志
+tail -f circdna.nf/.nextflow.log
 
-tail -f /data1/users/siyangming/eccDNA_results/reports/<species>_trace.txt
+# 查看最近 run name
+head -3 circdna.nf/.nextflow.log
 
-screen -S circdna_<species>
+# 查看运行进度
+nextflow log <run_name> -f
+
+# 清理 work 目录 (解决 root 权限问题)
+docker run --rm -v $(pwd):/work -w /work alpine rm -rf circdna.nf/work/
+
+# 快速重启某个物种
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_<species>_eccDNA.csv \
+    --genome <species> \
+    --outdir eccDNA_results/<species> \
+    -profile server
+```
+
+
+## 大基因组说明
+
+染色体超过 512 Mb 的物种（如小麦、日本柳杉、黑麦草），BAI 索引无法表示超过 2^29 ≈ 536 Mb 的坐标，会导致 `samtools index` 或 `samtools sort --write-index` 报 `Numerical result out of range`。
+
+`large_genome.config` 做两件事：
+
+1. `params.use_csi_index = true` — 子工作流中 `SAMTOOLS_SORT_RE` 等进程的 `samtools sort --write-index` 改用 CSI 格式
+2. 精确覆盖全部 4 个 `SAMTOOLS_INDEX` 实例（`SAMTOOLS_INDEX_BAM` / `_FILTERED` / `_RE` / `BAM_MARKDUPLICATES_PICARD:SAMTOOLS_INDEX`）的 `ext.args = '-c'`，使 `samtools index` 输出 CSI
+
+用法：在大基因组物种的命令末尾加 `-c circdna.nf/conf/large_genome.config`，如下方黑麦草/小麦/日本柳杉/婆罗门参 hap1 所示。
+
+## 注意事项
+
+- **必须执行 `conda activate nextflow`**：`nextflow` 命令仅在 `nextflow` conda 环境中可用
+- **`-resume` 必须指定 run name**：使用 `-resume`（不带参数）会恢复最近一次运行，可能不是你想要的
+- **参考基因组文件**：需已存在于 `/data1/users/siyangming/PublicDB/reference/<species>/` 目录下
+- **样本数据**：需存在于 `eccDNA/` 目录
+- **大基因组**：染色体超过 512 Mb 的物种需加 `-c circdna.nf/conf/large_genome.config`，详见上方「大基因组说明」
+- **`circle_identifier`、`input_format`** 等参数已在 `circdna.nf/conf/server.config` 中配置，无需在命令中指定
+- **清理旧 work 目录**：root 权限文件需用 Docker 删除
+
+## 常见错误
+
+### `bash: nextflow: 未找到命令`
+
+```bash
+# 原因: 未激活 conda 环境
+# 解决:
 conda activate nextflow
-cd /data1/users/siyangming/nextflow_nf_core/circdna.nf/
+which nextflow  # 验证
+```
+
+### `-resume` 恢复了错误的运行
+
+```bash
+# 原因: -resume 不带参数时默认恢复最近一次运行
+# 解决: 指定 run name
+nextflow run ./circdna.nf/main.nf ... -resume <具体的run_name>
+
+# 查看可用的 run names
+head -10 circdna.nf/.nextflow.log | grep "Launching\|run name"
+```
+
+### `WARN: Access to undefined parameter 'fasta'`
+
+```bash
+# 已在 circdna.nf/workflows/circdna.nf#L37 修复:
+# 使用 params.containsKey('fasta') 检查而非直接访问
+# 如果仍出现警告，确保 --genome 参数正确指定
+```
+
+### `Remote resource not found: nextflow-io/circdna.nf`
+
+```bash
+# 原因: Nextflow 把 circdna.nf 误解析为 GitHub 远程仓库（org/repo 格式）
+# 因为没有路径前缀，被识别为远程仓库名
+
+# 错误命令:
+nextflow run ./circdna.nf/main.nf ...
+
+# 解决方案 1: 使用 ./ 前缀（推荐）
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_<species>_eccDNA.csv \
+    --genome <species> \
+    --outdir eccDNA_results/<species> \
+    -profile server
+
+# 解决方案 2: 使用绝对路径
+nextflow run /data1/users/siyangming/PlanteccDNADB/circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_<species>_eccDNA.csv \
+    ...
+
+# 解决方案 3: 进入 circdna.nf 目录内运行
+cd circdna.nf/
 nextflow run main.nf \
     --input samplesheets/circdna_<species>_eccDNA.csv \
     --genome <species> \
-    --outdir /data1/users/siyangming/eccDNA_results/<species> \
-    -profile server \
-    -resume
+    --outdir ../eccDNA_results/<species> \
+    -profile server
 ```
-
-## 7. 批量运行脚本
-
-```bash
-screen -S circdna_Triticum_aestivum
-cd nextflow_nf_core/circdna.nf/
-conda activate nextflow
-    nextflow run main.nf \
-        --input "samplesheets/circdna_${species}_eccDNA.csv" \
-        --genome "${genome}" \
-        --outdir "/data1/users/siyangming/eccDNA_results/${genome}" \
-        -profile server \
-        -c conf/large_genome.config \
-        -with-report "/data1/users/siyangming/eccDNA_results/reports/${genome}_report.html" \
-        -with-timeline "/data1/users/siyangming/eccDNA_results/reports/${genome}_timeline.html" \
-        -with-trace "/data1/users/siyangming/eccDNA_results/reports/${genome}_trace.txt" \
-        -resume
-    echo ""
-    echo "========================================="
-    echo "${genome} completed!"
-    echo "========================================="
-    echo ""
-done
-echo "All species processed!"
-```
-
-## 8. 注意事项
-
-1. **FASTA文件必需**：流程运行前确保FASTA文件已上传到 `/data1/users/siyangming/FASTA/`
-2. **样本数据路径**：样本表中指定的路径 `/data1/users/siyangming/eccDNA/` 需要确保数据存在于服务器上
-3. **资源配置**：服务器配置为128核CPU、503GB内存，`conf/server.config` 中已优化资源分配
-4. **容器选择**：使用 `-profile server`，启用Docker运行
-5. **大型基因组**：小麦(Triticum_aestivum)和日本柳杉(Cryptomeria_japonica)基因组较大，需要更多内存和时间
-6. **NCBI物种**：Alopecurus_myosuroides、Amaranthus_palmeri_hap1/hap2、Tragopogon_porrifolius_hap1/hap2等NCBI物种没有基因注释文件，流程可能无法进行基因注释相关的分析步骤
-7. **双单倍型物种**：Amaranthus_palmeri 和 Tragopogon_porrifolius 各有 hap1 和 hap2 两个基因组版本，共用同一份样本表，但需要分别运行（`--genome` 参数和 `--outdir` 路径不同）
-8. **多用户共享环境**：服务器为多人共享环境，同时运行超过2个流程可能导致线程资源耗尽（`pthread_create failed (EAGAIN)`），建议用户之间协调运行时间，或使用 `-resume` 参数错开运行
-9. **进程管理规范**：禁止使用 `Ctrl+Z` 暂停流程，暂停后的进程会持续占用内存和线程资源但不工作，导致资源泄漏。应使用 `Ctrl+C` 优雅退出，Nextflow 会保存状态以便后续恢复
-
-## 9. 僵尸进程清理指南
-
-当流程异常退出或被暂停后，可能会产生僵尸进程占用系统资源。
-
-### 9.1 检查僵尸进程
-
-```bash
-# 查看所有 Nextflow Java 进程
-ps aux | grep nextflow | grep -v grep
-
-# 查看进程状态（状态为 T/Tl 表示暂停/停止）
-ps aux | grep nextflow | grep -v grep | awk '{print $2, $8, $11}'
-```
-
-### 9.2 终止僵尸进程
-
-```bash
-# 终止所有 Nextflow Java 进程（请谨慎使用）
-kill -9 $(ps aux | grep nextflow | grep -v grep | awk '{print $2}')
-
-# 终止特定进程
-kill -9 <pid1> <pid2> <pid3>
-```
-
-### 9.3 验证清理结果
-
-```bash
-ps aux | grep nextflow | grep -v grep
-```
-
-> ⚠️ **注意**：终止进程前，请确认这些进程确实是僵尸进程，而非正在运行的流程。正常运行的流程状态应为 `R`（运行中）或 `S`（睡眠中）。
-
-## 10. 输出结果
-
-运行完成后，结果将保存在 `--outdir` 指定的目录中：
-
-```
-eccDNA_results/<species>/
-├── multiqc_report.html      # 综合质量报告
-├── pipeline_info/           # 流程信息
-├── bam/                     # BAM文件
-├── circle_map/              # Circle-Map结果
-├── circexplorer2/           # CIRCexplorer2结果
-└── fastqc/                  # FastQC报告

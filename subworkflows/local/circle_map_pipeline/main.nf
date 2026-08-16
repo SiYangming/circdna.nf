@@ -26,7 +26,7 @@ workflow CIRCLE_MAP_PIPELINE {
     SAMTOOLS_SORT_QNAME_CM (
         bam_sorted,
         ch_fasta_fai,
-        'bai'
+        params.use_csi_index ? 'csi' : 'bai'
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_QNAME_CM.out.versions_samtools)
 
@@ -38,7 +38,7 @@ workflow CIRCLE_MAP_PIPELINE {
     SAMTOOLS_SORT_RE (
         CIRCLEMAP_READEXTRACTOR.out.bam,
         ch_fasta_fai,
-        'bai'
+        params.use_csi_index ? 'csi' : 'bai'
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_RE.out.versions_samtools)
 
@@ -47,11 +47,14 @@ workflow CIRCLE_MAP_PIPELINE {
     ch_re_sorted_bam = SAMTOOLS_SORT_RE.out.bam
     ch_re_sorted_bai = SAMTOOLS_SORT_RE.out.index
 
+    ch_bed = channel.empty()
+
     if (run_repeats) {
         CIRCLEMAP_REPEATS (
             ch_re_sorted_bam.join(ch_re_sorted_bai)
         )
         ch_versions = ch_versions.mix(CIRCLEMAP_REPEATS.out.versions)
+        ch_bed = ch_bed.mix(CIRCLEMAP_REPEATS.out.bed)
     }
 
     if (run_realign) {
@@ -62,8 +65,10 @@ workflow CIRCLE_MAP_PIPELINE {
             fasta_fai.map { _meta, fasta, _fai -> fasta }
         )
         ch_versions = ch_versions.mix(CIRCLEMAP_REALIGN.out.versions)
+        ch_bed = ch_bed.mix(CIRCLEMAP_REALIGN.out.bed)
     }
 
     emit:
-    ch_versions.map { v -> v }
+    bed = ch_bed
+    versions = ch_versions.map { v -> v }
 }
