@@ -14,12 +14,12 @@
   - [x] 1.4 验证合并结果：`git status` 无冲突标记；`nextflow config -profile test_local` 可解析；`python -m py_compile bin/check_samplesheet.py` 通过
   - [x] 1.5 提交合并（commit 33445d1）
 
-- [ ] Task 2: 准备长读长测试配置与样本表
-  - [ ] 2.1 更新 `conf/test_nanopore_lr.config`：`long_read_identifier = 'cresil,fled,flye,eccfinder'`，输入指向服务器内置 `ont_eccdna_smoke.fastq.gz`，fasta 指向 `testdatasets/reference/genome.fa`
-  - [ ] 2.2 更新 `conf/test_pacbio_lr.config`：`long_read_identifier = 'cresil,fled,flye,eccfinder'`，输入指向服务器内置 `pacbio_eccdna_smoke.fastq.gz`
-  - [ ] 2.3 创建/更新长读测试样本表 `samplesheets/test_ont_lr.csv` 与 `samplesheets/test_pacbio_lr.csv`（列：sample,fastq_1,fastq_2[,platform,protocol]），路径使用服务器绝对路径
-  - [ ] 2.4 本地运行 `nextflow config -profile test_nanopore_lr` 与 `nextflow config -profile test_pacbio_lr` 验证参数解析
-  - [ ] 2.5 提交本任务改动
+- [x] Task 2: 准备长读长测试配置与样本表
+  - [x] 2.1 更新 `conf/test_nanopore_lr.config`：`long_read_identifier = 'cresil,fled,flye,eccfinder'`，输入指向服务器内置 `ont_eccdna_smoke.fastq.gz`，fasta 指向拟南芥参考基因组（PublicDB）
+  - [x] 2.2 更新 `conf/test_pacbio_lr.config`：`long_read_identifier = 'cresil,fled,flye,eccfinder'`，输入指向服务器内置 `pacbio_eccdna_smoke.fastq.gz`，fasta 指向水稻参考基因组（PublicDB）
+  - [x] 2.3 创建 `samplesheets/test_ont_lr.csv` 与更新 `samplesheets/test_pacbio_lr.csv`（列：sample,fastq_1,fastq_2），路径使用服务器绝对路径
+  - [x] 2.4 本地运行 `nextflow config -profile test_nanopore_lr` 与 `test_pacbio_lr` 验证参数解析；修复 check_samplesheet.py 长读输出分支顺序 bug（commit 07664d8）
+  - [x] 2.5 提交本任务改动（commit 07664d8）
 
 - [ ] Task 3: 推送合并结果并同步到服务器
   - [ ] 3.1 推送 `circdnalr` 到 `origin/circdnalr`
