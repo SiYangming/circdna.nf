@@ -11,7 +11,7 @@ workflow REFERENCE_MODE {
     reads          // channel: [ val(meta), [ reads ] ]
     bwa_index      // channel: [ "bwa_index", index_dir ]
     fasta_meta     // channel: [ val(meta), path(fasta) ]
-    repeat_gff     // channel: [ path(repeat_gff) ] or channel.empty()
+    _repeat_gff     // channel: [ path(repeat_gff) ] or channel.empty()
 
     main:
     ch_versions = channel.empty()
@@ -28,7 +28,7 @@ workflow REFERENCE_MODE {
         .join(BAM_PREPROCESSING.out.bam_sorted_bai)
         .map { meta, bam, bai -> [meta, bam, bai] }
 
-    ch_fai_only = BAM_PREPROCESSING.out.fai.map { meta, fai -> fai }
+    ch_fai_only = BAM_PREPROCESSING.out.fai.map { _meta, fai -> fai }
 
     MOSDEPTH (
         ch_bam_bai,

@@ -5,10 +5,12 @@ workflow FLYE_PIPELINE {
     reads   // channel: [ val(meta), fastq ]
 
     main:
+    ch_versions = channel.empty()
+
     FLYE ( reads )
-        .assembly
-        .set { contigs }
+    ch_versions = ch_versions.mix(FLYE.out.versions)
 
     emit:
-    contigs    // channel: [ val(meta), assembly.fasta ]
+    assembly = FLYE.out.assembly    // channel: [ val(meta), assembly.fasta ]
+    versions = ch_versions
 }

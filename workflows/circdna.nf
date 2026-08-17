@@ -173,8 +173,8 @@ workflow CIRCDNA {
             LONG_READ_FILTERING_CRESIL (
                 ch_cresil_candidates
             )
-            .filtered_candidates
-            .set { ch_filtered_cresil }
+            ch_versions = ch_versions.mix(CRESIL_PIPELINE.out.versions)
+            ch_versions = ch_versions.mix(LONG_READ_FILTERING_CRESIL.out.versions)
         }
 
         if (run_fled) {
@@ -184,23 +184,21 @@ workflow CIRCDNA {
                 ch_preprocessed_fastq,
                 ch_fasta
             )
-            .eccdna_candidates
+            .junctions
             .set { ch_fled_candidates }
 
             LONG_READ_FILTERING_FLED (
                 ch_fled_candidates
             )
-            .filtered_candidates
-            .set { ch_filtered_fled }
+            ch_versions = ch_versions.mix(FLED_PIPELINE.out.versions)
+            ch_versions = ch_versions.mix(LONG_READ_FILTERING_FLED.out.versions)
         }
 
         if (run_flye) {
             FLYE_PIPELINE (
                 ch_preprocessed_fastq
             )
-            .contigs
-            .map { meta, file -> [ meta, file ] }
-            .set { ch_flye_contigs }
+            ch_versions = ch_versions.mix(FLYE_PIPELINE.out.versions)
         }
 
         if (run_eccfinder) {
@@ -208,9 +206,6 @@ workflow CIRCDNA {
                 ch_preprocessed_fastq,
                 ch_fasta
             )
-            .eccdna_candidates
-            .set { ch_eccfinder_candidates }
-
             ch_versions = ch_versions.mix(ECCFINDER_PIPELINE.out.versions)
         }
 

@@ -20,6 +20,10 @@ output:
       type: channel
       description: |
         Channel containing [meta, filtered_bed]
+  - versions:
+      type: channel
+      description: |
+        Channel containing software versions
 
 authors:
   - "@SiYangming"

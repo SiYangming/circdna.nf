@@ -11,13 +11,12 @@ workflow FLED_PIPELINE {
         .set { fled_input }
 
     FLED (
-        fled_input.map { meta, fastq, fasta -> [ meta, fastq ] },
-        fled_input.map { meta, fastq, fasta -> fasta }
+        fled_input.map { meta, fastq, _fasta -> [ meta, fastq ] },
+        fled_input.map { _meta, _fastq, fasta -> fasta }
     )
-
-    FLED.out.junctions
-        .set { eccdna_candidates }
+    ch_versions = FLED.out.versions
 
     emit:
-    eccdna_candidates    // channel: [ val(meta), <prefix>.fled_junctions.txt ]
+    junctions = FLED.out.junctions    // channel: [ val(meta), <prefix>.fled_junctions.txt ]
+    versions  = ch_versions
 }

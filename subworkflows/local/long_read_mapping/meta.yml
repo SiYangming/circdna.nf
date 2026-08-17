@@ -23,6 +23,10 @@ output:
       type: channel
       description: |
         Channel containing [meta, bam, bai]
+  - versions:
+      type: channel
+      description: |
+        Channel containing software versions
 
 authors:
   - "@SiYangming"

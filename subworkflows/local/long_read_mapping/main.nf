@@ -8,6 +8,8 @@ workflow LONG_READ_MAPPING {
     genome_fasta    // channel: reference genome file(s)
 
     main:
+    ch_versions = channel.empty()
+
     // For MINIMAP2_ALIGN: 2-tuple [ val(meta), path(reference) ]
     genome_fasta
         .map { fasta -> [[id: 'genome'], fasta] }
@@ -32,14 +34,17 @@ workflow LONG_READ_MAPPING {
     )
         .bam
         .set { aligned_bam }
+    ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
 
     SAMTOOLS_SORT ( aligned_bam, genome_fasta_fai, channel.value('bai') )
         .bam
         .set { sorted_bam }
+    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions)
 
     SAMTOOLS_INDEX ( sorted_bam )
         .index
         .set { bam_index }
+    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
     // Combine sorted bam with its index into 3-tuple [ val(meta), bam, bai ]
     sorted_bam
@@ -47,5 +52,6 @@ workflow LONG_READ_MAPPING {
         .set { mapped_reads }
 
     emit:
-    mapped_reads    // channel: [ val(meta), sorted.bam, bai ]
+    mapped_reads = mapped_reads    // channel: [ val(meta), sorted.bam, bai ]
+    versions     = ch_versions
 }

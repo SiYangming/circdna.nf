@@ -23,10 +23,10 @@ output:
       type: channel
       description: |
         Channel containing [meta, eccdna_final.txt]
-  - annotated_eccdna:
+  - versions:
       type: channel
       description: |
-        Channel containing [meta, annotated.txt]
+        Channel containing software versions
 
 authors:
   - "@SiYangming"

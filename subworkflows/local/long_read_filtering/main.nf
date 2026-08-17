@@ -6,16 +6,20 @@ workflow LONG_READ_FILTERING {
     eccdna_candidates    // channel: [ val(meta), bed_file ]
 
     main:
+    ch_versions = channel.empty()
+
     // 1. Filter by minimum read support
     FILTER_ECCDNA_BY_SUPPORT ( eccdna_candidates, params.min_read_support )
         .filtered
         .set { support_filtered }
+    ch_versions = ch_versions.mix(FILTER_ECCDNA_BY_SUPPORT.out.versions)
 
     // 2. Blacklist filtering
     if ( params.blacklist_bed ) {
         BEDTOOLS_INTERSECT ( support_filtered, file(params.blacklist_bed) )
             .non_overlapping_bed
             .set { filtered_candidates }
+        ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions)
     } else {
         support_filtered
             .set { filtered_candidates }
@@ -26,8 +30,10 @@ workflow LONG_READ_FILTERING {
         BEDTOOLS_INTERSECT ( filtered_candidates, file(params.repeats_bed) )
             .non_overlapping_bed
             .set { filtered_candidates }
+        ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions)
     }
 
     emit:
-    filtered_candidates    // channel: [ val(meta), filtered_bed ]
+    filtered_candidates = filtered_candidates    // channel: [ val(meta), filtered_bed ]
+    versions            = ch_versions
 }

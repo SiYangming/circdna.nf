@@ -17,10 +17,14 @@ input:
         Channel containing [meta, fastq]
 
 output:
-  - contigs:
+  - assembly:
       type: channel
       description: |
         Channel containing [meta, assembly.fasta]
+  - versions:
+      type: channel
+      description: |
+        Channel containing software versions
 
 authors:
   - "@SiYangming"

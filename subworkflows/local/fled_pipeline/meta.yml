@@ -10,19 +10,23 @@ subworkflows:
       description: "Run FLED eccDNA identification"
 
 input:
-  - mapped_reads:
+  - reads:
       type: channel
       description: |
-        Channel containing [meta, bam, bai]
+        Channel containing [meta, fastq]
   - genome_fasta:
       type: file
       description: Reference genome FASTA file
 
 output:
-  - eccdna_candidates:
+  - junctions:
       type: channel
       description: |
-        Channel containing [meta, circles.bed]
+        Channel containing [meta, <prefix>.fled_junctions.txt]
+  - versions:
+      type: channel
+      description: |
+        Channel containing software versions
 
 authors:
   - "@SiYangming"
