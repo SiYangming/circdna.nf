@@ -39,6 +39,8 @@ process CRESIL_IDENTIFY {
         awk 'NR%4==1 {print ">" substr(\$0,2)} NR%4==2 {print}' "\${READS_IN}" > reads_input.fasta
         READS_IN="reads_input.fasta"
     fi
+    # pysam.FastaFile requires a .fai index next to the reads file.
+    samtools faidx "\${READS_IN}"
 
     if [[ "${fasta}" == *.gz ]]; then
         zcat "${fasta}" > reference.fa
