@@ -32,6 +32,7 @@ RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g; s|security.debian.org|mirrors
         samtools \
         bedtools \
         seqtk \
+        procps \
         libcurl4 \
         libssl3 \
         zlib1g \
