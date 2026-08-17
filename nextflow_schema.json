@@ -142,6 +142,14 @@
                     "help_text": "Filter out eccDNA candidates with fewer supporting reads than this threshold.",
                     "fa_icon": "fas fa-filter"
                 },
+                "ccs_chunk_size": {
+                    "type": "number",
+                    "default": 2,
+                    "minimum": 0.1,
+                    "description": "Chunk size in GB for PBCCS (ccs) chunked processing of PacBio subreads BAM.",
+                    "help_text": "Subreads BAM files larger than this size are split into multiple chunks for parallel HiFi generation with PBCCS, then merged with samtools cat. Default 2 GB.",
+                    "fa_icon": "fas fa-cut"
+                },
                 "blacklist_bed": {
                     "type": "string",
                     "format": "file-path",

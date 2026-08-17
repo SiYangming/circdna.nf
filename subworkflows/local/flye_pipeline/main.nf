@@ -1,4 +1,4 @@
-include { FLYE } from '../../../modules/local/flye/main'
+include { FLYE } from '../../../modules/nf-core/flye/main'
 
 workflow FLYE_PIPELINE {
     take:
@@ -7,10 +7,13 @@ workflow FLYE_PIPELINE {
     main:
     ch_versions = channel.empty()
 
-    FLYE ( reads )
-    ch_versions = ch_versions.mix(FLYE.out.versions)
+    // nf-core FLYE 需要独立的 mode 输入（--pacbio-hifi / --nano-hq）
+    ch_flye_mode = reads.map { meta, _reads -> meta.platform == "pacbio" ? "--pacbio-hifi" : "--nano-hq" }
+
+    FLYE ( reads, ch_flye_mode )
+    ch_versions = ch_versions.mix(FLYE.out.versions_flye)
 
     emit:
-    assembly = FLYE.out.assembly    // channel: [ val(meta), assembly.fasta ]
+    assembly = FLYE.out.fasta    // channel: [ val(meta), *.assembly.fasta.gz ]
     versions = ch_versions
 }

@@ -1,4 +1,5 @@
-include { BEDTOOLS_INTERSECT } from '../../../modules/local/bedtools/intersect/main'
+include { BEDTOOLS_INTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
+include { BEDTOOLS_INTERSECT as BEDTOOLS_INTERSECT_REPEATS } from '../../../modules/nf-core/bedtools/intersect/main'
 include { FILTER_ECCDNA_BY_SUPPORT } from '../../../modules/local/filter_eccdna_by_support/main'
 
 workflow LONG_READ_FILTERING {
@@ -16,10 +17,13 @@ workflow LONG_READ_FILTERING {
 
     // 2. Blacklist filtering
     if ( params.blacklist_bed ) {
-        BEDTOOLS_INTERSECT ( support_filtered, file(params.blacklist_bed) )
-            .non_overlapping_bed
+        BEDTOOLS_INTERSECT (
+            support_filtered.map { meta, bed -> [ meta, bed, file(params.blacklist_bed) ] },
+            [[:], []]
+        )
+            .intersect
             .set { filtered_candidates }
-        ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions)
+        ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions_bedtools)
     } else {
         support_filtered
             .set { filtered_candidates }
@@ -27,10 +31,13 @@ workflow LONG_READ_FILTERING {
 
     // 3. Repeats filtering
     if ( params.repeats_bed ) {
-        BEDTOOLS_INTERSECT ( filtered_candidates, file(params.repeats_bed) )
-            .non_overlapping_bed
+        BEDTOOLS_INTERSECT_REPEATS (
+            filtered_candidates.map { meta, bed -> [ meta, bed, file(params.repeats_bed) ] },
+            [[:], []]
+        )
+            .intersect
             .set { filtered_candidates }
-        ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions)
+        ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT_REPEATS.out.versions_bedtools)
     }
 
     emit:

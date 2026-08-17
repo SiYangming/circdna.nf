@@ -1,8 +1,0 @@
-name: chopper
-channels:
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - chopper>=0.7.0
-  - python>=3.8
