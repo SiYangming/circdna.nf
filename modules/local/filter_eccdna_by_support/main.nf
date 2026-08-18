@@ -15,8 +15,9 @@ process FILTER_ECCDNA_BY_SUPPORT {
 
     script:
     def ext = input_file.getExtension() ?: 'txt'
+    def bin_script = "${projectDir}/bin/filter_by_read_support.py"
     """
-    python \${projectDir}/bin/filter_by_read_support.py \\
+    python ${bin_script} \\
         ${input_file} \\
         ${meta.id}.filtered.${ext} \\
         --min_support ${min_support}
