@@ -30,7 +30,7 @@ include { FLED_PIPELINE                 } from '../subworkflows/local/fled_pipel
 include { FLYE_PIPELINE                 } from '../subworkflows/local/flye_pipeline/main'
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_CRESIL } from '../subworkflows/local/long_read_filtering/main'
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_FLED   } from '../subworkflows/local/long_read_filtering/main'
-include { ECCFINDER_PIPELINE            } from '../subworkflows/local/eccfinder_pipeline/main'
+include { ECC_FINDER_PIPELINE           } from '../subworkflows/local/ecc_finder_pipeline/main'
 include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
 include { ECCDNA_MODE                   } from '../subworkflows/local/eccdna_mode/main'
 
@@ -202,11 +202,19 @@ workflow CIRCDNA {
         }
 
         if (run_eccfinder) {
-            ECCFINDER_PIPELINE (
-                ch_preprocessed_fastq,
-                ch_fasta
+            def eccfinder_mode = params.eccfinder_mode
+            def run_map = eccfinder_mode in ['map', 'both']
+            def run_asm = eccfinder_mode in ['asm', 'both']
+
+            ECC_FINDER_PIPELINE (
+                ch_preprocessed_fastq,   // reads (single-end long reads)
+                channel.empty(),          // bwa_index — not used for long-read
+                ch_fasta,                 // reference genome
+                run_map,
+                run_asm,
+                params.protocol           // 'ont' | 'pacbio'
             )
-            ch_versions = ch_versions.mix(ECCFINDER_PIPELINE.out.versions)
+            ch_versions = ch_versions.mix(ECC_FINDER_PIPELINE.out.versions)
         }
 
     } else {
