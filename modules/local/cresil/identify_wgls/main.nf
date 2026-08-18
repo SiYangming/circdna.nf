@@ -35,14 +35,21 @@ process CRESIL_IDENTIFY_WGLS {
         ${trim_arg} \\
         $args
 
-    mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+    # Output lands in the parent dir of the -trim input (here: the workdir).
+    # Fall back to cresil_result if the layout differs between CRESIL versions.
+    if [ -f eccDNA_final.txt ]; then
+        mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
+    elif [ -f cresil_result/eccDNA_final.txt ]; then
+        mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+    else
+        echo "CRESIL identify_wgls output not found" >&2 && exit 1
+    fi
     """
 
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir -p cresil_result
-    touch cresil_result/eccDNA_final.txt
-    mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+    touch eccDNA_final.txt
+    mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
     """
 }
