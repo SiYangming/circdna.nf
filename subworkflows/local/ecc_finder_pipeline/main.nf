@@ -23,13 +23,21 @@ workflow ECC_FINDER_PIPELINE {
     ch_versions    = channel.empty()
     all_candidates = channel.empty()
 
+    // Normalize the reference channel to [ meta, fasta ] — workflows/circdna.nf
+    // passes a bare file channel.
+    ch_ref = fasta_meta.map { it ->
+        (it instanceof List && it.size() == 2 && it[0] instanceof Map)
+            ? it
+            : [ [id: 'genome'], it instanceof List ? it[0] : it ]
+    }
+
     if (platform in ['ont', 'pacbio']) {
         // --- Long-read branch (single-end FASTQ) ---
         ch_query = reads.map { meta, r -> [meta, r instanceof List ? r[0] : r] }
 
         if (run_map) {
             // map-ont builds the minimap2 index internally from the reference fasta.
-            ECC_FINDER_MAP_ONT ( fasta_meta, ch_query, fasta_meta )
+            ECC_FINDER_MAP_ONT ( ch_ref, ch_query, ch_ref )
             all_candidates = all_candidates.mix(ECC_FINDER_MAP_ONT.out.csv)
             ch_versions    = ch_versions.mix(ECC_FINDER_MAP_ONT.out.versions_ecc_finder)
         }
@@ -46,7 +54,7 @@ workflow ECC_FINDER_PIPELINE {
         ch_r2 = reads.map { meta, r -> [meta, r instanceof List ? r[1] : r[0]] }
 
         if (run_map) {
-            ECC_FINDER_MAP_SR ( bwa_index, ch_r1, ch_r2, fasta_meta )
+            ECC_FINDER_MAP_SR ( bwa_index, ch_r1, ch_r2, ch_ref )
             all_candidates = all_candidates.mix(ECC_FINDER_MAP_SR.out.csv)
             ch_versions    = ch_versions.mix(ECC_FINDER_MAP_SR.out.versions_ecc_finder)
         }
