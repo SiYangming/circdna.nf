@@ -57,6 +57,7 @@ process CRESIL_IDENTIFY_WGLS {
     patch_wgls.py cresil_patch/cresil/cli/identify_wgls.py
     export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
 
+    set +e
     cresil identify_wgls \\
         -t ${task.cpus} \\
         -r ${mmi} \\
@@ -65,6 +66,20 @@ process CRESIL_IDENTIFY_WGLS {
         -fq \$READS_IN \\
         ${trim_arg} \\
         $args
+    EXIT_CODE=\$?
+    set -e
+    # CRESIL aborts (exit != 0) when no eccDNA passes the filters. Treat
+    # that as a valid empty result so the pipeline can continue.
+    if [ \$EXIT_CODE -ne 0 ]; then
+        if [ -f eccDNA_final.txt ]; then
+            :
+        elif [ -f cresil_result/eccDNA_final.txt ]; then
+            :
+        else
+            echo "# no eccDNA detected by CRESIL identify_wgls" > ${prefix}.eccDNA_final.txt
+            exit 0
+        fi
+    fi
 
     # Output lands in the parent dir of the -trim input (here: the workdir).
     # Fall back to cresil_result if the layout differs between CRESIL versions.
