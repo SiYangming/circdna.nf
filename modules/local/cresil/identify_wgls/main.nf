@@ -26,12 +26,33 @@ process CRESIL_IDENTIFY_WGLS {
     prefix = task.ext.prefix ?: "${meta.id}"
     def trim_arg = trim ? "-trim ${trim}" : ''
     """
+    # CRESIL determines input types by file extension and does not handle .gz,
+    # so decompress gzipped reference/reads to plain files when needed.
+    if [[ "${fasta}" == *.gz ]]; then
+        zcat "${fasta}" > reference_wgls.fa
+        FASTA_IN="reference_wgls.fa"
+    else
+        FASTA_IN="${fasta}"
+    fi
+    if [[ "${fai}" == *.gz ]]; then
+        zcat "${fai}" > reference_wgls.fa.fai
+        FAI_IN="reference_wgls.fa.fai"
+    else
+        FAI_IN="${fai}"
+    fi
+    if [[ "${reads}" == *.gz ]]; then
+        zcat "${reads}" > reads_input_wgls.fastq
+        READS_IN="reads_input_wgls.fastq"
+    else
+        READS_IN="${reads}"
+    fi
+
     cresil identify_wgls \\
         -t ${task.cpus} \\
         -r ${mmi} \\
-        -fa ${fasta} \\
-        -fai ${fai} \\
-        -fq ${reads} \\
+        -fa \$FASTA_IN \\
+        -fai \$FAI_IN \\
+        -fq \$READS_IN \\
         ${trim_arg} \\
         $args
 
