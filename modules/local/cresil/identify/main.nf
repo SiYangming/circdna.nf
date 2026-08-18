@@ -52,22 +52,32 @@ process CRESIL_IDENTIFY {
         FAIIN="${fai}"
     fi
 
-    cresil identify \\
+    # CRESIL aborts (exit != 0) when no eccDNA passes the filters. Treat
+    # that as a valid empty result so the pipeline can continue.
+    if ! cresil identify \\
         -t ${task.cpus} \\
         -fa \${FASTAIN} \\
         -fai \${FAIIN} \\
         -fq \${READS_IN} \\
         ${trim_arg} \\
         $args
+    then
+        if [ ! -f eccDNA_final.txt ] && [ ! -f cresil_result/eccDNA_final.txt ]; then
+            echo "# no eccDNA detected by CRESIL identify" > ${prefix}.eccDNA_final.txt
+            SKIP_MV=1
+        fi
+    fi
 
     # Output lands in the parent dir of the -trim input (here: the workdir).
-    # Fall back to cresil_run if the layout differs between CRESIL versions.
-    if [ -f eccDNA_final.txt ]; then
-        mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
-    elif [ -f cresil_result/eccDNA_final.txt ]; then
-        mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
-    else
-        echo "CRESIL identify output not found" >&2 && exit 1
+    # Fall back to cresil_result if the layout differs between CRESIL versions.
+    if [ "\${SKIP_MV:-}" != "1" ]; then
+        if [ -f eccDNA_final.txt ]; then
+            mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
+        elif [ -f cresil_result/eccDNA_final.txt ]; then
+            mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+        else
+            echo "CRESIL identify output not found" >&2 && exit 1
+        fi
     fi
     """
 
