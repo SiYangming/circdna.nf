@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Patch CRESIL identify_wgls strand comparison bug.
 
 CRESIL identify_wgls compares trim_sup['strand'] to '+'/'-' but CRESIL
