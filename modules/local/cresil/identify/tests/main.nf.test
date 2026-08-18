@@ -12,19 +12,19 @@ nextflow_process {
 
     test("test-identify") {
 
-        options "-c /Users/siyangming/nextflow_nf_core/bio.nf/modules/cresil/identify/tests/nextflow.config"
+        options "-c ${projectDir}/modules/local/cresil/identify/tests/nextflow.config"
 
         when {
             process {
                 """
                 input[0] = [ [ id:'ref' ], // meta
-                             file("\${projectDir}/modules/cresil/testdata/ref.fa", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/ref.fa", checkIfExists: true) ]
                 input[1] = [ [ id:'ref' ], // meta2
-                             file("\${projectDir}/modules/cresil/testdata/ref.fa.fai", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/ref.fa.fai", checkIfExists: true) ]
                 input[2] = [ [ id:'test' ], // meta3
-                             file("\${projectDir}/modules/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
                 input[3] = [ [ id:'test' ], // meta4
-                             file("\${projectDir}/modules/cresil/testdata/trim.txt", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/trim.txt", checkIfExists: true) ]
                 """
             }
         }
@@ -46,13 +46,13 @@ nextflow_process {
             process {
                 """
                 input[0] = [ [ id:'ref' ], // meta
-                             file("\${projectDir}/modules/cresil/testdata/ref.fa", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/ref.fa", checkIfExists: true) ]
                 input[1] = [ [ id:'ref' ], // meta2
-                             file("\${projectDir}/modules/cresil/testdata/ref.fa.fai", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/ref.fa.fai", checkIfExists: true) ]
                 input[2] = [ [ id:'test' ], // meta3
-                             file("\${projectDir}/modules/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
                 input[3] = [ [ id:'test' ], // meta4
-                             file("\${projectDir}/modules/cresil/testdata/trim.txt", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/cresil/testdata/trim.txt", checkIfExists: true) ]
                 """
             }
         }
