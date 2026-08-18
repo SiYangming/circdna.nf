@@ -37,6 +37,7 @@ process CRESIL_ANNOTATE {
     mkdir -p cresil_patch
     cp -r \$(python -c "import cresil, os; print(os.path.dirname(cresil.__file__))") cresil_patch/cresil
     patch_cresil.py cresil_patch/cresil/cli/annotate.py "value['eccdna_status']" "value['consensus_status']"
+    patch_cresil.py cresil_patch/cresil/cli/annotate.py "df_identify[df_identify['id'] == id_]['eccdna_status']" "df_identify[df_identify['id'] == id_]['consensus_status']"
     export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
 
     cresil annotate \\
