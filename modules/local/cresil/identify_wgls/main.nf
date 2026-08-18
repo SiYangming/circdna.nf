@@ -54,7 +54,7 @@ process CRESIL_IDENTIFY_WGLS {
     mkdir -p cresil_patch/cresil/cli
     cp \$(python -c "import cresil.cli.identify_wgls as m; print(m.__file__)") cresil_patch/cresil/cli/identify_wgls.py
     sed -i "s/trim_sup\['strand'\] == '+'/trim_sup['strand'] == 1/g; s/trim_sup\['strand'\] == '-'/trim_sup['strand'] == -1/g" cresil_patch/cresil/cli/identify_wgls.py
-    export PYTHONPATH=\$PWD/cresil_patch:\$PYTHONPATH
+    export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
 
     cresil identify_wgls \\
         -t ${task.cpus} \\
