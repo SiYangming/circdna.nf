@@ -10,6 +10,7 @@ process FLED {
     input:
     tuple val(meta), path(fastq)
     path genome_fasta
+    path genome_fai          // optional: pre-built .fai index to avoid rebuilding
 
     output:
     tuple val(meta), path("${prefix}.fled_junctions.txt"), emit: junctions
@@ -32,8 +33,13 @@ process FLED {
     else
         GENOME="${genome_fasta}"
     fi
-    if [ ! -f \${GENOME}.fai ]; then
-        samtools faidx \${GENOME}
+
+    # Reuse an externally-provided .fai when available (avoids rebuilding the
+    # index already computed for e.g. cresil identify); otherwise build it.
+    if [ -n "${genome_fai}" ] && [ -f "${genome_fai}" ]; then
+        cp "${genome_fai}" "\${GENOME}.fai"
+    elif [ ! -f "\${GENOME}.fai" ]; then
+        samtools faidx "\${GENOME}"
     fi
 
     if [[ "${fastq}" == *.gz ]]; then
