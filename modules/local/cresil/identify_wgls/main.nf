@@ -49,10 +49,11 @@ process CRESIL_IDENTIFY_WGLS {
 
     # Patch: identify_wgls compares strand to '+'/'-' but trim.txt stores
     # numeric -1/1 (mappy convention), so the breakpoint split finds 0 reads
-    # and genomecov returns empty. Copy the module into a writable dir and
-    # shadow it via PYTHONPATH instead of patching read-only site-packages.
-    mkdir -p cresil_patch/cresil/cli
-    cp \$(python -c "import cresil.cli.identify_wgls as m; print(m.__file__)") cresil_patch/cresil/cli/identify_wgls.py
+    # and genomecov returns empty. Copy the whole cresil package into a
+    # writable dir, patch the comparison, and shadow it via PYTHONPATH
+    # (site-packages is read-only in the container).
+    mkdir -p cresil_patch
+    cp -r \$(python -c "import cresil, os; print(os.path.dirname(cresil.__file__))") cresil_patch/cresil
     patch_wgls.py cresil_patch/cresil/cli/identify_wgls.py
     export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
 
