@@ -68,22 +68,22 @@ process CRESIL_IDENTIFY_WGLS {
         ${trim_arg} \\
         $args
     then
-        if [ -f eccDNA_final.txt ] || [ -f cresil_result/eccDNA_final.txt ]; then
-            :
-        else
+        if [ ! -f eccDNA_final.txt ] && [ ! -f cresil_result/eccDNA_final.txt ]; then
             echo "# no eccDNA detected by CRESIL identify_wgls" > ${prefix}.eccDNA_final.txt
-            exit 0
+            SKIP_MV=1
         fi
     fi
 
     # Output lands in the parent dir of the -trim input (here: the workdir).
     # Fall back to cresil_result if the layout differs between CRESIL versions.
-    if [ -f eccDNA_final.txt ]; then
-        mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
-    elif [ -f cresil_result/eccDNA_final.txt ]; then
-        mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
-    else
-        echo "CRESIL identify_wgls output not found" >&2 && exit 1
+    if [ "\${SKIP_MV:-}" != "1" ]; then
+        if [ -f eccDNA_final.txt ]; then
+            mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
+        elif [ -f cresil_result/eccDNA_final.txt ]; then
+            mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+        else
+            echo "CRESIL identify_wgls output not found" >&2 && exit 1
+        fi
     fi
     """
 
