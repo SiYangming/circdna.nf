@@ -31,6 +31,14 @@ process CRESIL_ANNOTATE {
     def gene_arg = gene_bed && gene_bed.exists() ? "-gb ${gene_bed}" : ''
 
     """
+    # Patch: CRESIL 1.2.1 identify writes `consensus_status` but annotate
+    # reads `eccdna_status`, crashing with KeyError. Copy the package into a
+    # writable dir, patch the column name, and shadow it via PYTHONPATH.
+    mkdir -p cresil_patch
+    cp -r \$(python -c "import cresil, os; print(os.path.dirname(cresil.__file__))") cresil_patch/cresil
+    patch_cresil.py cresil_patch/cresil/cli/annotate.py "value['eccdna_status']" "value['consensus_status']"
+    export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
+
     cresil annotate \\
         -t ${task.cpus} \\
         -identify ${identify_table} \\
