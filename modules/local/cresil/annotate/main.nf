@@ -48,6 +48,12 @@ process CRESIL_ANNOTATE {
             *variant*) mv "\$f" "${prefix}_variant.annotate.txt" ;;
         esac
     done
+
+    # Ensure all four annotation files exist: CRESIL skips categories that
+    # have no hits, but downstream modules expect the files.
+    for suffix in gene CpG repeat variant; do
+        [ -f "${prefix}_\${suffix}.annotate.txt" ] || touch "${prefix}_\${suffix}.annotate.txt"
+    done
     """
 
     stub:

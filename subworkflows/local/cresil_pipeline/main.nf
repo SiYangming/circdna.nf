@@ -54,7 +54,10 @@ workflow CRESIL_PIPELINE {
     ch_versions = ch_versions.mix(CRESIL_IDENTIFY_WGLS.out.versions_cresil)
 
     // Annotate the standard identify output (gene/CpG/repeat/variant).
-    CRESIL_ANNOTATE ( eccdna_candidates, channel.empty(), channel.empty(), channel.empty() )
+    // Optional annotation beds default to an empty tuple so the process
+    // still runs even when no annotation files are provided.
+    ch_empty_bed = Channel.of([[:], []])
+    CRESIL_ANNOTATE ( eccdna_candidates, ch_empty_bed, ch_empty_bed, ch_empty_bed )
     ch_versions = ch_versions.mix(CRESIL_ANNOTATE.out.versions_cresil)
 
     // Visualize the first eccDNA in the identify table (Circos config files).
