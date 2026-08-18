@@ -18,14 +18,8 @@ workflow FLED_PIPELINE {
     SAMTOOLS_FAIDX ( ch_fasta_fai_input, false )
     ch_fai = SAMTOOLS_FAIDX.out.fai
 
-    reads
-        .combine(genome_fasta)
-        .combine(ch_fai)
-        .map { meta, fastq, _fasta, _fai -> [ meta, fastq ] }
-        .set { ch_reads }
-
     FLED (
-        ch_reads,
+        reads,
         genome_fasta,
         ch_fai.map { meta, fai -> fai }
     )
