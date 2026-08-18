@@ -53,13 +53,7 @@ process CRESIL_IDENTIFY_WGLS {
     # shadow it via PYTHONPATH instead of patching read-only site-packages.
     mkdir -p cresil_patch/cresil/cli
     cp \$(python -c "import cresil.cli.identify_wgls as m; print(m.__file__)") cresil_patch/cresil/cli/identify_wgls.py
-    python -c "
-import pathlib
-p = pathlib.Path('cresil_patch/cresil/cli/identify_wgls.py')
-s = p.read_text()
-s = s.replace(\"trim_sup['strand'] == '+'\", \"trim_sup['strand'] == 1\").replace(\"trim_sup['strand'] == '-'\", \"trim_sup['strand'] == -1\")
-p.write_text(s)
-"
+    patch_wgls.py cresil_patch/cresil/cli/identify_wgls.py
     export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
 
     cresil identify_wgls \\
