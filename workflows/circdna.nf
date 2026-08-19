@@ -30,7 +30,9 @@ include { FLED_PIPELINE                 } from '../subworkflows/local/fled_pipel
 include { FLYE_PIPELINE                 } from '../subworkflows/local/flye_pipeline/main'
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_CRESIL } from '../subworkflows/local/long_read_filtering/main'
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_FLED   } from '../subworkflows/local/long_read_filtering/main'
+include { LONG_READ_FILTERING as LONG_READ_FILTERING_CIRCLESEEKER } from '../subworkflows/local/long_read_filtering/main'
 include { ECC_FINDER_PIPELINE           } from '../subworkflows/local/ecc_finder_pipeline/main'
+include { CIRCLESEEKER_PIPELINE         } from '../subworkflows/local/circleseeker_pipeline/main'
 include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
 include { ECCDNA_MODE                   } from '../subworkflows/local/eccdna_mode/main'
 
@@ -145,6 +147,7 @@ workflow CIRCDNA {
         def run_fled = ("fled" in lr_branch)
         def run_flye = ("flye" in lr_branch)
         def run_eccfinder = ("eccfinder" in lr_branch)
+        def run_circleseeker = ("circleseeker" in lr_branch)
 
         INPUT_CHECK (
             file(params.input)
@@ -215,6 +218,21 @@ workflow CIRCDNA {
                 params.protocol           // 'ont' | 'pacbio'
             )
             ch_versions = ch_versions.mix(ECC_FINDER_PIPELINE.out.versions)
+        }
+
+        if (run_circleseeker) {
+            CIRCLESEEKER_PIPELINE (
+                ch_preprocessed_fastq,
+                ch_fasta
+            )
+            .bed
+            .set { ch_circleseeker_candidates }
+
+            LONG_READ_FILTERING_CIRCLESEEKER (
+                ch_circleseeker_candidates
+            )
+            ch_versions = ch_versions.mix(CIRCLESEEKER_PIPELINE.out.versions)
+            ch_versions = ch_versions.mix(LONG_READ_FILTERING_CIRCLESEEKER.out.versions)
         }
 
     } else {

@@ -1,5 +1,4 @@
 include { FLED } from '../../../modules/local/fled/main'
-include { SAMTOOLS_FAIDX } from '../../../modules/nf-core/samtools/faidx/main'
 
 workflow FLED_PIPELINE {
     take:
@@ -7,23 +6,15 @@ workflow FLED_PIPELINE {
     genome_fasta    // channel: reference genome file
 
     main:
-    // Build the reference .fai index here so FLED reuses it instead of
-    // re-running `samtools faidx` per task. Nextflow's task cache dedupes
-    // this against the identical index built by CRESIL_PIPELINE (same input
-    // fasta, same get_sizes=false), so it only runs once per pipeline run.
-    genome_fasta
-        .map { fasta -> [ [id: 'genome'], fasta, [] ] }
-        .set { ch_fasta_fai_input }
-
-    SAMTOOLS_FAIDX ( ch_fasta_fai_input, false )
-    ch_fai = SAMTOOLS_FAIDX.out.fai
+    reads
+        .combine(genome_fasta)
+        .set { fled_input }
 
     FLED (
-        reads,
-        genome_fasta,
-        ch_fai.map { meta, fai -> fai }
+        fled_input.map { meta, fastq, _fasta -> [ meta, fastq ] },
+        fled_input.map { _meta, _fastq, fasta -> fasta }
     )
-    ch_versions = FLED.out.versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
+    ch_versions = FLED.out.versions
 
     emit:
     junctions = FLED.out.junctions    // channel: [ val(meta), <prefix>.fled_junctions.txt ]

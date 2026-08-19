@@ -1,0 +1,58 @@
+{
+    "test-circleseeker - stub": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test_eccDNA_summary.csv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.circleseeker.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                "versions.yml:md5,bdfd69689c3328754ed4ecbcfcf891a5"
+            ]
+        ],
+        "timestamp": "2026-08-18T21:27:35.322716",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test-circleseeker": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test_eccDNA_summary.csv:md5,0d1df304e1662e3fb78fa3da5b62efd4"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.circleseeker.bed:md5,e64d585b2e06cb3297522fae77255cfb"
+                ]
+            ],
+            [
+                "versions.yml:md5,cdc34a7d92787115735e83acec929de4"
+            ]
+        ],
+        "timestamp": "2026-08-18T21:27:18.883664",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}
