@@ -42,6 +42,15 @@ On release, automated continuous integration tests run the pipeline on a full-si
    1. Identification of circular amplicons [`AmpliconArchitect`](https://github.com/jluebeck/AmpliconArchitect)
    1. De Novo Assembly of ecDNAs [`Unicycler`](https://github.com/rrwick/Unicycler) -> [`Minimap2`](https://github.com/lh3/minimap2)
 7. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+8. Optional long-read analysis (PacBio HiFi / ONT, see [usage](https://nf-co.re/circdna/usage))
+   1. Long-read QC ([`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+   1. Long-read eccDNA detection engines, selected via `--long_read_identifier`
+      1. [`CircleSeeker`](https://github.com/leoxqy/CircleSeeker) -> comprehensive eccDNA detection from PacBio HiFi reads (CtcReads-Caller + SplitReads-Caller)
+      1. [`CRESIL`](https://gitlab.com/visanu/cresil) -> eccDNA detection from long reads
+      1. [`FLED`](https://github.com/ejbs-lab/fled) -> eccDNA junction detection
+      1. [`Flye`](https://github.com/fenderglass/Flye) -> long-read assembly
+      1. [`ECC_finder`](https://github.com/ueda0413/ECC_finder) -> eccDNA detection (map/asm modes)
+   1. Candidate filtering by read support, blacklist and repeats ([`bedtools`](https://github.com/arq5x/bedtools))
 
 ## Functionality Overview
 
@@ -110,6 +119,20 @@ Please specify the parameter `circle_identifier` depending on the pipeline branc
 ### De novo assembly of ecDNAs with Circle-seq data
 
 > `unicycler` uses [Unicycler](https://github.com/rrwick/Unicycler) for de novo assembly of ecDNAs and [Minimap2](https://github.com/lh3/minimap2) for accurate mapping of the identified circular sequences.
+
+### Long-read eccDNA detection (PacBio HiFi / ONT)
+
+For long-read data, set `--protocol pacbio|ont` and select the detection engines with `--long_read_identifier`. `circleseeker` is an optional engine that runs [CircleSeeker](https://github.com/leoxqy/CircleSeeker) for comprehensive eccDNA detection and characterisation from PacBio HiFi reads, and feeds its results into the shared long-read candidate filtering (read support, blacklist and repeats):
+
+> `circleseeker` uses [CircleSeeker](https://github.com/leoxqy/CircleSeeker) (CtcReads-Caller + SplitReads-Caller) for eccDNA detection from PacBio HiFi long reads
+
+```bash
+nextflow run nf-core/circdna --input samplesheet_long_read.csv --outdir <OUTDIR> \
+    --fasta <reference.fa> --input_format FASTQ \
+    --protocol pacbio --entrypoint cleaned_fastq \
+    --long_read_identifier cresil,fled,flye,eccfinder,circleseeker \
+    -profile docker
+```
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
