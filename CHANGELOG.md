@@ -3,6 +3,34 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.2.0 - [2026-08-18]
+
+### Credits
+
+Special thanks to the following for their input and contributions to the release:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **CircleSeeker 模块接入**: 新增 `modules/local/circleseeker/` nf-core 标准模块（main.nf、meta.yml、environment.yml），通过 `quay.io/biocontainers/circleseeker:1.1.2--pyhdfd78af_0`（singularity 回退 galaxy depot）与 `bioconda::circleseeker=1.1.2` 双引擎运行。模块支持 gz 解压、FASTQ→FASTA 自动转换、`task.ext.args`/`task.ext.prefix`、stub 模式，输出 merged（`<prefix>_eccDNA_summary.csv`）、BED、summary、report 与 versions
+- **CircleSeeker BED 转换**: 新增 `bin/circleseeker_to_bed.py`，将 CircleSeeker v1.1.x `eccDNA_summary.csv` 转换为 BED6+`read_count` 表（坐标 1-based inclusive → 0-based half-open），与现有 `filter_by_read_support.py` 自动检测兼容
+- **长读分支新增 `circleseeker` 检测引擎**: `workflows/circdna.nf` 长读分支 `long_read_identifier` 新增 `circleseeker` 选项（默认不启用，显式加入后运行），新增 `subworkflows/local/circleseeker_pipeline/` 子流程，产出 BED 接入现有 `LONG_READ_FILTERING`（支持度/黑名单/重复序列过滤）
+- **CircleSeeker 输出发布**: `conf/modules.config` 配置 CIRCLESEEKER publishDir 至 `${params.outdir}/long_read/circleseeker/${meta.id}`
+- **测试 profile 更新**: `conf/test_pacbio_lr.config`、`conf/test_nanopore_lr.config` 的 `long_read_identifier` 加入 `circleseeker` 并补充资源覆盖
+- **nf-test 模块测试**: `modules/local/circleseeker/tests/main.nf.test`（真实 + stub 用例），使用模块自带 `testdata/`（重构为含串联重复结构的 HiFi 模拟 reads，可真实检出 UeccDNA），`tests/nextflow.config` 按 §11 规范配置 docker（A+C 用户映射 + amd64）；snapshot 仅匹配稳定输出（summary.txt/report.html 含运行时间戳）
+
+### Dependencies
+
+- **circleseeker**: 新增（1.1.2）
+  - conda 包: `bioconda::circleseeker=1.1.2`（含 tidehunter、minimap2、samtools、cd-hit、last 等依赖）
+  - Docker 镜像: `quay.io/biocontainers/circleseeker:1.1.2--pyhdfd78af_0`
+
+### Notes
+
+- CircleSeeker 由 [leoxqy/CircleSeeker](https://github.com/leoxqy/CircleSeeker) 开发，用于 PacBio HiFi 长读长 eccDNA 检测（CtcReads-Caller + SplitReads-Caller 双证据）
+- 微小模拟数据上 SplitReads 推断步骤可能因无 junction 证据报 WARNING（EmptyDataError），属工具对空输入的已知行为，不影响流程完成与 CtcReads 检出
+
 ## v4.1.0 - [2026-08-02]
 
 ### Credits
