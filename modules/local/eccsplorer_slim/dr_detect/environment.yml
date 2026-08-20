@@ -1,6 +1,6 @@
-name: genrich
+name: bedtools
 channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::genrich=0.6.1
+  - bedtools=2.31.1

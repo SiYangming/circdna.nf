@@ -9,7 +9,7 @@ include { MINIMAP2_ALIGN as MINIMAP2_ONT_UNIT      } from '../../../modules/nf-c
 include { TIDEHUNTER as TIDEHUNTER_UNIT            } from '../../../modules/local/tidehunter/main'
 include { TIDEHUNTER as TIDEHUNTER_ASM             } from '../../../modules/local/tidehunter/main'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_NAME_ONT  } from '../../../modules/nf-core/samtools/sort/main'
-include { GENRICH as GENRICH_ONT                   } from '../../../modules/local/genrich/main'
+include { GENRICH as GENRICH_ONT                   } from '../../../modules/nf-core/genrich/main'
 include { CDHIT_CDHITEST as CDHIT_ONT              } from '../../../modules/nf-core/cdhit/cdhitest/main'
 include { ECC_FINDER_ONT_PAF_FILTER } from '../../../modules/local/ecc_finder_slim/paf_filter/main'
 include { ECC_FINDER_ONT_MERGE       } from '../../../modules/local/ecc_finder_slim/ont_merge/main'
@@ -34,12 +34,12 @@ workflow ECC_FINDER_ONT_SLIM {
         ECC_FINDER_ONT_PAF_FILTER ( MINIMAP2_ONT.out.paf )
         ch_versions = ch_versions.mix(ECC_FINDER_ONT_PAF_FILTER.out.versions)
 
-        // 3) TideHunter splits tandem repeats into units
-        TIDEHUNTER_UNIT ( reads )
+        // 3) TideHunter splits tandem repeats into units (args '-u' in modules.config → unit_fa)
+        TIDEHUNTER_UNIT ( reads, [], [] )
         ch_versions = ch_versions.mix(TIDEHUNTER_UNIT.out.versions)
 
         // 4) unit re-alignment → name-sorted BAM
-        MINIMAP2_ONT_UNIT ( TIDEHUNTER_UNIT.out.cons_fa, fasta_meta, true, '', false, false )
+        MINIMAP2_ONT_UNIT ( TIDEHUNTER_UNIT.out.unit_fa, fasta_meta, true, '', false, false )
         SAMTOOLS_SORT_NAME_ONT (
             MINIMAP2_ONT_UNIT.out.bam,
             fasta_meta.map { meta, fa -> [ meta, fa, [] ] },
@@ -50,13 +50,17 @@ workflow ECC_FINDER_ONT_SLIM {
             SAMTOOLS_SORT_NAME_ONT.out.versions_samtools
         )
 
-        // 5) Genrich peak calling on unit alignments
-        GENRICH_ONT ( SAMTOOLS_SORT_NAME_ONT.out.bam )
-        ch_versions = ch_versions.mix(GENRICH_ONT.out.versions)
+        // 5) Genrich peak calling on unit alignments (nf-core GENRICH: treatment=[bam], control=[], blacklist=[])
+        GENRICH_ONT (
+            SAMTOOLS_SORT_NAME_ONT.out.bam.map { meta, bam -> [ meta, [bam], [] ] },
+            []
+        )
+        ch_versions = ch_versions.mix(GENRICH_ONT.out.versions_genrich)
 
         // 6) merge sites with genome alignments → candidates
+        // (narrowPeak 前 3 列即 BED chr/start/end，ont_merge 兼容多余列)
         ECC_FINDER_ONT_MERGE (
-            GENRICH_ONT.out.bed,
+            GENRICH_ONT.out.peak,
             ECC_FINDER_ONT_PAF_FILTER.out.paf_bed,
             fasta_meta.map { _meta, f -> [ [id:'genome'], f ] }
         )
@@ -65,7 +69,7 @@ workflow ECC_FINDER_ONT_SLIM {
 
     if (run_asm_ont) {
         // 1) TideHunter consensus (tandem repeat units per read)
-        TIDEHUNTER_ASM ( reads )
+        TIDEHUNTER_ASM ( reads, [], [] )
         ch_versions = ch_versions.mix(TIDEHUNTER_ASM.out.versions)
 
         // 2) cd-hit-est clustering
@@ -84,6 +88,6 @@ workflow ECC_FINDER_ONT_SLIM {
     map_csv         = run_map_ont ? ECC_FINDER_ONT_MERGE.out.csv     : channel.empty()
     map_fasta       = run_map_ont ? ECC_FINDER_ONT_MERGE.out.fasta   : channel.empty()
     asm_fasta       = run_asm_ont ? ECC_FINDER_ONT_ASM.out.fasta     : channel.empty()
-    unit_fa         = run_map_ont ? TIDEHUNTER_UNIT.out.cons_fa      : channel.empty()
+    unit_fa         = run_map_ont ? TIDEHUNTER_UNIT.out.unit_fa      : channel.empty()
     versions        = ch_versions
 }

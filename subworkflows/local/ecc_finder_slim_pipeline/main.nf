@@ -8,7 +8,7 @@
 //
 
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_NAME } from '../../../modules/nf-core/samtools/sort/main'
-include { GENRICH              } from '../../../modules/local/genrich/main'
+include { GENRICH              } from '../../../modules/nf-core/genrich/main'
 include { ECC_FINDER_SPLIT_DETECT } from '../../../modules/local/ecc_finder_slim/split_detect/main'
 include { ECC_FINDER_MERGE_SCORE } from '../../../modules/local/ecc_finder_slim/merge_score/main'
 include { ECC_FINDER_DISTRIBUTION } from '../../../modules/local/ecc_finder_slim/distribution/main'
@@ -44,17 +44,21 @@ workflow ECC_FINDER_SLIM_PIPELINE {
 
         def ch_name_sorted = SAMTOOLS_SORT_NAME.out.bam
 
-        // Genrich: detect enrichment sites
-        GENRICH ( ch_name_sorted )
-        ch_versions = ch_versions.mix(GENRICH.out.versions)
+        // Genrich: detect enrichment sites (nf-core GENRICH: treatment=[bam], control=[], blacklist=[])
+        GENRICH (
+            ch_name_sorted.map { meta, bam -> [ meta, [bam], [] ] },
+            []
+        )
+        ch_versions = ch_versions.mix(GENRICH.out.versions_genrich)
 
         // Split/discordant-read detection (pybedtools, replicates map-sr.py run_split/run_disc)
         ECC_FINDER_SPLIT_DETECT ( ch_name_sorted )
         ch_versions = ch_versions.mix(ECC_FINDER_SPLIT_DETECT.out.versions)
 
         // Merge enrichment + split + discordant reads → eccDNA candidates
+        // (narrowPeak 前 3 列即 BED chr/start/end，merge_score 兼容多余列)
         ECC_FINDER_MERGE_SCORE (
-            GENRICH.out.bed,
+            GENRICH.out.peak,
             ECC_FINDER_SPLIT_DETECT.out.split_bed,
             ECC_FINDER_SPLIT_DETECT.out.disc_bed,
             fasta_meta.map { _meta, f -> [ [id:'genome'], f ] }
@@ -85,7 +89,7 @@ workflow ECC_FINDER_SLIM_PIPELINE {
     emit:
     map_csv         = run_map_sr ? ECC_FINDER_MERGE_SCORE.out.csv    : channel.empty()
     map_fasta       = run_map_sr ? ECC_FINDER_MERGE_SCORE.out.fasta  : channel.empty()
-    genrich_bed     = run_map_sr ? GENRICH.out.bed                   : channel.empty()
+    genrich_bed     = run_map_sr ? GENRICH.out.peak                   : channel.empty()
     split_bed       = run_map_sr ? ECC_FINDER_SPLIT_DETECT.out.split_bed : channel.empty()
     asm_fasta       = run_asm_sr ? ECC_FINDER_ASM_FILTER.out.fasta   : channel.empty()
     unicycler_scaffolds = run_asm_sr ? UNICYCLER.out.scaffolds        : channel.empty()

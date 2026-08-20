@@ -9,7 +9,7 @@
 include { SEGEMEHL_INDEX    } from '../../../modules/nf-core/segemehl/index/main'
 include { SEGEMEHL_ALIGN    } from '../../../modules/nf-core/segemehl/align/main'
 include { SEGEMEHL_ALIGN as SEGEMEHL_ALIGN_CO } from '../../../modules/nf-core/segemehl/align/main'
-include { HAARZ             } from '../../../modules/local/haarz/main'
+include { HAARZ             } from '../../../modules/local/segemehl/haarz/main'
 
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_SAM2BAM } from '../../../modules/nf-core/samtools/view/main'
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_DR_F2   } from '../../../modules/nf-core/samtools/view/main'

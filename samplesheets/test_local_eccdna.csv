@@ -1,0 +1,2 @@
+sample,fastq_1,fastq_2,data_type
+test1,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/ngs/circdna_1_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/ngs/circdna_1_R2.fastq.gz,eccDNA
