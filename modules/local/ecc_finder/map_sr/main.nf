@@ -26,8 +26,6 @@ process ECC_FINDER_MAP_SR {
     prefix = task.ext.prefix ?: "ecc.sr"
 
     """
-    # 容器 pandas 3.x 与原版脚本不兼容（KeyError），临时降级到 1.x
-    pip install -q 'pandas<2.0' 2>/dev/null || true
     # ecc_finder.py 子命令用相对路径调用子脚本，需在 work 目录软链容器脚本
     ln -sf /app/*.py . 2>/dev/null || true
     # bwa 索引目录 → bwa 索引前缀文件（map-sr.py 校验 idx 为文件；bwa 用相邻 .bwt/.pac 索引）
