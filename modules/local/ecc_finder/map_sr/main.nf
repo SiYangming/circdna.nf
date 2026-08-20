@@ -29,7 +29,7 @@ process ECC_FINDER_MAP_SR {
     # ecc_finder.py 子命令用相对路径调用子脚本，需在 work 目录软链容器脚本
     ln -sf /app/*.py . 2>/dev/null || true
     # bwa 索引目录 → bwa 索引前缀文件（map-sr.py 校验 idx 为文件；bwa 用相邻 .bwt/.pac 索引）
-    IDX_BWT=\$(ls \${idx}/*.bwt 2>/dev/null | head -1)
+    IDX_BWT=\$(ls ${idx}/*.bwt 2>/dev/null | head -1)
     IDX_PREFIX=\${IDX_BWT%.bwt}
     [ -n "\$IDX_PREFIX" ] && touch "\$IDX_PREFIX"
     ecc_finder.py map-sr \\
