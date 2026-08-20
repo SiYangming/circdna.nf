@@ -24,8 +24,10 @@ process ECC_FINDER_ONT_MERGE {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
+    # site 兼容 10 列 narrowPeak（nf-core GENRICH）与 3 列 BED：统一取前 3 列
+    cut -f1-3 ${site_bed} > enrich_sites.bed
     ont_merge.py \\
-        --site ${site_bed} \\
+        --site enrich_sites.bed \\
         --paf-bed ${paf_bed} \\
         --ref ${ref} \\
         --prefix ${prefix} \\

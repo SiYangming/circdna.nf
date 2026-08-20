@@ -23,8 +23,10 @@ process ECC_FINDER_MERGE_SCORE {
     prefix = task.ext.prefix ?: "${meta.id}"
     """
     # v2: dual-evidence (split ∩ disc) inner merge, header-less 6-col CSV (map-sr.py contract)
+    # enrichment 兼容 10 列 narrowPeak（nf-core GENRICH）与 3 列 BED：统一取前 3 列
+    cut -f1-3 ${enrichment_bed} > enrich_sites.bed
     merge_score.py \\
-        --enrichment ${enrichment_bed} \\
+        --enrichment enrich_sites.bed \\
         --splitreads ${splitreads_bed} \\
         --discordant ${discordant_bed} \\
         --ref ${ref} \\
