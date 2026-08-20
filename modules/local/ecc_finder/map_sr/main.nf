@@ -42,8 +42,8 @@ process ECC_FINDER_MAP_SR {
         -x ${prefix} \\
         $args
 
-    mv eccFinder_output/${prefix}.csv ${prefix}.csv
-    mv eccFinder_output/${prefix}.fasta ${prefix}.fasta
+    mv eccFinder_output/${prefix}.csv ${prefix}.csv 2>/dev/null || true
+    mv eccFinder_output/${prefix}.fasta ${prefix}.fasta 2>/dev/null || true
     """
 
     stub:
