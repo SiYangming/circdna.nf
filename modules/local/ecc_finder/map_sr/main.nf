@@ -26,6 +26,8 @@ process ECC_FINDER_MAP_SR {
     prefix = task.ext.prefix ?: "ecc.sr"
 
     """
+    # ecc_finder.py 子命令用相对路径调用 map-sr.py，需在 work 目录软链容器脚本
+    ln -sf /app/*.py . 2>/dev/null || true
     ecc_finder.py map-sr \\
         ${idx} \\
         ${query1} \\

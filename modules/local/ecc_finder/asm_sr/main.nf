@@ -23,6 +23,8 @@ process ECC_FINDER_ASM_SR {
     prefix = task.ext.prefix ?: "ecc.asm.sr"
 
     """
+    # ecc_finder.py 子命令用相对路径调用子脚本，需在 work 目录软链容器脚本
+    ln -sf /app/*.py . 2>/dev/null || true
     ecc_finder.py asm-sr \\
         ${query1} \\
         ${query2} \\
