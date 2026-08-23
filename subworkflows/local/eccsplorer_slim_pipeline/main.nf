@@ -96,16 +96,22 @@ workflow ECCSPLORER_SLIM_PIPELINE {
     SAMTOOLS_VIEW_DR_F2 ( ch_alignment, fasta_meta.map { meta, fa -> [ meta, fa, [] ] }, [[id:'no_qname'], []], [[id:'no_bed'], []], [] )
     SAMTOOLS_VIEW_DR_F83 ( ch_alignment, fasta_meta.map { meta, fa -> [ meta, fa, [] ] }, [[id:'no_qname'], []], [[id:'no_bed'], []], [] )
     SAMTOOLS_VIEW_DR_F163 ( ch_alignment, fasta_meta.map { meta, fa -> [ meta, fa, [] ] }, [[id:'no_qname'], []], [[id:'no_bed'], []], [] )
+
+    // Genome sizes (needed by DR_DETECT genomecov -g and MAKEWINDOWS)
+    SAMTOOLS_FAIDX_WIN ( fasta_meta.map { meta, fa -> [ meta, fa, [] ] }, true )
+
     ECCSPLORER_DR_DETECT (
         SAMTOOLS_VIEW_DR_F2.out.bam,
         SAMTOOLS_VIEW_DR_F83.out.bam,
-        SAMTOOLS_VIEW_DR_F163.out.bam
+        SAMTOOLS_VIEW_DR_F163.out.bam,
+        SAMTOOLS_FAIDX_WIN.out.sizes
     )
     ch_versions = ch_versions.mix(
         SAMTOOLS_VIEW_DR_F2.out.versions_samtools,
         SAMTOOLS_VIEW_DR_F83.out.versions_samtools,
         SAMTOOLS_VIEW_DR_F163.out.versions_samtools,
-        ECCSPLORER_DR_DETECT.out.versions
+        ECCSPLORER_DR_DETECT.out.versions,
+        SAMTOOLS_FAIDX_WIN.out.versions_samtools
     )
 
     // BAM → BED (all alignments)
@@ -152,13 +158,9 @@ workflow ECCSPLORER_SLIM_PIPELINE {
         )
     }
 
-    // Genome windows (runs once per genome)
-    SAMTOOLS_FAIDX_WIN ( fasta_meta.map { meta, fa -> [ meta, fa, [] ] }, true )
+    // Genome windows (runs once per genome; FAIDX_WIN already run above for DR_DETECT)
     BEDTOOLS_MAKEWINDOWS ( SAMTOOLS_FAIDX_WIN.out.sizes )
-    ch_versions = ch_versions.mix(
-        SAMTOOLS_FAIDX_WIN.out.versions_samtools,
-        BEDTOOLS_MAKEWINDOWS.out.versions_bedtools
-    )
+    ch_versions = ch_versions.mix(BEDTOOLS_MAKEWINDOWS.out.versions_bedtools)
 
     // Per-base coverage: windows × all.bed
     // collect() makes windows a single-value channel → one coverage task per sample (no cartesian product)
@@ -175,10 +177,11 @@ workflow ECCSPLORER_SLIM_PIPELINE {
 
     // Candidate extraction: SR ∩ peak_all ∩ peak_DR (3/3 hiconf, 2/3 lowconf)
     // Explicit join by sample id prevents channel meta mismatch (HAARZ vs PEAK_DETECT lineage)
+    // DR uses regions-DR.bed (coverage-threshold regions) matching blackbox extract_candidate_regions
     def ch_cand_input = HAARZ.out.sr_bed
         .map { meta, bed -> [ meta.id, meta, bed ] }
         .join( ECCSPLORER_PEAK_DETECT.out.bed.map { meta, bed -> [ meta.id, meta, bed ] } )
-        .join( ECCSPLORER_DR_DETECT.out.dr_bed.map { meta, bed -> [ meta.id, meta, bed ] } )
+        .join( ECCSPLORER_DR_DETECT.out.dr_regions.map { meta, bed -> [ meta.id, meta, bed ] } )
         .map { id, ms, sr, mp, peak, md, dr -> [ ms, sr, peak, dr ] }
     ECCSPLORER_CANDIDATE_EXTRACT (
         ch_cand_input.map { ms, sr, peak, dr -> [ ms, sr ] },

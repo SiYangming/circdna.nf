@@ -41,6 +41,10 @@ def create_short_read_fastq_channels(LinkedHashMap row) {
         meta.lane = row.lane
     }
     meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    // 兼容 data_type 列（workflows 用 meta.data_type 过滤 eccdna/gdna；check_samplesheet 已归一化为小写）
+    meta.data_type    = row.containsKey('data_type') ? row.data_type : meta.datatype
+    // ECCsplorer 配对键：pair 优先，回退 group（test_local_gdna.csv 用 group 列）
+    meta.pair         = (row.containsKey('pair') && row.pair) ? row.pair : ((row.containsKey('group') && row.group) ? row.group : null)
     meta.platform     = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
     meta.protocol     = row.containsKey('protocol') ? (row.protocol ? row.protocol : 'short_read') : 'short_read'
 

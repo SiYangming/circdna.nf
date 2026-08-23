@@ -294,3 +294,39 @@
 - **黑盒容器重建（apt 最小化）**：`quay.io/bioinfortools/ecc_finder:1.0.0` 三版迭代——conda 版 py3.12+pandas3（不兼容）→ conda 版 py3.9+pandas1.5.3+seqtk（3.39GB）→ **apt 最小化版 `python:3.9-slim-bullseye` + apt(bwa/samtools/bedtools/seqtk/cd-hit/fastp/g++/python3.9-dev) + pip(numpy 1.26.4/pandas 1.5.3/matplotlib/scipy/biopython/pybedtools) + 自编译 Genrich(v0.6.1, jsh58) + 预编译 TideHunter(v1.5.6, bioconda 提取)**（**967MB，减 72%**）；旧版备份 `1.0.0-conda-old`；apt 版黑盒 MAP_SR 重跑结果与 conda 版完全一致（18 候选）无回归；Dockerfile 存于 `circdna.nf/.trae/build/ecc_finder_apt/` 与服务器 `/data1/users/siyangming/ecc_finder_orig_build/`
 
 **遗留**：ECCsplorer 原版容器（`quay.io/bioinfortools/eccsplorer`）黑盒对照未做（需 gdna 对照数据 + 原版 ECCsplorer 流程，工作量大）；slim 短读链已通过 stub + 真实 MAP_SR 验证。
+
+---
+
+## 九、任务 2b：ECCsplorer 黑盒 vs slim 全链对照结论（2026-08-23）
+
+**对照数据**：单样本配对 `circdna_1`（eccDNA）+ `gdna_1`（gDNA 对照），`testdatasets/ngs/` 短读 FASTQ，测试参考基因组。黑盒走原版 `quay.io/bioinfortools/eccsplorer`（ECCsplorer.py 完整流程），slim 走 `eccsplorer_map_slim`（原子化链）。
+
+### 9.1 hiconf 候选对照（TR_hiconf-ECC-REGIONS.bed）
+
+| 指标 | 黑盒 | slim | 说明 |
+|---|---|---|---|
+| 高置信候选数 | 86 | 81 | 黑盒在比较阶段因 BLAST combinedDB 索引缺失终止，但候选已产出 |
+| **黑盒被 slim 覆盖** | — | **80/86（93%）** | ≥90% 长度重叠，非仅 1bp |
+| **slim 被黑盒覆盖** | — | **80/81（98.8%）** | |
+| 总长度 | 231,268 bp | 225,881 bp | 高度一致（97.7%） |
+| 平均长度 | 2,689 bp | 2,788 bp | |
+
+**结论**：slim 原子化链与黑盒 ECCsplorer 在高置信候选上 **93% 重合（80/86 双向一致）**，核心检测逻辑（split-read × peak_all × peak_DR 三重交集 → hiconf）复刻成功。6 个黑盒独有区域全部位于 slim peaks 覆盖内但未达 DR 阈值，属预期参数级差异。
+
+### 9.2 修复问题（对照过程中发现）
+
+1. **`SAMTOOLS_VIEW_SAM2BAM_CO` 缺 ext 配置**：slim CO（gdna 对照）链的 SAM→BAM 转换无 `ext.prefix`/`ext.args`，导致输入 `gdna_1.sam` 与默认输出同名报错（`Input and output names are the same`）。修复：`conf/modules.config` 补 `SAMTOOLS_VIEW_SAM2BAM_CO`/`BEDTOOLS_BAMTOBED_CO`（mirror TR 链）。
+2. **`ECCSPLORER_DR_DETECT` 未做 DR coverage 阈值过滤**：原版 `eccMapper.run_discordantread_detect` 对 `genomecov -bga` 结果按 `max_cov × BACKGROUND_PERC(0.05)` 过滤再 `merge -d 1000`（142 区域），slim 直接把 28,255 行原始 DR 片段当 peak_DR 用 → hiconf 膨胀至 1,228 行。修复：`dr_detect/main.nf` 复现原版逻辑（genomecov → 5% 阈值 → merge → 长度过滤），新增 `dr_regions` emit（134 区域）；`eccsplorer_slim_pipeline` 将 `FAIDX_WIN` 提前供 `-g` 使用，`CANDIDATE_EXTRACT` 的 peak_DR 改用 `dr_regions`。修复后 hiconf 从 1,228 → 81。
+
+### 9.3 遗留差异说明
+
+- 黑盒 regions-DR 142 vs slim 134：源于两侧 aligned-DR 输入行数差异（黑盒 25,629 vs slim 28,255，约 10%）→ 5% 阈值下 max_cov 微差 → 边界/合并差异。非逻辑错误。
+- slim 独有 1 区域（VIII:548823-549574）：DR 阈值过滤后保留，黑盒同区域因阈值略高被滤除。
+
+### 9.4 本轮改动文件
+
+- `conf/modules.config`：补 CO 链 `SAMTOOLS_VIEW_SAM2BAM_CO` / `BEDTOOLS_BAMTOBED_CO` 配置
+- `modules/local/eccsplorer_slim/dr_detect/main.nf`：新增 ref_sizes 输入 + DR regions 输出（复现黑盒阈值逻辑）
+- `subworkflows/local/eccsplorer_slim_pipeline/main.nf`：FAIDX_WIN 提前、DR_DETECT 接 sizes、CANDIDATE_EXTRACT 用 dr_regions
+- `subworkflows/local/input_check/main.nf`：`meta.data_type`/`meta.pair` 映射（merge 修复，gdna 配对分流）
+- `nextflow.config`：注册 `test_local_gdna` / `test_bam_local` profiles
