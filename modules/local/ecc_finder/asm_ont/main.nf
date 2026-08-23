@@ -31,7 +31,10 @@ process ECC_FINDER_ASM_ONT {
         -x ${prefix} \\
         $args
 
-    mv eccFinder_asm_output/${prefix}.fasta ${prefix}.fasta
+    # -o . 时 ecc_finder 直接写 work 根目录；部分版本写入 eccFinder_asm_output/ 子目录
+    if [ -d eccFinder_asm_output ]; then
+        mv eccFinder_asm_output/${prefix}.fasta ${prefix}.fasta
+    fi
     """
 
     stub:

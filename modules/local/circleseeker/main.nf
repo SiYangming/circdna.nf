@@ -61,6 +61,13 @@ process CIRCLESEEKER {
         ${prefix}_eccDNA_summary.csv \\
         ${prefix}.circleseeker.bed
 
+    # CircleSeeker 无候选时不生成 summary/report 文件，补空文件满足 output 声明
+    if [ ! -f ${prefix}_eccDNA_summary.csv ]; then
+        echo "eccDNA_id,type,state,chr,start,end,strand,length" > ${prefix}_eccDNA_summary.csv
+    fi
+    touch ${prefix}_summary.txt
+    touch ${prefix}_report.html
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         circleseeker: \$(circleseeker --version 2>&1 | sed 's/CircleSeeker //')

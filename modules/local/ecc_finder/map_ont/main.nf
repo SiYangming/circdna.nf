@@ -36,8 +36,11 @@ process ECC_FINDER_MAP_ONT {
         -x ${prefix} \\
         $args
 
-    mv eccFinder_output/${prefix}.csv ${prefix}.csv
-    mv eccFinder_output/${prefix}.fasta ${prefix}.fasta
+    # -o . 时 ecc_finder 直接写 work 根目录；部分版本写入 eccFinder_output/ 子目录
+    if [ -d eccFinder_output ]; then
+        mv eccFinder_output/${prefix}.csv ${prefix}.csv
+        mv eccFinder_output/${prefix}.fasta ${prefix}.fasta
+    fi
     """
 
     stub:

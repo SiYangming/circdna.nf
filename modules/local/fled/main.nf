@@ -53,8 +53,9 @@ process FLED {
 
     # Combine both junction outputs into a single candidates file.
     # MulsegFullJunction.out is only produced when multi-segment eccDNAs exist.
-    cat ${prefix}.DiGraph.OnesegJunction.out 2>/dev/null > ${prefix}.fled_junctions.txt
-    cat ${prefix}.DiGraph.MulsegFullJunction.out 2>/dev/null >> ${prefix}.fled_junctions.txt
+    # `set -e` 下 cat 缺失文件会中止脚本，需 || true 容错。
+    cat ${prefix}.DiGraph.OnesegJunction.out 2>/dev/null > ${prefix}.fled_junctions.txt || true
+    cat ${prefix}.DiGraph.MulsegFullJunction.out 2>/dev/null >> ${prefix}.fled_junctions.txt || true
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

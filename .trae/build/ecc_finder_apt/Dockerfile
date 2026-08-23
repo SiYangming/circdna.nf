@@ -11,7 +11,7 @@ RUN git clone --depth 1 --branch v0.6.1 https://github.com/jsh58/Genrich.git \
 # ---- runtime: apt 最小化 ----
 FROM python:3.9-slim-bullseye
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bwa samtools bedtools seqtk cd-hit fastp g++ python3.9-dev procps \
+    bwa samtools bedtools seqtk cd-hit fastp g++ python3.9-dev procps minimap2 bc \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/local/bin/Genrich /usr/local/bin/
 # TideHunter 预编译二进制（bioconda 1.5.6，避免 simde 子模块克隆失败）

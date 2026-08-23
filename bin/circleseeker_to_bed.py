@@ -19,6 +19,7 @@ The header line deliberately does NOT start with ``#`` so that
 """
 import argparse
 import csv
+import os
 import re
 import sys
 
@@ -45,6 +46,12 @@ def parse_region(region):
 
 def convert(csv_path, bed_path):
     written = 0
+    # 无候选时 CircleSeeker 不生成 summary CSV；此时产出仅含表头的空 BED，
+    # 避免下游（filter_by_read_support 等）因缺文件而失败。
+    if not os.path.isfile(csv_path):
+        with open(bed_path, "w") as fout:
+            fout.write("\t".join(BED_HEADER) + "\n")
+        return written
     with open(csv_path, newline="") as fin, open(bed_path, "w") as fout:
         reader = csv.DictReader(fin)
         fout.write("\t".join(BED_HEADER) + "\n")
