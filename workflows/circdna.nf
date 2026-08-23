@@ -108,7 +108,7 @@ workflow CIRCDNA {
     def bwa_index_exists = false
     def ch_bwa_index = channel.empty()
     if (params.bwa_index) {
-    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').map{ index -> ["bwa_index", index] }.first()
+    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').map{ index -> [[id: 'bwa_index'], index] }.first()
     bwa_index_exists = true
     } else {
     ch_bwa_index = channel.empty()
@@ -341,14 +341,14 @@ workflow CIRCDNA {
             BWA_INDEX (
                 ch_fasta_meta
             )
-            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }
+            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> [[id: 'bwa_index'], index] }
             ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
         }
         if (!bwa_index_exists & !use_legacy_mode & params.mode in ['reference', 'eccdna']) {
             BWA_INDEX (
                 ch_fasta_meta
             )
-            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> ["bwa_index", index] }
+            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> [[id: 'bwa_index'], index] }
             ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
         }
     } else if (params.input_format == "BAM") {
