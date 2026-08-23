@@ -6,49 +6,43 @@ workflow INPUT_CHECK {
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
-    ch_versions = SAMPLESHEET_CHECK.out.versions
+        .csv
+        .splitCsv ( header:true, sep:',' )
+        .set { parsed_samplesheet }
 
-    if ( params.input_format == "FASTQ" ) {
-        channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
-            .map { it -> create_fastq_channels(it) }
+    if ( params.protocol == "short_read" && params.input_format == "FASTQ" ) {
+        parsed_samplesheet
+            .map { it -> create_short_read_fastq_channels(it) }
             .set { reads }
-    } else if ( params.input_format == "BAM" ) {
-        channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
-            .map { it -> create_bam_channels(it) }
+    } else if ( params.protocol == "short_read" && params.input_format == "BAM" ) {
+        parsed_samplesheet
+            .map { it -> create_short_read_bam_channels(it) }
             .set { reads }
     } else if ( params.protocol in ["pacbio", "ont"] ) {
-        channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
+        parsed_samplesheet
             .map { it -> create_long_read_channels(it) }
             .set { reads }
+    } else {
+        exit 1, "ERROR: Invalid combination of protocol '${params.protocol}' and input_format '${params.input_format}'"
     }
 
     emit:
-    reads
-    versions = ch_versions
+    reads   // channel: [ val(meta), [ reads ] ] OR
+            // channel: [ val(meta),  bam  ] OR
+            // channel: [ val(meta), fastq, input_bam, entrypoint ]
+    versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
-def create_fastq_channels(LinkedHashMap row) {
+def create_short_read_fastq_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id           = row.sample
     meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
     if (row.containsKey('lane') && row.lane) {
         meta.lane = row.lane
     }
-    // Support both 'data_type' and 'datatype' column names
-    def dt_value = ''
-    if (row.containsKey('data_type') && row.data_type) {
-        dt_value = row.data_type.toLowerCase()
-    } else if (row.containsKey('datatype') && row.datatype) {
-        dt_value = row.datatype.toLowerCase()
-    }
-    meta.datatype = dt_value ?: 'eccdna'
-    meta.data_type = meta.datatype
+    meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
     meta.platform     = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
     meta.protocol     = row.containsKey('protocol') ? (row.protocol ? row.protocol : 'short_read') : 'short_read'
-    // Support optional 'group' column for eccDNA/gDNA pairing
-    meta.group = row.containsKey('group') ? (row.group ?: '') : ''
-    // Support optional 'pair' column for eccDNA/gDNA pairing
-    meta.pair = row.containsKey('pair') ? (row.pair ?: '') : ''
 
     def array = []
     if (!file(row.fastq_1).exists()) {
@@ -65,15 +59,10 @@ def create_fastq_channels(LinkedHashMap row) {
     return array
 }
 
-def create_bam_channels(LinkedHashMap row) {
+def create_short_read_bam_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id             = row.sample
     meta.single_end     = false
-    meta.data_type = row.containsKey('data_type') ? (row.data_type ? row.data_type.toLowerCase() : 'eccdna') :
-                     (row.containsKey('datatype') ? (row.datatype ? row.datatype.toLowerCase() : 'eccdna') : 'eccdna')
-    meta.datatype = meta.data_type
-    meta.group = row.containsKey('group') ? (row.group ?: '') : ''
-    meta.pair = row.containsKey('pair') ? (row.pair ?: '') : ''
 
     def array = []
     if (!file(row.bam).exists()) {

@@ -23,9 +23,18 @@ process CRESIL_TRIM {
     prefix = task.ext.prefix ?: "${meta.id}"
 
     """
+    # CRESIL determines input type by file extension and does not handle .gz,
+    # so decompress gzipped reads to a .fastq file when needed.
+    if [[ "${reads}" == *.gz ]]; then
+        zcat "${reads}" > reads_input.fastq
+        READS_IN="reads_input.fastq"
+    else
+        READS_IN="${reads}"
+    fi
+
     cresil trim \\
         -t ${task.cpus} \\
-        -fq ${reads} \\
+        -fq \$READS_IN \\
         -r ${mmi} \\
         -o . \\
         $args

@@ -23,6 +23,16 @@ include { CIRCLE_MAP_PIPELINE            } from '../subworkflows/local/circle_ma
 include { CIRCLE_FINDER_PIPELINE         } from '../subworkflows/local/circle_finder_pipeline/main'
 include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/ampliconarchitect_pipeline/main'
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
+include { LONG_READ_PREPROCESSING        } from '../subworkflows/local/long_read_preprocessing/main'
+include { LONG_READ_MAPPING             } from '../subworkflows/local/long_read_mapping/main'
+include { CRESIL_PIPELINE               } from '../subworkflows/local/cresil_pipeline/main'
+include { FLED_PIPELINE                 } from '../subworkflows/local/fled_pipeline/main'
+include { FLYE_PIPELINE                 } from '../subworkflows/local/flye_pipeline/main'
+include { LONG_READ_FILTERING as LONG_READ_FILTERING_CRESIL } from '../subworkflows/local/long_read_filtering/main'
+include { LONG_READ_FILTERING as LONG_READ_FILTERING_FLED   } from '../subworkflows/local/long_read_filtering/main'
+include { LONG_READ_FILTERING as LONG_READ_FILTERING_CIRCLESEEKER } from '../subworkflows/local/long_read_filtering/main'
+include { ECC_FINDER_PIPELINE           } from '../subworkflows/local/ecc_finder_pipeline/main'
+include { CIRCLESEEKER_PIPELINE         } from '../subworkflows/local/circleseeker_pipeline/main'
 include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
 include { ECCDNA_MODE                   } from '../subworkflows/local/eccdna_mode/main'
 include { ECCSPLORER_PIPELINE            } from '../subworkflows/local/eccsplorer_pipeline/main'
@@ -39,13 +49,13 @@ workflow CIRCDNA {
         exit 1, "Invalid mode: ${params.mode}. Valid modes: ${valid_modes.join(', ')}"
     }
 
-    if (params.containsKey('fasta') && params.fasta) { 
-        ch_fasta = channel.fromPath(params.fasta) 
+    if (params.containsKey('fasta') && params.fasta) {
+        ch_fasta = channel.fromPath(params.fasta).collect()
     } else {
         def genome_fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
         if (genome_fasta) {
             params.fasta = genome_fasta
-            ch_fasta = channel.fromPath(genome_fasta)
+            ch_fasta = channel.fromPath(genome_fasta).collect()
         } else {
             exit 1, 'Fasta reference genome not specified!' 
         }
@@ -145,16 +155,116 @@ workflow CIRCDNA {
     ch_markduplicates_flagstat  = channel.empty()
     ch_markduplicates_idxstats  = channel.empty()
     ch_markduplicates_multiqc   = channel.empty()
+    ch_fastqc_multiqc           = channel.empty()
+    ch_trimgalore_multiqc       = channel.empty()
+    ch_trimgalore_multiqc_log   = channel.empty()
     ch_mosdepth_multiqc         = channel.empty()
 
-    // Check file format
-    if (params.input_format == "FASTQ") {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
+    // Check protocol first - long-read analysis is independent
+    if (params.protocol in ["pacbio", "ont"]) {
+        def lr_branch = params.long_read_identifier.split(",")
+        def run_cresil = ("cresil" in lr_branch)
+        def run_fled = ("fled" in lr_branch)
+        def run_flye = ("flye" in lr_branch)
+        def run_eccfinder = ("eccfinder" in lr_branch)
+        def run_circleseeker = ("circleseeker" in lr_branch)
+
         INPUT_CHECK (
             file(params.input)
         )
+        .reads
+        .set { ch_long_reads }
+        ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+
+        LONG_READ_PREPROCESSING (
+            ch_long_reads
+        )
+        .preprocessed_fastq
+        .set { ch_preprocessed_fastq }
+
+        ch_versions = ch_versions.mix(LONG_READ_PREPROCESSING.out.versions)
+
+        if (run_cresil) {
+            CRESIL_PIPELINE (
+                ch_preprocessed_fastq,
+                ch_fasta
+            )
+            .eccdna_candidates
+            .map { meta, file -> [ meta, file ] }
+            .set { ch_cresil_candidates }
+
+            LONG_READ_FILTERING_CRESIL (
+                ch_cresil_candidates
+            )
+            ch_versions = ch_versions.mix(CRESIL_PIPELINE.out.versions)
+            ch_versions = ch_versions.mix(LONG_READ_FILTERING_CRESIL.out.versions)
+        }
+
+        if (run_fled) {
+            // FLED accepts FASTQ directly (it runs minimap2 internally),
+            // so pass the preprocessed long reads without pre-mapping.
+            FLED_PIPELINE (
+                ch_preprocessed_fastq,
+                ch_fasta
+            )
+            .junctions
+            .set { ch_fled_candidates }
+
+            LONG_READ_FILTERING_FLED (
+                ch_fled_candidates
+            )
+            ch_versions = ch_versions.mix(FLED_PIPELINE.out.versions)
+            ch_versions = ch_versions.mix(LONG_READ_FILTERING_FLED.out.versions)
+        }
+
+        if (run_flye) {
+            FLYE_PIPELINE (
+                ch_preprocessed_fastq
+            )
+            ch_versions = ch_versions.mix(FLYE_PIPELINE.out.versions)
+        }
+
+        if (run_eccfinder) {
+            def eccfinder_mode = params.eccfinder_mode
+            def run_map = eccfinder_mode in ['map', 'both']
+            def run_asm = eccfinder_mode in ['asm', 'both']
+
+            ECC_FINDER_PIPELINE (
+                ch_preprocessed_fastq,   // reads (single-end long reads)
+                channel.empty(),          // bwa_index — not used for long-read
+                ch_fasta,                 // reference genome
+                run_map,
+                run_asm,
+                params.protocol           // 'ont' | 'pacbio'
+            )
+            ch_versions = ch_versions.mix(ECC_FINDER_PIPELINE.out.versions)
+        }
+
+        if (run_circleseeker) {
+            CIRCLESEEKER_PIPELINE (
+                ch_preprocessed_fastq,
+                ch_fasta
+            )
+            .bed
+            .set { ch_circleseeker_candidates }
+
+            LONG_READ_FILTERING_CIRCLESEEKER (
+                ch_circleseeker_candidates
+            )
+            ch_versions = ch_versions.mix(CIRCLESEEKER_PIPELINE.out.versions)
+            ch_versions = ch_versions.mix(LONG_READ_FILTERING_CIRCLESEEKER.out.versions)
+        }
+
+    } else {
+        // Short-read analysis
+        // Check file format
+        if (params.input_format == "FASTQ") {
+            //
+            // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+            //
+            INPUT_CHECK (
+                file(params.input)
+            )
         .reads
         .map {
             meta, fastq ->
@@ -454,6 +564,7 @@ workflow CIRCDNA {
             ch_fasta_meta
         )
         ch_versions = ch_versions.mix(UNICYCLER_PIPELINE.out)
+    }
     }
 
     //

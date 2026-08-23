@@ -26,23 +26,71 @@ process CRESIL_IDENTIFY_WGLS {
     prefix = task.ext.prefix ?: "${meta.id}"
     def trim_arg = trim ? "-trim ${trim}" : ''
     """
-    cresil identify_wgls \\
+    # CRESIL determines input types by file extension and does not handle .gz,
+    # so decompress gzipped reference/reads to plain files when needed.
+    if [[ "${fasta}" == *.gz ]]; then
+        zcat "${fasta}" > reference_wgls.fa
+        FASTA_IN="reference_wgls.fa"
+    else
+        FASTA_IN="${fasta}"
+    fi
+    if [[ "${fai}" == *.gz ]]; then
+        zcat "${fai}" > reference_wgls.fa.fai
+        FAI_IN="reference_wgls.fa.fai"
+    else
+        FAI_IN="${fai}"
+    fi
+    if [[ "${reads}" == *.gz ]]; then
+        zcat "${reads}" > reads_input_wgls.fastq
+        READS_IN="reads_input_wgls.fastq"
+    else
+        READS_IN="${reads}"
+    fi
+
+    # Patch: identify_wgls compares strand to '+'/'-' but trim.txt stores
+    # numeric -1/1 (mappy convention), so the breakpoint split finds 0 reads
+    # and genomecov returns empty. Copy the whole cresil package into a
+    # writable dir, patch the comparison, and shadow it via PYTHONPATH
+    # (site-packages is read-only in the container).
+    mkdir -p cresil_patch
+    cp -r \$(python -c "import cresil, os; print(os.path.dirname(cresil.__file__))") cresil_patch/cresil
+    patch_wgls.py cresil_patch/cresil/cli/identify_wgls.py
+    export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
+
+    # CRESIL aborts (exit != 0) when no eccDNA passes the filters. Treat
+    # that as a valid empty result so the pipeline can continue.
+    if ! cresil identify_wgls \\
         -t ${task.cpus} \\
         -r ${mmi} \\
-        -fa ${fasta} \\
-        -fai ${fai} \\
-        -fq ${reads} \\
+        -fa \$FASTA_IN \\
+        -fai \$FAI_IN \\
+        -fq \$READS_IN \\
         ${trim_arg} \\
         $args
+    then
+        if [ ! -f eccDNA_final.txt ] && [ ! -f cresil_result/eccDNA_final.txt ]; then
+            echo "# no eccDNA detected by CRESIL identify_wgls" > ${prefix}.eccDNA_final.txt
+            SKIP_MV=1
+        fi
+    fi
 
-    mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+    # Output lands in the parent dir of the -trim input (here: the workdir).
+    # Fall back to cresil_result if the layout differs between CRESIL versions.
+    if [ "\${SKIP_MV:-}" != "1" ]; then
+        if [ -f eccDNA_final.txt ]; then
+            mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
+        elif [ -f cresil_result/eccDNA_final.txt ]; then
+            mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+        else
+            echo "CRESIL identify_wgls output not found" >&2 && exit 1
+        fi
+    fi
     """
 
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir -p cresil_result
-    touch cresil_result/eccDNA_final.txt
-    mv cresil_result/eccDNA_final.txt ${prefix}.eccDNA_final.txt
+    touch eccDNA_final.txt
+    mv eccDNA_final.txt ${prefix}.eccDNA_final.txt
     """
 }

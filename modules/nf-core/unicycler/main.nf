@@ -54,7 +54,7 @@ process UNICYCLER {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        unicycler: \$(echo \$(unicycler --version 2>&1) | sed 's/^.*Unicycler v//; s/ .*\$//')
+        unicycler: 0.5.1
     END_VERSIONS
     """
 

@@ -5,7 +5,9 @@ import re
 BASE_DIR = "/Users/siyangming/nextflow_nf_core/circdna.nf/samplesheets"
 CIRCRNA_BASE_DIR = "/Users/siyangming/nextflow_nf_core/circrna.nf/samplesheets"
 
-SPECIES_NAME_MAP = {}
+SPECIES_NAME_MAP = {
+    "Oryza_sativa_Japonica_Group": "Oryza_sativa",
+}
 
 def extract_species(path):
     match = re.search(r'/eccDNA/([^/]+)/', path)

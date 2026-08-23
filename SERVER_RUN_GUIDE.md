@@ -219,7 +219,8 @@ nextflow run ./circdna.nf/main.nf \
     --input circdna.nf/samplesheets/circdna_Tragopogon_porrifolius_eccDNA.csv \
     --genome Tragopogon_porrifolius_hap2 \
     --outdir eccDNA_results/Tragopogon_porrifolius \
-    -profile server
+    -profile server \
+    -c circdna.nf/conf/large_genome.config
 ```
 
 ### 狗牙根 (Cynodon_dactylon)
@@ -334,13 +335,25 @@ nextflow run ./circdna.nf/main.nf \
     -profile server
 ```
 
+
+## 大基因组说明
+
+染色体超过 512 Mb 的物种（如小麦、日本柳杉、黑麦草），BAI 索引无法表示超过 2^29 ≈ 536 Mb 的坐标，会导致 `samtools index` 或 `samtools sort --write-index` 报 `Numerical result out of range`。
+
+`large_genome.config` 做两件事：
+
+1. `params.use_csi_index = true` — 子工作流中 `SAMTOOLS_SORT_RE` 等进程的 `samtools sort --write-index` 改用 CSI 格式
+2. 精确覆盖全部 4 个 `SAMTOOLS_INDEX` 实例（`SAMTOOLS_INDEX_BAM` / `_FILTERED` / `_RE` / `BAM_MARKDUPLICATES_PICARD:SAMTOOLS_INDEX`）的 `ext.args = '-c'`，使 `samtools index` 输出 CSI
+
+用法：在大基因组物种的命令末尾加 `-c circdna.nf/conf/large_genome.config`，如下方黑麦草/小麦/日本柳杉/婆罗门参 hap1 所示。
+
 ## 注意事项
 
 - **必须执行 `conda activate nextflow`**：`nextflow` 命令仅在 `nextflow` conda 环境中可用
 - **`-resume` 必须指定 run name**：使用 `-resume`（不带参数）会恢复最近一次运行，可能不是你想要的
 - **参考基因组文件**：需已存在于 `/data1/users/siyangming/PublicDB/reference/<species>/` 目录下
 - **样本数据**：需存在于 `eccDNA/` 目录
-- **大基因组**（小麦、日本柳杉、Tragopogon_porrifolius hap1）需添加 `-c circdna.nf/conf/large_genome.config`；黑麦草同为大型基因组，章节内已单独标注
+- **大基因组**：染色体超过 512 Mb 的物种需加 `-c circdna.nf/conf/large_genome.config`，详见上方「大基因组说明」
 - **`circle_identifier`、`input_format`** 等参数已在 `circdna.nf/conf/server.config` 中配置，无需在命令中指定
 - **清理旧 work 目录**：root 权限文件需用 Docker 删除
 

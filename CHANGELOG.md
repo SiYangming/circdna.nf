@@ -180,6 +180,12 @@ Special thanks to the following for their input and contributions to the release
 - **ECCsplorer.py 命令行直接调用支持**: ECCsplorer.py 源码已添加可执行权限（`chmod +x`，shebang `#!/usr/bin/env python3` 已存在）。Dockerfile 新增 PATH 符号链接（`/opt/conda/envs/eccsplorer/bin/ECCsplorer.py` → `/opt/eccsplorer/ECCsplorer.py`，同时提供无后缀的 `ECCsplorer` 入口）。`bio.nf/modules/eccsplorer/main.nf` 与 `circdna.nf/modules/local/eccsplorer/main.nf` 的调用方式从 `python ${ECCSPLORER_HOME:-/opt/eccsplorer}/ECCsplorer.py` 改为直接调用 `ECCsplorer.py`，无需 `python` 前缀和显式路径
 - **Docker 和 conda 包依赖列表按 Installation_instructions.md 完善**: 参考 `ECCsplorer/tutorials/Installation_instructions.md` 第 158-173 行"Third party tool required"清单与源码 `ECCsplorer/environment.yml`，在 `ECCsplorer/environment-docker.yml` 与 `ECCsplorer/conda-recipe/meta.yaml` 中补齐以下依赖：第三方工具（`diamond`、`last`、`mafft`、`imagemagick`、`blast-legacy`）、RepeatExplorer2 推荐 R 库（`r-igraph`、`r-data.tree`、`r-stringr`、`r-r2html`、`r-hwriter`、`r-dt`、`r-scales`、`r-plotrix`、`r-png`、`r-plyr`、`r-optparse`、`r-dbi`、`r-rsqlite`、`r-gridbase`）、Bioconductor 包（`bioconductor-biostrings`）。同时将 `r-rserve` 从 Dockerfile 单独安装迁移至 environment-docker.yml 统一管理。Dockerfile 中 RepeatExplorer2 安装步骤保留 stub 兜底逻辑（上游 URL 失效），并在注释中明确说明用户需手动安装
 - **Dockerfile 新增 conda 清华镜像源配置**: 为解决从 conda.anaconda.org 下载 R 包网络超时问题，Dockerfile 新增 `CONDA_REMOTE_MAX_RETRIES=10`、`CONDA_REMOTE_CONNECT_TIMEOUT_SECS=30`、`CONDA_REMOTE_READ_TIMEOUT_SECS=120`、`CONDA_REMOTE_BACKOFF_FACTOR=2` 环境变量，以及 `/opt/conda/.condarc` 清华大学镜像源配置（conda-forge 映射至 `mirrors.tuna.tsinghua.edu.cn`），显著提升构建稳定性
+- **CircleSeeker 模块接入**: 新增 `modules/local/circleseeker/` nf-core 标准模块（main.nf、meta.yml、environment.yml），通过 `quay.io/biocontainers/circleseeker:1.1.2--pyhdfd78af_0`（singularity 回退 galaxy depot）与 `bioconda::circleseeker=1.1.2` 双引擎运行。模块支持 gz 解压、FASTQ→FASTA 自动转换、`task.ext.args`/`task.ext.prefix`、stub 模式，输出 merged（`<prefix>_eccDNA_summary.csv`）、BED、summary、report 与 versions
+- **CircleSeeker BED 转换**: 新增 `bin/circleseeker_to_bed.py`，将 CircleSeeker v1.1.x `eccDNA_summary.csv` 转换为 BED6+`read_count` 表（坐标 1-based inclusive → 0-based half-open），与现有 `filter_by_read_support.py` 自动检测兼容
+- **长读分支新增 `circleseeker` 检测引擎**: `workflows/circdna.nf` 长读分支 `long_read_identifier` 新增 `circleseeker` 选项（默认不启用，显式加入后运行），新增 `subworkflows/local/circleseeker_pipeline/` 子流程，产出 BED 接入现有 `LONG_READ_FILTERING`（支持度/黑名单/重复序列过滤）
+- **CircleSeeker 输出发布**: `conf/modules.config` 配置 CIRCLESEEKER publishDir 至 `${params.outdir}/long_read/circleseeker/${meta.id}`
+- **测试 profile 更新**: `conf/test_pacbio_lr.config`、`conf/test_nanopore_lr.config` 的 `long_read_identifier` 加入 `circleseeker` 并补充资源覆盖
+- **nf-test 模块测试**: `modules/local/circleseeker/tests/main.nf.test`（真实 + stub 用例），使用模块自带 `testdata/`（重构为含串联重复结构的 HiFi 模拟 reads，可真实检出 UeccDNA），`tests/nextflow.config` 按 §11 规范配置 docker（A+C 用户映射 + amd64）；snapshot 仅匹配稳定输出（summary.txt/report.html 含运行时间戳）
 
 ### Dependencies
 
@@ -189,6 +195,9 @@ Special thanks to the following for their input and contributions to the release
   - 新增运行时依赖: samtools（用于 BAM→FASTQ 转换，已在 environment.yml 中声明）
   - Docker 镜像新增依赖（参考 Installation_instructions.md）: diamond、last、mafft、imagemagick、blast-legacy、r-igraph、r-data.tree、r-stringr、r-r2html、r-hwriter、r-dt、r-scales、r-plotrix、r-png、r-plyr、r-optparse、r-dbi、r-rsqlite、r-gridbase、bioconductor-biostrings、r-rserve
 - **segemehl**: 0.2.0 → >=0.3.4（修复 haarz.x 缺失问题，0.3.4+ 包含 haarz.x）
+- **circleseeker**: 新增（1.1.2）
+  - conda 包: `bioconda::circleseeker=1.1.2`（含 tidehunter、minimap2、samtools、cd-hit、last 等依赖）
+  - Docker 镜像: `quay.io/biocontainers/circleseeker:1.1.2--pyhdfd78af_0`
 
 ### Notes
 
@@ -196,6 +205,8 @@ Special thanks to the following for their input and contributions to the release
 - conda 包与 Docker 镜像版本号保持一致（`2022.01.1.1`）
 - 构建流程遵循 [AGENTS.md](../AGENTS.md) 第 12 章 "第三方模块构建工作流程"
 - conda 包上传至 anaconda.org/yangmingsi（用户 anaconda.org 用户名为 `YangmingSi`，channel 不区分大小写为 `yangmingsi`），Docker 镜像上传至 quay.io/bioinfortools（用户 quay.io 登录账户）
+- CircleSeeker 由 [leoxqy/CircleSeeker](https://github.com/leoxqy/CircleSeeker) 开发，用于 PacBio HiFi 长读长 eccDNA 检测（CtcReads-Caller + SplitReads-Caller 双证据）
+- 微小模拟数据上 SplitReads 推断步骤可能因无 junction 证据报 WARNING（EmptyDataError），属工具对空输入的已知行为，不影响流程完成与 CtcReads 检出
 
 ## v4.1.0 - [2026-08-02]
 

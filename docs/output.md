@@ -22,6 +22,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Circle_finder](#circle_finder) - Identifies putative circular DNA junctions
 - [AmpliconArchitect](#ampliconarchitect) - Reconstruct the structure of focally amplified regions
 - [Unicycler](#unicycler) - DeNovo Alignment of circular DNAs
+- [CircleSeeker](#circleseeker) - Long-read (PacBio HiFi) eccDNA detection
 
 ## General Tools
 
@@ -398,6 +399,41 @@ The plots will show:
   - Samtools stats output
 
 </details>
+### CircleSeeker
+
+[CircleSeeker](https://github.com/leoxqy/CircleSeeker) is an optional long-read eccDNA detection engine (enabled by adding `circleseeker` to `--long_read_identifier`). It detects and classifies eccDNA from PacBio HiFi reads using two evidence-based callers: the CtcReads-Caller (tandem repeat / concatemer evidence, producing "Confirmed" eccDNA) and the SplitReads-Caller (split-read / junction evidence, producing "Inferred" eccDNA). EccDNA are classified as Unique (UeccDNA), Multiple (MeccDNA) or Chimeric (CeccDNA).
+
+<details markdown="1">
+<summary>Output files</summary>
+
+**Output directory: `results/long_read/circleseeker/<SAMPLE>/`**
+
+- `<SAMPLE>_eccDNA_summary.csv`
+  - Combined table of all detected eccDNA (eccDNA_id, type, state, chr, start, end, strand, length, location, segment_count, read_count, copy_number, confidence, inferred_reads)
+- `<SAMPLE>_eccDNA_all.fasta`
+  - FASTA file with the sequences of all detected eccDNA
+- `<SAMPLE>_eccDNA_reads.csv`
+  - Per-read support table (read_name, copy_number, match_degree, identity, mapq)
+- `<SAMPLE>_eccDNA_regions.csv`
+  - Per-region table (region_idx, chr, start, end, strand, length, role)
+- `<SAMPLE>.circleseeker.bed`
+  - BED6+read_count table derived from the summary CSV, used as input for the shared long-read candidate filtering
+- `<SAMPLE>_summary.txt`
+  - Summary statistics text report
+- `<SAMPLE>_report.html`
+  - Interactive HTML report
+- `UeccDNA/`, `MeccDNA/`, `CeccDNA/`
+  - Per-type subdirectories with `*.bed` and `*.fasta` files
+
+</details>
+
+Filtered CircleSeeker candidates are published by the shared long-read filtering step:
+
+**Output directory: `results/long_read/filtering/<SAMPLE>/`**
+
+- `<SAMPLE>.filtered.circleseeker.bed`
+  - Candidates passing the `--min_read_support` filter (plus `--blacklist_bed` / `--repeats_bed` when provided)
+
 ### Pipeline information
 
 <details markdown="1">
