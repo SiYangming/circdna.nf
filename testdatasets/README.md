@@ -345,3 +345,97 @@ nextflow run main.nf \
 - 样本量过小（<500 条）可能因串联重复 reads 太少而检不出候选，建议至少 1,000 条起步
 - PacBio CIDER-seq reads 来自 Amaranthus palmeri（基因组 ~700 Mb），比 Arabidopsis 大，但 eccDNA circles 大小不受基因组限制
 - 若需对照 WGS 背景，可使用已有的 Illumina 短读测试数据（`testdata/` 目录下 `gdna_1` 样本）
+
+---
+
+## 服务器全量测试命令（circdnalr 分支）
+
+服务器环境：192.168.16.65，项目路径 `/data1/users/siyangming/PlanteccDNADB/circdna.nf`，nextflow 26.04.6（conda env `nextflow`），docker 26.1.4。
+
+### 注意事项（重要）
+
+- **SSH 执行命令必须先加载 conda 再 cd**：服务器 `~/.bashrc` 第 12 行含 `cd /data1/users/siyangming`，若先 `cd` 再 `source ~/.bashrc` 会被切走目录导致 `Cannot find script file: main.nf`。正确顺序：
+  ```bash
+  ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run ..."
+  ```
+- **`ps` 硬依赖**：nextflow ≥26 的 `.command.run` 每个任务硬检查容器内 `command -v ps`。黑盒镜像（`ecc_finder:1.0.0`）必须含 `procps`，否则 stub 与真实运行都会失败（exit 1）。
+- **不要改 master 分支**：以下测试均在 `circdnalr` 分支进行。
+
+### 1. 同步服务器代码到最新
+
+```bash
+ssh 192.168.16.65
+cd /data1/users/siyangming/PlanteccDNADB/circdna.nf
+git fetch origin
+git checkout circdnalr
+git merge --ff-only origin/circdnalr
+```
+
+### 2. Stub 全量测试（slim 链，68 任务，~1 分钟）
+
+覆盖 eccsplorer_map_slim + ecc_finder 短读，快速编译验证整条链路：
+
+```bash
+ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run main.nf -profile test_local,docker -stub-run --input samplesheets/test_local_gdna_single.csv --fasta testdatasets/reference/genome.fa --outdir results/test_stub_full"
+```
+
+预期：`Pipeline completed successfully`，68 个任务全部 Succeeded。
+
+### 3. 真实数据测试（slim ECCsplorer gdna 对照，单样本，62 任务，~7 分钟）
+
+```bash
+ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run main.nf -profile test_local_gdna,docker --circle_identifier eccsplorer_map_slim --input samplesheets/test_local_gdna_single.csv --fasta testdatasets/reference/genome.fa --eccsplorer_database testdatasets/eccsplorer_db/eccsplorer_db.fa --outdir results/test_real_slim"
+```
+
+预期：62 任务全部 Succeeded；候选结果 `results/test_real_slim/eccsplorer_slim/candidates/circdna_1_hiconf-ECC-REGIONS.bed`（81 行）。
+
+### 4. 黑盒 ecc_finder stub 测试（map_sr，修复 ps 后）
+
+```bash
+ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run main.nf -profile test_local,docker -stub-run --circle_identifier ecc_finder_map_sr --input samplesheets/test_local_gdna_single.csv --fasta testdatasets/reference/genome.fa --outdir results/test_stub_blackbox"
+```
+
+### 5. 长读链 stub 测试（PacBio / ONT）
+
+```bash
+# PacBio
+ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run main.nf -profile test_pacbio_lr,docker -stub-run --outdir results/test_stub_pacbio"
+
+# ONT (Nanopore)
+ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run main.nf -profile test_nanopore_lr,docker -stub-run --outdir results/test_stub_nanopore"
+```
+
+### 6. 重建并推送黑盒 ecc_finder 镜像（含 procps）
+
+仅在修改 `/data1/users/siyangming/ecc_finder_orig_build/Dockerfile` 后需要（如 apt 依赖变更）：
+
+```bash
+ssh 192.168.16.65 "cd /data1/users/siyangming/ecc_finder_orig_build && docker build -t quay.io/bioinfortools/ecc_finder:1.0.0 . && docker push quay.io/bioinfortools/ecc_finder:1.0.0"
+```
+
+Dockerfile 对应本地文件：`.trae/build/ecc_finder_apt/Dockerfile`。当前版本 apt 安装含 `procps`（解决 nextflow 任务 `ps` 缺失）。
+
+### 7. 已修复问题记录
+
+| 问题 | 现象 | 修复 |
+|------|------|------|
+| 黑盒镜像缺 `ps` | 所有 ecc_finder 黑盒模块（map_sr/asm_sr/map_ont/asm_ont）exit 1，报 `Command 'ps' required by nextflow` | Dockerfile apt 加 `procps`，重建推送镜像 |
+| bwa_index meta 非 Map | `ECC_FINDER_MAP_SR` finalizing 报 `No such property: id for class: java.lang.String` | `workflows/circdna.nf` 3 处改为 `[[id: 'bwa_index'], index]` |
+| FLED 缺 stub 块 | stub 模式仍真实运行 minimap2（71s） | 补充 stub 块 |
+| FLED cat 不健壮 | 无多片段 eccDNA 时 `MulsegFullJunction.out` 不存在，`cat` exit 1 | 分两次 `cat` 加 `2>/dev/null` 容错 |
+| FLED output 依赖 script 局部变量 | stub 模式 `No such variable: prefix` | output 路径改内联 `task.ext.prefix ?: meta.id` |
+| `.bashrc` 含 `cd` | 先 cd 再 source 会切走目录，`Cannot find script file` | SSH 命令先 source 再 cd |
+
+### 8. 测试日志位置（服务器 /tmp）
+
+| 日志 | 内容 | 结果 |
+|------|------|------|
+| `/tmp/stub_full.log` | slim stub 全量 | 68 任务成功 |
+| `/tmp/real_slim.log` | 真实 slim gdna 对照 | 62 任务成功 |
+| `/tmp/stub_blackbox.log` | 黑盒 stub（修复前） | 失败（ps 缺失） |
+| `/tmp/stub_blackbox2.log` | 黑盒 stub（修复后） | 成功 |
+| `/tmp/stub_pacbio2.log` | PacBio 长读 stub（修复后） | 成功 |
+| `/tmp/stub_nanopore2.log` | ONT 长读 stub（修复后） | 成功 |
+| `/tmp/ecc_finder_build.log` | 镜像构建 | 成功 |
+| `/tmp/ecc_finder_push.log` | 镜像推送 | 成功 |
+
