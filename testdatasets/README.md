@@ -405,7 +405,29 @@ ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /da
 ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run main.nf -profile test_nanopore_lr,docker -stub-run --outdir results/test_stub_nanopore"
 ```
 
-### 6. 重建并推送黑盒 ecc_finder 镜像（含 procps）
+### 6. 长读链真实数据测试（PacBio / ONT，各 17 任务，~5 分钟）
+
+真实运行 5 条长读链（cresil / fled / flye / eccfinder / circleseeker）。test config 的资源限制（2 CPU / 6GB / 6h）是给 GitHub CI 的，服务器上需用 `-c /tmp/lr_resources.config` 放宽（**必须用第 8 节完整配置**，仅覆盖 label 不够——test config 中约 20 个 `withName` 覆盖会兜底限制为 2 CPU）。
+
+```bash
+# 先按第 8 节完整配置创建 /tmp/lr_resources.config（一次即可）
+
+# PacBio 真实运行
+ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nohup nextflow run main.nf -profile test_pacbio_lr,docker -c /tmp/lr_resources.config --outdir results/test_real_pacbio > /tmp/real_pacbio.log 2>&1 &"
+
+# ONT 真实运行
+ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nohup nextflow run main.nf -profile test_nanopore_lr,docker -c /tmp/lr_resources.config --outdir results/test_real_nanopore > /tmp/real_nanopore.log 2>&1 &"
+```
+
+预期产物（`results/test_real_{pacbio,nanopore}/long_read/`）：
+- `cresil/genome/genome.eccDNA_final.txt`（候选列表 + 注释 + Circos 可视化）
+- `fled/{sample}/{sample}.fled_junctions.txt`（无候选时为空文件）
+- `flye/{sample}/{sample}.assembly.fasta.gz`（组装结果）
+- `eccfinder/map/genome/ecc.ont.csv`（map-ont 检出）
+- `circleseeker/{sample}/{sample}_eccDNA_summary.csv`（无候选时仅有表头）
+- `qc/nanoplot/...`（NanoPlot 报告）
+
+### 7. 重建并推送黑盒 ecc_finder 镜像（含 procps / minimap2 / bc）
 
 仅在修改 `/data1/users/siyangming/ecc_finder_orig_build/Dockerfile` 后需要（如 apt 依赖变更）：
 
@@ -413,20 +435,56 @@ ssh 192.168.16.65 "source ~/.bashrc 2>/dev/null; conda activate nextflow; cd /da
 ssh 192.168.16.65 "cd /data1/users/siyangming/ecc_finder_orig_build && docker build -t quay.io/bioinfortools/ecc_finder:1.0.0 . && docker push quay.io/bioinfortools/ecc_finder:1.0.0"
 ```
 
-Dockerfile 对应本地文件：`.trae/build/ecc_finder_apt/Dockerfile`。当前版本 apt 安装含 `procps`（解决 nextflow 任务 `ps` 缺失）。
+Dockerfile 对应本地文件：`.trae/build/ecc_finder_apt/Dockerfile`。当前版本 apt 安装含 `procps minimap2 bc`：
+- `procps`：解决 nextflow 任务 `ps` 缺失
+- `minimap2` + `bc`：map-ont / asm-ont 真实运行依赖（`FileNotFoundError: minimap2`）
 
-### 7. 已修复问题记录
+### 8. 长读真实测试完整资源覆盖配置
+
+```groovy
+// /tmp/lr_resources.config —— 覆盖 test config 中所有 withLabel 与 withName 限制
+params { max_cpus = 32; max_memory = '128.GB'; max_time = '48.h' }
+process {
+    withLabel:process_high   { cpus = 16; memory = '64.GB'; time = '48.h' }
+    withLabel:process_medium { cpus = 8;  memory = '32.GB'; time = '48.h' }
+    withLabel:process_low    { cpus = 4;  memory = '16.GB'; time = '48.h' }
+    withName: 'PBCCS'      { cpus = 8;  memory = '32.GB'; time = '48.h' }
+    withName: 'LIMA'       { cpus = 8;  memory = '32.GB'; time = '48.h' }
+    withName: 'CHOPPER'    { cpus = 4;  memory = '16.GB'; time = '48.h' }
+    withName: 'PYCHOPPER'  { cpus = 4;  memory = '16.GB'; time = '48.h' }
+    withName: 'CRESIL_TRIM'       { cpus = 8;  memory = '32.GB'; time = '48.h' }
+    withName: 'CRESIL_IDENTIFY'   { cpus = 16; memory = '64.GB'; time = '48.h' }
+    withName: 'CRESIL_ANNOTATE'   { cpus = 8;  memory = '32.GB'; time = '48.h' }
+    withName: 'CRESIL_IDENTIFY_WGLS' { cpus = 8; memory = '32.GB'; time = '48.h' }
+    withName: 'CRESIL_VISUALIZE'  { cpus = 4;  memory = '16.GB'; time = '48.h' }
+    withName: 'MINIMAP2_INDEX'    { cpus = 8;  memory = '32.GB'; time = '48.h' }
+    withName: 'FLED'       { cpus = 16; memory = '64.GB'; time = '48.h' }
+    withName: 'FLYE'       { cpus = 16; memory = '64.GB'; time = '48.h' }
+    withName: 'ECC_FINDER_MAP_ONT' { cpus = 8; memory = '32.GB'; time = '48.h' }
+    withName: 'ECC_FINDER_MAP_SR'  { cpus = 8; memory = '32.GB'; time = '48.h' }
+    withName: 'ECC_FINDER_ASM_ONT' { cpus = 8; memory = '32.GB'; time = '48.h' }
+    withName: 'ECC_FINDER_ASM_SR'  { cpus = 8; memory = '32.GB'; time = '48.h' }
+    withName: 'CIRCLESEEKER'       { cpus = 8;  memory = '32.GB'; time = '48.h' }
+    withName: 'NANOPLOT'           { cpus = 4;  memory = '16.GB'; time = '48.h' }
+    withName: 'FILTER_ECCDNA_BY_SUPPORT' { cpus = 4; memory = '16.GB'; time = '48.h' }
+}
+```
+
+### 9. 已修复问题记录
 
 | 问题 | 现象 | 修复 |
 |------|------|------|
 | 黑盒镜像缺 `ps` | 所有 ecc_finder 黑盒模块（map_sr/asm_sr/map_ont/asm_ont）exit 1，报 `Command 'ps' required by nextflow` | Dockerfile apt 加 `procps`，重建推送镜像 |
+| 黑盒镜像缺 `minimap2`/`bc` | 真实运行 map-ont 报 `FileNotFoundError: minimap2` | Dockerfile apt 加 `minimap2 bc`，重建推送镜像 |
 | bwa_index meta 非 Map | `ECC_FINDER_MAP_SR` finalizing 报 `No such property: id for class: java.lang.String` | `workflows/circdna.nf` 3 处改为 `[[id: 'bwa_index'], index]` |
 | FLED 缺 stub 块 | stub 模式仍真实运行 minimap2（71s） | 补充 stub 块 |
-| FLED cat 不健壮 | 无多片段 eccDNA 时 `MulsegFullJunction.out` 不存在，`cat` exit 1 | 分两次 `cat` 加 `2>/dev/null` 容错 |
+| FLED cat 不健壮 | 无多片段 eccDNA 时 `MulsegFullJunction.out` 不存在，`cat` exit 1 | 分两次 `cat` 加 `2>/dev/null || true`（`set -e` 下需 `|| true`） |
 | FLED output 依赖 script 局部变量 | stub 模式 `No such variable: prefix` | output 路径改内联 `task.ext.prefix ?: meta.id` |
+| map_ont/asm_ont mv 路径错误 | 真实运行 `-o .` 使输出直接写 work 根目录，`mv eccFinder_output/...` 失败 | 判断 `eccFinder_output/` 目录存在才 mv |
+| CIRCLESEEKER 无候选缺输出 | smoke 数据无候选时 summary CSV/BED/报告缺失，output 声明校验失败 | 模块脚本补空 summary/report；`circleseeker_to_bed.py` 缺输入时产出空 BED |
 | `.bashrc` 含 `cd` | 先 cd 再 source 会切走目录，`Cannot find script file` | SSH 命令先 source 再 cd |
 
-### 8. 测试日志位置（服务器 /tmp）
+### 10. 测试日志位置（服务器 /tmp）
 
 | 日志 | 内容 | 结果 |
 |------|------|------|
@@ -436,6 +494,8 @@ Dockerfile 对应本地文件：`.trae/build/ecc_finder_apt/Dockerfile`。当前
 | `/tmp/stub_blackbox2.log` | 黑盒 stub（修复后） | 成功 |
 | `/tmp/stub_pacbio2.log` | PacBio 长读 stub（修复后） | 成功 |
 | `/tmp/stub_nanopore2.log` | ONT 长读 stub（修复后） | 成功 |
-| `/tmp/ecc_finder_build.log` | 镜像构建 | 成功 |
-| `/tmp/ecc_finder_push.log` | 镜像推送 | 成功 |
+| `/tmp/real_pacbio.log` | PacBio 长读真实运行 | 成功（17 任务，3m14s，5 链全检出） |
+| `/tmp/real_nanopore.log` | ONT 长读真实运行 | 成功（17 任务，5m26s，5 链全检出） |
+| `/tmp/ecc_finder_build.log` / `build2.log` | 镜像构建 | 成功 |
+| `/tmp/ecc_finder_push.log` / `push2.log` | 镜像推送 | 成功 |
 
