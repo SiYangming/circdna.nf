@@ -1,0 +1,2 @@
+sample,fastq_1,input_bam,entrypoint
+example1,/Users/siyangming/nextflow_nf_core/circdna.nf/modules/local/ciderseq/testdata/example1.fastq.gz,,cleaned_fastq

@@ -3,6 +3,38 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.6.0 - [2026-08-25]
+
+### Credits
+
+Special thanks to the following for their input and contributions:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **新增 CIDeR-Seq2 长读检测引擎 `ciderseq`**: 将 CIDER-Seq2 五步流程（separate / align / deconcat / annotate / phase）封装为 5 个独立 Nextflow 模块（`modules/local/ciderseq/{separate,align,deconcat,annotate,phase}/`），每步一个 process，支持分步执行与 `-resume` 缓存复用。通过 `--long_read_identifier ciderseq` 激活，与 cresil/fled/flye/eccfinder 并列。采用薄包装脚本方案（`bin/ciderseq_{common,separate,align,deconcat,annotate,phase}.py`），通过 sys.path 注入定位 `cider` 包并调用内部函数，不改动 CIDER-Seq2 源码仓库
+- **新增 `cs-eccDNA` 模块 (`cseccdna`)**: `bin/ciderseq_eccdna.py` 包装 cs-eccDNA.py，按目录内 fa/stat 配对构建 input.list、staging input/output，输出 assess/reorder/rfile fasta
+- **新增 `cs-tools` 模块 (`cstools`)**: 封装 cs-tools.py 各子命令，通过 `ext.args` 分派，`printf '\n\n'` 预应答避免交互卡死
+- **新增 CIDeR-Seq2 参数**: `nextflow.config` 新增 `ciderseq_config`、`ciderseq_blastdb`、`ciderseq_align_targets`、`ciderseq_protein_db`、`ciderseq_host_genome` 5 个参数；`workflows/circdna.nf` 中 `run_ciderseq` 标识符校验（4 个参数必填），JsonSlurper 解析 config 的 align.targets / phase.phasegenomes 传给子流程
+- **新增 `test_ciderseq_local` 测试 profile**: `conf/test_ciderseq_local.config` + `samplesheets/test_ciderseq_lr.csv`（CIDER-Seq2 `examples/` EACMV geminivirus 数据），路径统一使用 `${projectDir}` 相对引用；服务器端 `nextflow run main.nf -profile test_ciderseq_local,docker -resume` 11 任务全部成功
+- **子流程 `CIDERSEQ_PIPELINE`**: `subworkflows/local/ciderseq_pipeline/main.nf` 串联 5 步，separate 输出 `flatMap` 拆分子 genome，align 按 per-genome 分支，phase 按 phase_genomes 过滤；emit separated/aligned/deconcat/stat/annotation/phased/versions
+- **模块级 nf-test 测试**: 7 个模块（5×ciderseq + cseccdna + cstools）均含 `tests/main.nf.test` + snapshot，docker 环境本地全部通过
+- **ecc_finder 模块测试修复**: 修复 `modules/local/ecc_finder/{map_sr,map_ont,asm_sr,asm_ont}` 的 nf-test（testdata 路径补 `local/`、`options` 显式加载 tests/nextflow.config、`withName` 资源覆盖 + `withLabel:process_high` 上限、更新 snapshot），stub 模式 4 个模块全部通过
+- **长读五引擎回归验证**: 服务器端 `test_pacbio_lr`（cresil,fled,flye,eccfinder,circleseeker）17 任务全部成功，输出目录齐全（long_read/{cresil,fled,flye,eccfinder,circleseeker}/）
+
+### Dependencies
+
+- **CIDER-Seq2**: 2.0.0（`quay.io/bioinfortools/ciderseq2:2.0.0`，conda `yangmingsi::ciderseq2=2.0.0`）
+- **muscle**: 3.8.1551（服务器镜像内固定版本，兼容 CIDER-Seq2 config 的 muscleexe 调用）
+- **procps**: 镜像内补充 `ps` 命令以满足 Nextflow 任务指标收集
+
+### Notes
+
+- 薄包装设计：容器内 `CIDERSEQ_HOME=/opt/ciderseq2`、conda libexec 布局、源码邻目录三处候选定位 `cider` 包
+- 支持 gzip 输入（`bin/ciderseq_common.py` 的 `open_read()` 自动解压）与 muscle 回退（config 指定 muscleexe 优先，其次 PATH）
+- 镜像为 linux/amd64，macOS arm64 主机需 `--platform linux/amd64`（QEMU 模拟）
+
 ## v4.5.0 - [2026-08-06]
 
 ### Credits

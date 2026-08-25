@@ -1,0 +1,36 @@
+nextflow_process {
+
+    name "Test Process CIDERSEQ_ALIGN"
+    script "../main.nf"
+    process "CIDERSEQ_ALIGN"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "ciderseq"
+
+    test("test-ciderseq-align") {
+
+        options "-c ${projectDir}/modules/local/ciderseq/align/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'example1', genome:'EACMV_DNA_A' ], // meta
+                             file("\${projectDir}/modules/local/ciderseq/testdata/separate/example1.EACMV_DNA_A.fa", checkIfExists: true) ]
+                input[1] = file("\${projectDir}/modules/local/ciderseq/testdata/ciderseq_config.json", checkIfExists: true)
+                input[2] = file("\${projectDir}/modules/local/ciderseq/testdata/blastdb", checkIfExists: true)
+                input[3] = 'EACMV_DNA_A'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.aligned, process.out.versions).match() }
+            )
+        }
+
+    }
+
+}

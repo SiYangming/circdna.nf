@@ -33,6 +33,7 @@ include { LONG_READ_FILTERING as LONG_READ_FILTERING_FLED   } from '../subworkfl
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_CIRCLESEEKER } from '../subworkflows/local/long_read_filtering/main'
 include { ECC_FINDER_PIPELINE           } from '../subworkflows/local/ecc_finder_pipeline/main'
 include { CIRCLESEEKER_PIPELINE         } from '../subworkflows/local/circleseeker_pipeline/main'
+include { CIDERSEQ_PIPELINE             } from '../subworkflows/local/ciderseq_pipeline/main'
 include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
 include { ECCDNA_MODE                   } from '../subworkflows/local/eccdna_mode/main'
 include { ECCSPLORER_PIPELINE            } from '../subworkflows/local/eccsplorer_pipeline/main'
@@ -168,6 +169,22 @@ workflow CIRCDNA {
         def run_flye = ("flye" in lr_branch)
         def run_eccfinder = ("eccfinder" in lr_branch)
         def run_circleseeker = ("circleseeker" in lr_branch)
+        def run_ciderseq = ("ciderseq" in lr_branch)
+
+        if (run_ciderseq) {
+            if (!params.ciderseq_config) {
+                exit 1, 'ciderseq identifier requires --ciderseq_config (CIDER-Seq2 config JSON)'
+            }
+            if (!params.ciderseq_blastdb) {
+                exit 1, 'ciderseq identifier requires --ciderseq_blastdb (directory of the blastn database)'
+            }
+            if (!params.ciderseq_align_targets) {
+                exit 1, 'ciderseq identifier requires --ciderseq_align_targets (directory of align target fastas)'
+            }
+            if (!params.ciderseq_protein_db) {
+                exit 1, 'ciderseq identifier requires --ciderseq_protein_db (directory of the tblastn protein database)'
+            }
+        }
 
         INPUT_CHECK (
             file(params.input)
@@ -253,6 +270,25 @@ workflow CIRCDNA {
             )
             ch_versions = ch_versions.mix(CIRCLESEEKER_PIPELINE.out.versions)
             ch_versions = ch_versions.mix(LONG_READ_FILTERING_CIRCLESEEKER.out.versions)
+        }
+
+        if (run_ciderseq) {
+            // Parse the align targets / phase genomes from the CIDER-Seq2 config
+            // to drive the per-genome align & phase branches.
+            def ciderseq_cfg = new groovy.json.JsonSlurper().parseText(file(params.ciderseq_config).text)
+            def ciderseq_align_genomes = ciderseq_cfg.align.targets.keySet() as List
+            def ciderseq_phase_genomes = ciderseq_cfg.phase.phasegenomes.keySet() as List
+
+            CIDERSEQ_PIPELINE (
+                ch_preprocessed_fastq,
+                file(params.ciderseq_config, checkIfExists: true),
+                file(params.ciderseq_blastdb, checkIfExists: true),
+                file(params.ciderseq_align_targets, checkIfExists: true),
+                file(params.ciderseq_protein_db, checkIfExists: true),
+                ciderseq_align_genomes,
+                ciderseq_phase_genomes
+            )
+            ch_versions = ch_versions.mix(CIDERSEQ_PIPELINE.out.versions)
         }
 
     } else {

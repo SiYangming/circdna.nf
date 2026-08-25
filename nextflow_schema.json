@@ -122,8 +122,8 @@
                 "long_read_identifier": {
                     "type": "string",
                     "default": "cresil,fled,flye,eccfinder",
-                    "description": "Long-read eccDNA identification algorithms to use. Options: 'cresil', 'fled', 'flye', 'eccfinder'. Multiple can be specified with comma-separated string.",
-                    "help_text": "Specify the long-read eccDNA identification engines. 'cresil' and 'fled' are mapping-based tools; 'flye' is an assembly-based tool; 'eccfinder' supports both mapping and assembly modes. E.g. `--long_read_identifier 'cresil,flye'`.",
+                    "description": "Long-read eccDNA identification algorithms to use. Options: 'cresil', 'fled', 'flye', 'eccfinder', 'circleseeker', 'ciderseq'. Multiple can be specified with comma-separated string.",
+                    "help_text": "Specify the long-read eccDNA identification engines. 'cresil' and 'fled' are mapping-based tools; 'flye' is an assembly-based tool; 'eccfinder' supports both mapping and assembly modes; 'circleseeker' is a repeat-based tool; 'ciderseq' runs the CIDER-Seq2 five-step pipeline (requires --ciderseq_config and its databases). E.g. `--long_read_identifier 'cresil,flye'`.",
                     "fa_icon": "fas fa-circle-notch"
                 },
                 "eccfinder_mode": {
@@ -133,6 +133,46 @@
                     "description": "ecc_finder detection mode. 'map' = mapping-based, 'asm' = assembly-based, 'both' = run both.",
                     "help_text": "Controls which ecc_finder sub-pipeline runs. map-ont/map-sr for mapping-based detection; asm-ont/asm-sr for assembly-based detection.",
                     "fa_icon": "fas fa-search"
+                },
+                "ciderseq_config": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "CIDER-Seq2 config JSON (see ciderseq2 examples/ciderseq_config.json).",
+                    "help_text": "Required when 'ciderseq' is in --long_read_identifier. The config holds the blast database path, align targets, protein database, and phasing parameters; file paths are re-resolved by basename inside --ciderseq_blastdb / --ciderseq_align_targets / --ciderseq_protein_db.",
+                    "fa_icon": "fas fa-file-code"
+                },
+                "ciderseq_blastdb": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "description": "Directory (or db file) of the blastn database for the CIDER-Seq2 separate step.",
+                    "help_text": "Directory containing the pre-built blastn database (fasta + .nhr/.nin/.nsq). If only a fasta is given, makeblastdb is run automatically.",
+                    "fa_icon": "fas fa-database"
+                },
+                "ciderseq_align_targets": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "description": "Directory of the align target fasta files for the CIDER-Seq2 align step.",
+                    "help_text": "Directory containing one FASTA per target genome, named after the align.targets keys of the CIDER-Seq2 config (e.g. EACMV_DNA_A.fa).",
+                    "fa_icon": "fas fa-database"
+                },
+                "ciderseq_protein_db": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "description": "Directory (or db file) of the tblastn protein database for the CIDER-Seq2 annotate step.",
+                    "help_text": "Directory containing the pre-built tblastn protein database (fasta + .phr/.pin/.psq). If only a fasta is given, makeblastdb is run automatically.",
+                    "fa_icon": "fas fa-database"
+                },
+                "ciderseq_host_genome": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Host genome FASTA for the optional CIDER-Seq2 cs-eccDNA detection step.",
+                    "help_text": "When provided, CIDER-Seq2 deconcatenated outputs are screened against the host genome with cs-eccDNA.py to report likely eccDNA candidates.",
+                    "fa_icon": "fas fa-dna"
                 },
                 "min_read_support": {
                     "type": "integer",

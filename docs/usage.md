@@ -131,6 +131,22 @@ nextflow run nf-core/circdna --input samplesheet_long_read.csv --outdir <OUTDIR>
 
 All engine outputs are filtered by the shared long-read candidate filtering step (`--min_read_support` read-support filter, plus optional `--blacklist_bed` and `--repeats_bed`), and CircleSeeker results are written to `results/long_read/circleseeker/<SAMPLE>/`.
 
+Add `ciderseq` to run the [CIDER-Seq2](https://github.com/devang-mehta/ciderseq2) five-step pipeline (separate → align → deconcatenate → annotate → phase) on long reads. CIDER-Seq2 is configured through a config JSON and its databases:
+
+```bash
+nextflow run nf-core/circdna --input samplesheet_long_read.csv --outdir <OUTDIR> \
+    --fasta <reference.fa> --input_format FASTQ \
+    --protocol pacbio --entrypoint cleaned_fastq \
+    --long_read_identifier ciderseq \
+    --ciderseq_config <ciderseq_config.json> \
+    --ciderseq_blastdb <blastn_db_dir> \
+    --ciderseq_align_targets <align_targets_dir> \
+    --ciderseq_protein_db <tblastn_db_dir> \
+    -profile docker
+```
+
+The `--ciderseq_config` file (see the `examples/ciderseq_config.json` shipped with CIDER-Seq2) holds the blast database path, the align target genomes, the protein database and the phasing parameters. File paths inside the config are re-resolved by basename inside `--ciderseq_blastdb` / `--ciderseq_align_targets` / `--ciderseq_protein_db`, so the config can be reused across machines. Each of the five steps runs as an independent Nextflow process and can be resumed separately. Results are written to `results/long_read/ciderseq/<SAMPLE>/{separate,align,deconcat,annotate,phase}/`. If `--ciderseq_host_genome` is provided, the deconcatenated outputs are additionally screened against the host genome with `cs-eccDNA.py` (`results/long_read/ciderseq/<SAMPLE>/eccdna/`).
+
 The typical command for running the pipeline is as follows:
 
 ```bash
