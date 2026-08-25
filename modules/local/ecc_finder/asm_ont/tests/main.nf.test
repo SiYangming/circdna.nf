@@ -11,13 +11,13 @@ nextflow_process {
 
     test("test-asm-ont - stub") {
 
-        options "-stub"
+        options "-stub -c ${projectDir}/modules/local/ecc_finder/asm_ont/tests/nextflow.config"
 
         when {
             process {
                 """
                 input[0] = [ [ id:'test' ], // meta
-                             file("\${projectDir}/modules/ecc_finder/testdata/Arabi.ONT.1kReads.fasta.gz", checkIfExists: true) ]
+                             file("\${projectDir}/modules/local/ecc_finder/testdata/Arabi.ONT.1kReads.fasta.gz", checkIfExists: true) ]
                 """
             }
         }
