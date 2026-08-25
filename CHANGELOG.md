@@ -3,6 +3,24 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.6.1 - [2026-08-25]
+
+### Credits
+
+Special thanks to the following for their input and contributions:
+
+- [siyangming](https://github.com/siyangming)
+
+### Enhancements & fixes
+
+- **ECCsplorer slim clu 链真实运行修复**: 修复 `clu_candidates` 模块无法解析真实 seqclust 输出的问题——新增 `bin/clu_candidates.py` 修正版（normalize `[]`/引号、按 cluster id 对齐、`CLUSTER_TABLE.csv` 缺失时回退到 `COMPARATIVE_ANALYSIS_COUNTS.csv`），并显式调用 `python3 ${projectDir}/bin/clu_candidates.py` 绝对路径绕过镜像内旧版拦截；镜像版本升级 `quay.io/bioinfortools/eccsplorer_slim:1.0.1`
+- **RepeatExplorer2 模块容错加固**: 镜像迁移至 `quay.io/bioinfortools/repeatexplorer:2.3.8`；Rserve 竞态 patch 对只读文件仅告警不中断（镜像已固化则跳过，统一用 `python3`）；seqclust 主 HTML 报告阶段 Rserve 崩溃（`object 'imagemap' not found`）时，若核心产物 `COMPARATIVE_ANALYSIS_COUNTS.csv` 已生成则告警继续
+- **clu 链真实测试文档**: `testdatasets/README.md` 新增 8.1 节 clu 链真实运行命令、预期产物与已修复问题记录（SQLite too many columns、clu_candidates 解析失败、镜像旧版脚本拦截、seqclust 主报告崩溃等）
+
+### Notes
+
+- 版本号同步：`nextflow.config` manifest `4.6.0 → 4.6.1`
+
 ## v4.6.0 - [2026-08-25]
 
 ### Credits

@@ -4,8 +4,8 @@ process ECCSPLORER_CLU_CANDIDATES {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/eccsplorer_slim:1.0.0--0' :
-        'quay.io/bioinfortools/eccsplorer_slim:1.0.0' }"
+        'https://depot.galaxyproject.org/singularity/eccsplorer_slim:1.0.1--0' :
+        'quay.io/bioinfortools/eccsplorer_slim:1.0.1' }"
 
     input:
     tuple val(meta), path(clu_dir)
@@ -24,8 +24,11 @@ process ECCSPLORER_CLU_CANDIDATES {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    # v2: clu_candidates.py reads seqclust outputs from clu_dir root (seqclust --output_dir layout)
-    clu_candidates.py \\
+    # v3: 显式调用 pipeline bin/ 版 clu_candidates.py（镜像内 /opt/eccsplorer_slim/bin 旧版
+    #     优先于 PATH 中的 pipeline bin，需用 ${projectDir}/bin 绝对路径绕过）。
+    #     修正版兼容真实 seqclust 输出：normalize []/引号、按 cluster id 对齐、
+    #     CLUSTER_TABLE.csv 缺失时回退到 COMPARATIVE_ANALYSIS_COUNTS.csv。
+    python3 ${projectDir}/bin/clu_candidates.py \\
         --clu_dir ${clu_dir} \\
         --pre_a ${pre_a} \\
         --pre_b ${pre_b} \\

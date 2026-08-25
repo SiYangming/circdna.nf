@@ -4,8 +4,8 @@ process REPEATEXPLORER2 {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'docker://docker.1ms.run/kavonrtep/repeatexplorer:2.3.8' :
-        'docker.1ms.run/kavonrtep/repeatexplorer:2.3.8' }"
+        'docker://quay.io/bioinfortools/repeatexplorer:2.3.8' :
+        'quay.io/bioinfortools/repeatexplorer:2.3.8' }"
 
     input:
     tuple val(meta), path(reads_fa)
@@ -30,9 +30,15 @@ process REPEATEXPLORER2 {
     which seqclust >/dev/null 2>&1 || { echo "seqclust not found"; exit 1; }
     # ② databases：conda wrapper 按 REPEX_DATABASES 软链；docker 镜像内置
     export REPEX_DATABASES="${params.repex_databases}"
-    # ③ Rserve 竞态 patch（幂等）：conda build 2 已固化自动跳过；docker 运行时打一次
+    # ③ Rserve 竞态 patch（幂等）：conda build 已固化；docker 镜像构建时已固化。
+    #    普通用户（docker runOptions 用户映射 uid:gid）对 /repex_tarean/lib/r2py.py 只读，
+    #    patch 失败时仅告警不中断（镜像已固化则跳过）。
     for r2py in /repex_tarean/lib/r2py.py "\${CONDA_PREFIX:-}/repeatexplorer/lib/r2py.py"; do
-        [ -f "\$r2py" ] && python ${moduleDir}/bin/patch_r2py.py "\$r2py"
+        [ -f "\$r2py" ] || continue
+        # 镜像内可能无 `python` 符号链接（仅 python3），统一用 python3
+        if ! python3 ${moduleDir}/bin/patch_r2py.py "\$r2py"; then
+            echo "WARN: cannot patch \$r2py (read-only), assuming pre-patched image" >&2
+        fi
     done
     # ④ 输入下限校验（seqclust 要求 >=1000 条）
     NSEQ=\$(grep -c '^>' ${reads_fa})
@@ -42,6 +48,9 @@ process REPEATEXPLORER2 {
     fi
 
     # --- RepeatExplorer2 (seqclust) clustering ---
+    # seqclust 偶发在最后主 HTML 报告阶段崩溃（Rserve bug: object 'imagemap' not found）。
+    # 此时核心分析产物（COMPARATIVE_ANALYSIS_COUNTS.csv）已生成，容错继续。
+    set +e
     seqclust \\
         --paired \\
         --prefix_length ${prefix_length} \\
@@ -51,6 +60,16 @@ process REPEATEXPLORER2 {
         ${reads_fa} \\
         --cleanup --keep_names --options ILLUMINA \\
         $args
+    RC=\$?
+    set -e
+    if [ \$RC -ne 0 ]; then
+        if [ -f seqclust/COMPARATIVE_ANALYSIS_COUNTS.csv ]; then
+            echo "WARN: seqclust exited \$RC (final HTML report step), core outputs present; continuing" >&2
+        else
+            echo "ERROR: seqclust failed (exit \$RC) without core outputs" >&2
+            exit \$RC
+        fi
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -470,6 +470,24 @@ process {
 }
 ```
 
+### 8.1 clu 链（eccsplorer_clu_slim）真实测试
+
+ECCsplorer slim 的 comparative 模式（clu 链）：`clu_prepare`（TR/CO 前缀合并）→ `repeatexplorer2`（seqclust 聚类，`--prefix_length 2`）→ `clu_candidates`（富集打分筛选）。本链需要 gDNA 对照样本（samplesheet 需含 `eccDNA` + `gDNA` 两行，同一 sample group）。
+
+```bash
+# 真实运行（REPEATEXPLORER2 全量 seqclust 约 6h：72 万条序列 → 3304 clusters）
+ssh 192.168.16.65 "source /data1/users/siyangming/miniforge3/etc/profile.d/conda.sh; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nohup nextflow run main.nf -profile test_local_gdna,docker -c /tmp/lr_resources.config --circle_identifier eccsplorer_clu_slim --input samplesheets/test_local_gdna_single.csv --fasta testdatasets/reference/genome.fa --outdir results/test_real_clu > /tmp/real_clu_run6.log 2>&1 &"
+
+# Stub 快速验证（~1 分钟）
+ssh 192.168.16.65 "source /data1/users/siyangming/miniforge3/etc/profile.d/conda.sh; conda activate nextflow; cd /data1/users/siyangming/PlanteccDNADB/circdna.nf && nextflow run main.nf -profile test_local_gdna,docker -stub-run --circle_identifier eccsplorer_clu_slim --input samplesheets/test_local_gdna_single.csv --fasta testdatasets/reference/genome.fa --outdir results/test_stub_clu_v2"
+```
+
+预期产物（`results/test_real_clu/eccsplorer_slim/`）：
+- `clu_prepare/{sample}_REPEATEXPLORER_READY.fa`（TR+CO 合并序列，720252 条）
+- `repeatexplorer2/seqclust/...`（seqclust 全部聚类/注释/TAREAN 产物）
+- `clu_candidates/{sample}_cluster_candidates.csv`（TR 比例 ≥ 0.8 的候选，真实测试 2661 个）
+- `clu_candidates/{sample}_comparative_cluster_table.csv`（全部 36937 个 cluster 的打分表）
+
 ### 9. 已修复问题记录
 
 | 问题 | 现象 | 修复 |
@@ -483,6 +501,13 @@ process {
 | map_ont/asm_ont mv 路径错误 | 真实运行 `-o .` 使输出直接写 work 根目录，`mv eccFinder_output/...` 失败 | 判断 `eccFinder_output/` 目录存在才 mv |
 | CIRCLESEEKER 无候选缺输出 | smoke 数据无候选时 summary CSV/BED/报告缺失，output 声明校验失败 | 模块脚本补空 summary/report；`circleseeker_to_bed.py` 缺输入时产出空 BED |
 | `.bashrc` 含 `cd` | 先 cd 再 source 会切走目录，`Cannot find script file` | SSH 命令先 source 再 cd |
+| repeatexplorer 镜像缺 `python` | seqclust 任务 exit 127（`python: command not found`） | patch 命令统一用 `python3` |
+| r2py.py 只读（普通用户） | docker `runOptions -u $(id -u):$(id -g)` 下普通用户无法 patch root 拥有的 `/repex_tarean/lib/r2py.py` | 禁止 containerOptions 覆盖；固化镜像（Dockerfile `RUN python3 /tmp/patch_r2py.py /repex_tarean/lib/r2py.py`，推 quay.io/bioinfortools/repeatexplorer:2.3.8），运行时 patch 失败仅告警 |
+| Nextflow 模板 `\$` 错位替换 | main.nf 注释含 `\$(id -u):\$(id -g)` 后 `${moduleDir}`→`10`、`${reads_fa}`→`VIRIDIPLANTAE3.0` 等按位置错位，静默失败 | 注释/字符串中禁用 `\$` 转义序列，改纯文字描述 |
+| SQLite `too many columns` | `--prefix_length 10` 使 comparative_counts 唯一前缀列数超 SQLite 2000 列上限 | `nextflow.config` 设 `eccsplorer_clu_prefix_length = 2`（TR/CO 前缀长度） |
+| clu_candidates 无法解析真实 seqclust 输出 | 镜像原版仅匹配 `cluster` 列 + 精确 `TR`/`CO`，真实 CSV 首列 `supercluster`、列名带 `[]` | 修正版 `bin/clu_candidates.py`：normalize `[]`/引号、按 cluster id 显式对齐 |
+| 镜像内旧版 clu_candidates.py 拦截 | `clu_candidates.py` 通过 PATH 查找，镜像内 `/opt/eccsplorer_slim/bin` 优先于 pipeline `bin/`（追加在 PATH 末尾） | `clu_candidates/main.nf` 显式调用 `python3 ${projectDir}/bin/clu_candidates.py` 绝对路径 |
+| seqclust 主报告 Rserve 崩溃 | 全部分析完成后 `create_main_reports` 报 `Error in index_html(imagemap) : object 'imagemap' not found`（exit 1），导致 `CLUSTER_TABLE.csv` 缺失 | `repeatexplorer2/main.nf` 容错：seqclust 失败但 `COMPARATIVE_ANALYSIS_COUNTS.csv` 已生成则告警继续；`clu_candidates.py` 回退到仅用 comparative 表构建 cluster 列表 |
 
 ### 10. 测试日志位置（服务器 /tmp）
 
@@ -498,4 +523,8 @@ process {
 | `/tmp/real_nanopore.log` | ONT 长读真实运行 | 成功（17 任务，5m26s，5 链全检出） |
 | `/tmp/ecc_finder_build.log` / `build2.log` | 镜像构建 | 成功 |
 | `/tmp/ecc_finder_push.log` / `push2.log` | 镜像推送 | 成功 |
+| `/tmp/real_clu_run5.log` | clu 链真实运行（seqclust 全量） | seqclust 全部分析完成，最后主报告 Rserve 崩溃（已修复） |
+| `/tmp/real_clu_run6.log` | clu 链真实运行（容错修复后 -resume） | REPEATEXPLORER2 成功（容错 WARN）；CLU_CANDIDATES 失败（镜像旧版脚本拦截） |
+| `/tmp/real_clu_run7.log` | clu 链真实运行（显式调用 pipeline bin 后 -resume） | **成功**：全链闭环，2641+ 候选 |
+| `/tmp/stub_clu_v2.log` | clu 链 stub 验证（修复后） | 成功（CLU_PREPARE + CLU_CANDIDATES） |
 
