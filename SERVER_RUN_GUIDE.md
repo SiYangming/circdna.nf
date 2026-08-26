@@ -416,3 +416,197 @@ nextflow run main.nf \
     --outdir ../eccDNA_results/<species> \
     -profile server
 ```
+
+---
+
+## 三代（TGS）长读数据分析
+
+> 三代数据 = PacBio / ONT 长读。路由完全由 samplesheet 行级字段控制（`platform × assay × datatype × concatemer × read_type`），**无需指定 `--protocol`**；`--genome` 为单基因组参数，因此按物种表（`circdnalr_{species}_long_read.csv`）逐个运行。
+
+### 数据总览（141 个长读样本，`samplesheets/circdna_tgs_clean.csv`）
+
+| 物种 | 样本数 | 平台 | assay | datatype | read_type | 自动路由 |
+|------|--------|------|-------|----------|-----------|----------|
+| Oryza_sativa | 1 | pacbio | wgs | gdna | hifi | LONG_READ_REFERENCE（背景） |
+| Triticum_aestivum | 80 | ont | rca | eccdna | ont | 检测（默认引擎） |
+| Amaranthus_palmeri | 9 | pacbio | rca | eccdna | clr | 检测（默认引擎） |
+| Amaranthus_palmeri | 1 | pacbio | ciderseq | eccdna | clr | CIDER-Seq2 |
+| Amaranthus_palmeri | 6 | pacbio | wgs | gdna | hifi | LONG_READ_REFERENCE（背景） |
+| Arabidopsis_thaliana | 13 | ont | wgs | gdna | ont | LONG_READ_REFERENCE（背景） |
+| Arabidopsis_thaliana | 15 | ont | rca | eccdna | ont | 检测（默认引擎） |
+| Alopecurus_myosuroides | 7 | pacbio | rca | eccdna | clr(1)/hifi(6) | 检测（大基因组 + CSI） |
+| Solanum_lycopersicum | 2 | ont | rca | eccdna | ont | 检测（默认引擎） |
+| Helianthus_annuus | 1 | ont | enriched | eccdna | ont | 检测（T7 富集） |
+| Helianthus_annuus | 3 | ont | wgs | gdna | ont | LONG_READ_REFERENCE（背景） |
+| Nicotiana_benthamiana | 4 | ont | rca | eccdna | ont | 检测（默认引擎） |
+
+> 单张表内同时含 `wgs/gdna` 与 `rca/eccdna` 行时（如拟南芥、向日葵、长芒苋），背景行自动走 LONG_READ_REFERENCE、检测行自动走检测引擎，一次 run 并行完成，无需拆表。
+
+### 引擎与参数速查
+
+| 参数 | 推荐值 | 说明 |
+|------|--------|------|
+| `--long_read_identifier` | `cresil,fled,flye,eccfinder` | 默认引擎（PacBio/ONT RCA、PacBio CLR 均适用） |
+| `--long_read_identifier` | 默认 + `,circleseeker` | HiFi + RCA + concatemer=true 样本（黑麦草 6 个 hifi） |
+| `--long_read_identifier` | `''`（空） | 纯 WGS 背景表，不跑任何检测引擎 |
+| `--long_read_identifier` | `ciderseq` | CIDER-Seq2（需同时提供 4 个 `ciderseq_*` 参数） |
+| `--eccfinder_mode` | `map`（默认） | `map` / `asm` / `both`；`asm` 会触发组装 + remap，耗时翻倍 |
+| `--min_read_support` | `2`（默认） | 统一 BED 的读支持数过滤阈值 |
+| `-c circdna.nf/conf/large_genome.config` | 小麦 / 黑麦草 | 染色体 >512 Mb，启用 CSI 索引 |
+
+### 前置检查（每次进入 screen 后）
+
+```bash
+conda activate nextflow
+cd /data1/users/siyangming/PlanteccDNADB/
+
+# 1. 数据文件（应 ≥ 物种表样本数）
+for sp in Oryza_sativa Triticum_aestivum Amaranthus_palmeri Arabidopsis_thaliana \
+          Alopecurus_myosuroides Solanum_lycopersicum Helianthus_annuus Nicotiana_benthamiana; do
+    echo "$sp: $(ls eccDNA/$sp/*.fastq.gz 2>/dev/null | wc -l) fastq.gz"
+done
+
+# 2. 参考基因组（server.config 中 9 个路径已验证全部存在）
+ls /data1/users/siyangming/PublicDB/reference/*/   # 核对各物种 .fa.gz
+
+# 3. 当前代码版本（应含 v4.7 路由改造）
+cd circdna.nf && git log --oneline -1 && cd ..
+```
+
+### 运行命令（按物种）
+
+> 冒烟优先：先跑番茄（仅 2 样本）验证链路，再按需全量。所有长读 run 使用 `circdnalr_{species}_long_read.csv`，输出到 `eccDNA_results/{species}_longread/`。
+
+#### ① 冒烟验证 — 番茄（2 样本，最快）
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Solanum_lycopersicum_long_read.csv \
+    --genome Solanum_lycopersicum \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    --outdir eccDNA_results/Solanum_lycopersicum_longread \
+    -profile server
+```
+
+#### ② 拟南芥（27 样本：13 WGS 背景 + 15 RCA 检测，双链路并行验证）
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Arabidopsis_thaliana_long_read.csv \
+    --genome Arabidopsis_thaliana \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    --outdir eccDNA_results/Arabidopsis_thaliana_longread \
+    -profile server
+```
+
+#### ③ 向日葵（1 T7 富集检测 + 3 WGS 背景）
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Helianthus_annuus_long_read.csv \
+    --genome Helianthus_annuus \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    --outdir eccDNA_results/Helianthus_annuus_longread \
+    -profile server
+```
+
+#### ④ 本氏烟草（4 样本 ONT RCA）
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Nicotiana_benthamiana_long_read.csv \
+    --genome Nicotiana_benthamiana \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    --outdir eccDNA_results/Nicotiana_benthamiana_longread \
+    -profile server
+```
+
+#### ⑤ 长芒苋（9 RCA CLR + 6 HiFi WGS 背景；含 1 个 CIDER-Seq2 行）
+
+```bash
+# RCA 检测 + HiFi WGS 背景（CIDER 行无引擎，仅预处理；如需跑 CIDER 见下方⑨）
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Amaranthus_palmeri_long_read.csv \
+    --genome Amaranthus_palmeri_hap1 \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    --outdir eccDNA_results/Amaranthus_palmeri_longread \
+    -profile server
+```
+
+#### ⑥ 黑麦草（7 样本，大基因组 + CSI；6 个 HiFi 可加 circleseeker）
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Alopecurus_myosuroides_long_read.csv \
+    --genome Alopecurus_myosuroides \
+    --long_read_identifier cresil,fled,flye,eccfinder,circleseeker \
+    --outdir eccDNA_results/Alopecurus_myosuroides_longread \
+    -profile server \
+    -c circdna.nf/conf/large_genome.config
+```
+
+#### ⑦ 水稻（仅 1 个 HiFi WGS 背景，纯背景无检测引擎）
+
+```bash
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Oryza_sativa_long_read.csv \
+    --genome Oryza_sativa \
+    --long_read_identifier '' \
+    --outdir eccDNA_results/Oryza_sativa_longread \
+    -profile server
+```
+
+#### ⑧ 小麦（80 样本 ONT RCA，大基因组 + CSI；计算量最大，务必先抽样验证）
+
+```bash
+# 第一步：抽取 3 个代表样本验证（含 pair 为空/非空、benchmark 样本各 1）
+head -1 circdna.nf/samplesheets/circdnalr_Triticum_aestivum_long_read.csv > /tmp/wheat_smoke.csv
+grep -E "^ERR12724336|^ERR12724360|^ERR6326020" circdna.nf/samplesheets/circdnalr_Triticum_aestivum_long_read.csv >> /tmp/wheat_smoke.csv
+
+# 第二步：冒烟跑（验证后删掉 --outdir 或换 run name 全量）
+nextflow run ./circdna.nf/main.nf \
+    --input /tmp/wheat_smoke.csv \
+    --genome Triticum_aestivum \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    --outdir eccDNA_results/Triticum_aestivum_longread_smoke \
+    -profile server \
+    -c circdna.nf/conf/large_genome.config
+
+# 第三步：全量（-resume 必须指定 run name）
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdnalr_Triticum_aestivum_long_read.csv \
+    --genome Triticum_aestivum \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    --outdir eccDNA_results/Triticum_aestivum_longread \
+    -profile server \
+    -c circdna.nf/conf/large_genome.config \
+    -resume <冒烟_run_name>
+```
+
+#### ⑨ CIDER-Seq2（长芒苋 SRR16958693，单独运行）
+
+> 前置准备：CIDER-Seq2 需要 4 个参数指向数据库（服务器尚无生产库，需从官方 CIDER-Seq2 资源准备）：`--ciderseq_config`（JSON）、`--ciderseq_blastdb`、`--ciderseq_align_targets`、`--ciderseq_protein_db`。并准备只含 ciderseq 行的子表：
+
+```bash
+head -1 circdna.nf/samplesheets/circdnalr_Amaranthus_palmeri_long_read.csv > circdna.nf/samplesheets/ciderseq_prod.csv
+grep "SRR16958693" circdna.nf/samplesheets/circdnalr_Amaranthus_palmeri_long_read.csv >> circdna.nf/samplesheets/ciderseq_prod.csv
+
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/ciderseq_prod.csv \
+    --genome Amaranthus_palmeri_hap1 \
+    --long_read_identifier ciderseq \
+    --ciderseq_config /path/to/ciderseq_config.json \
+    --ciderseq_blastdb /path/to/ciderseq_blastdb \
+    --ciderseq_align_targets /path/to/ciderseq_align_targets \
+    --ciderseq_protein_db /path/to/ciderseq_protein_db \
+    --outdir eccDNA_results/Amaranthus_palmeri_ciderseq \
+    -profile server
+```
+
+### 三代运行注意事项
+
+1. **数据放置**：小麦表中 ERR6326020/21 的 FASTQ 位于 `Triticum_aestivum/` 目录，但 metadata 显示其属于拟南芥 ecc_finder benchmark（PRJEB46420）——按"路径决定物种"规则会按小麦处理；如要正确归类，先把文件移到 `Arabidopsis_thaliana/` 并移出小麦表。
+2. **引擎资源**：Flye 组装最重（12c/100GB/96h，base.config 已覆盖）；`eccfinder_mode=asm` 会额外触发组装+remap。全量跑 80 样本小麦前先评估队列（executor cpus=96）。
+3. **短读参数无影响**：server.config 中 `circle_identifier` 为短读 legacy 值，长读 run 下短读通道为空（数据触发门控已验证），不会执行短读进程。
+4. **`-resume` 必须指定 run name**（见上文「常见错误」）。
+5. **断点续跑**：长读大表建议拆成多个独立 run（按物种），避免单次排队过久。
