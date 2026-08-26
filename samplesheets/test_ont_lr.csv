@@ -1,3 +1,3 @@
 sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
-nanopore_test_1,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_1_R1.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,ont_smoke,true,ont,circleseq
-nanopore_test_2,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/testdata/circdna_3_R1.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,ont_smoke,true,ont,circleseq
+nanopore_test_1,testdatasets/testdata/circdna_1_R1.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,ont_smoke,true,ont,circleseq
+nanopore_test_2,testdatasets/testdata/circdna_3_R1.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,ont_smoke,true,ont,circleseq
