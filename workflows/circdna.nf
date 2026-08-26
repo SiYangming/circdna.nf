@@ -68,7 +68,9 @@ workflow CIRCDNA {
     if (!(params.input_format == "FASTQ" | params.input_format == "BAM")) {
     exit 1, 'Please specifiy --input_format "FASTQ" or "BAM" in capital letters, depending on the input file format.'
     }
-    ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }.first()
+    // ch_fasta 经 .collect() 已是 value channel，无需 .first()（否则触发
+    // "first is useless on value channel" 警告）
+    ch_fasta_meta = ch_fasta.map{ fasta -> [[id: fasta.baseName], fasta] }
 
     // ---------------- short-read identifier parsing (legacy / slim / blackbox) ----------------
     def use_legacy_mode = false
@@ -114,7 +116,7 @@ workflow CIRCDNA {
     def bwa_index_exists = false
     def ch_bwa_index = channel.empty()
     if (params.bwa_index) {
-    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').map{ index -> [[id: 'bwa_index'], index] }.first()
+    ch_bwa_index = channel.fromPath(params.bwa_index, type: 'dir').map{ index -> [[id: 'bwa_index'], index] }
     bwa_index_exists = true
     } else {
     ch_bwa_index = channel.empty()
