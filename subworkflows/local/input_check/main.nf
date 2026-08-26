@@ -6,7 +6,11 @@ workflow INPUT_CHECK {
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
-        .csv
+
+    // 增量缓存（.trae/specs/incremental-cache）：channel 直接从原始 CSV 创建，
+    // 任务哈希只依赖 fastq 内容与 meta，不依赖验证输出 CSV；增删样本时旧样本复用缓存。
+    // SAMPLESHEET_CHECK 仍执行（验证 + versions），文件存在性由 create_*_channels 兜底。
+    Channel.fromPath(samplesheet)
         .splitCsv ( header:true, sep:',' )
         .set { parsed_samplesheet }
 
@@ -34,7 +38,9 @@ def create_short_read_fastq_channels(LinkedHashMap row) {
     if (row.containsKey('lane') && row.lane) {
         meta.lane = row.lane
     }
-    meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    // datatype：兼容 data_type（大写 eccDNA/gDNA）与 datatype（小写 eccdna/gdna）两种列名
+    def datatype_val = row.containsKey('datatype') ? row.datatype : (row.containsKey('data_type') ? row.data_type : null)
+    meta.datatype     = datatype_val ? datatype_val.toString().toLowerCase() : 'eccdna'
     // 兼容旧过滤（workflows 曾用 meta.data_type）；统一为小写 datatype
     meta.data_type    = meta.datatype
     meta.platform     = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
@@ -66,7 +72,8 @@ def create_short_read_bam_channels(LinkedHashMap row) {
     meta.id             = row.sample
     meta.single_end     = false
     meta.platform       = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
-    meta.datatype       = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    def datatype_val    = row.containsKey('datatype') ? row.datatype : (row.containsKey('data_type') ? row.data_type : null)
+    meta.datatype       = datatype_val ? datatype_val.toString().toLowerCase() : 'eccdna'
     meta.data_type      = meta.datatype
     meta.assay          = row.containsKey('assay') && row.assay ? row.assay : (meta.datatype == 'gdna' ? 'wgs' : 'circleseq')
     meta.pair           = (row.containsKey('pair') && row.pair) ? row.pair : null
@@ -90,7 +97,8 @@ def create_long_read_channels(LinkedHashMap row) {
     meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
     meta.entrypoint   = row.entrypoint ?: params.entrypoint
     meta.platform     = row.platform ?: params.protocol
-    meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    def datatype_val  = row.containsKey('datatype') ? row.datatype : (row.containsKey('data_type') ? row.data_type : null)
+    meta.datatype     = datatype_val ? datatype_val.toString().toLowerCase() : 'eccdna'
     meta.data_type    = meta.datatype
     meta.pair         = (row.containsKey('pair') && row.pair) ? row.pair : null
     meta.concatemer   = row.containsKey('concatemer') && row.concatemer ? row.concatemer.toBoolean() : false
