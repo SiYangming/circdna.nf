@@ -9,7 +9,15 @@ SPECIES_NAME_MAP = {
     "Oryza_sativa_Japonica_Group": "Oryza_sativa",
 }
 
+# 非 SRA 下载目录 → 物种映射（按最长前缀匹配；优先级高于 /eccDNA/ 正则）
+PATH_SPECIES_MAP = {
+    "/data2/users/liuqi/eccdna/drought/ecc": "Oryza_sativa",  # liuqi 干旱实验（水稻）
+}
+
 def extract_species(path):
+    for prefix, sp in sorted(PATH_SPECIES_MAP.items(), key=lambda x: -len(x[0])):
+        if str(path).startswith(prefix):
+            return sp
     match = re.search(r'/eccDNA/([^/]+)/', path)
     if match:
         sp = match.group(1)
