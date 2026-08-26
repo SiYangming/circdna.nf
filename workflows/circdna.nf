@@ -268,7 +268,9 @@ workflow CIRCDNA {
                     .combine(ch_fasta_meta)
                     .map { _t, m_fa, fa -> [ m_fa, fa ] }
             )
-            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> [[id: 'bwa_index'], index] }
+            // .first() 必须：BWA_INDEX.out.index 是队列通道（1 元素），BWA_MEM 多队列输入
+            // 会 one-to-one 配对只匹配 1 个样本；转 value 后广播给所有 trimmed_reads
+            ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> [[id: 'bwa_index'], index] }.first()
             ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
             bwa_index_exists = true
         }

@@ -30,14 +30,18 @@ workflow CRESIL_PIPELINE {
 
     SAMTOOLS_FAIDX ( ch_faidx_input, false )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
+    // .first() 必须：fai/mmi 是单元素队列通道，与多样本 reads/trimmed_reads 多队列输入
+    // 会 one-to-one 配对只匹配 1 个样本；转 value 后广播给所有样本
     ch_fai = SAMTOOLS_FAIDX.out.fai
         .map { meta, fai -> [ meta, fai ] }
+        .first()
 
     // Build minimap2 .mmi index (cresil identify_wgls needs it; trim uses it too).
     MINIMAP2_INDEX ( ch_mmi_input )
     ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions_minimap2)
     ch_mmi = MINIMAP2_INDEX.out.index
         .map { meta, mmi -> [ meta, mmi ] }
+        .first()
 
     // Pass the reference genome (gz is fine: mappy and pysam handle it) to
     // cresil trim; the module decompresses gzipped reads to .fastq itself.
