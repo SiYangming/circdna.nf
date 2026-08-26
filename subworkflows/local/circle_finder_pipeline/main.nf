@@ -20,9 +20,11 @@ workflow CIRCLE_FINDER_PIPELINE {
     main:
     ch_versions = channel.empty()
 
+    // value channel 自动广播给所有 full_bam_sorted 元素，无需 .repeat()
+    // （.repeat() 是旧写法，Nextflow 26 中可能触发 ArrayList.repeat() 错误）
     SAMTOOLS_SORT_QNAME_CF (
         full_bam_sorted,
-        channel.value([[], null, null]).repeat(),
+        channel.value([[], null, null]),
         ''
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_QNAME_CF.out.versions_samtools)
