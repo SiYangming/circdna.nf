@@ -23,7 +23,7 @@ process CIDERSEQ_SEPARATE {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    python ${projectDir}/bin/ciderseq_separate.py \\
+    python ciderseq_separate.py \\
         --config ${config} \\
         --blastdb ${blastdb} \\
         --outdir . \\

@@ -29,7 +29,7 @@ workflow CIDERSEQ_PIPELINE {
                 [ meta + [ genome: genome ], genome, fasta ]
             }
         }
-        .branch { meta, genome, fasta ->
+        .branch { _meta, genome, _fasta ->
             alignable: align_genomes.contains(genome)
             skipped:   true
         }
@@ -38,10 +38,10 @@ workflow CIDERSEQ_PIPELINE {
 
     // STEP 2: align — MUSCLE end trimming (per genome, only target genomes)
     CIDERSEQ_ALIGN (
-        ch_separated_branch.alignable.map { meta, genome, fasta -> [ meta, fasta ] },
+        ch_separated_branch.alignable.map { meta, _genome, fasta -> [ meta, fasta ] },
         config,
         align_targets,
-        ch_separated_branch.alignable.map { meta, genome, fasta -> genome }
+        ch_separated_branch.alignable.map { _meta, genome, _fasta -> genome }
     )
     ch_versions = ch_versions.mix(CIDERSEQ_ALIGN.out.versions)
 
@@ -62,15 +62,15 @@ workflow CIDERSEQ_PIPELINE {
 
     ch_deconcat_for_phase
         .join( ch_annotation_for_phase )
-        .map { key, meta, fa, json -> [ meta, fa, json ] }
-        .filter { meta, fa, json -> phase_genomes.contains(meta.genome) }
+        .map { _key, meta, fa, json -> [ meta, fa, json ] }
+        .filter { meta, _fa, _json -> phase_genomes.contains(meta.genome) }
         .set { ch_phase_input }
 
     CIDERSEQ_PHASE (
-        ch_phase_input.map { meta, fa, json -> [ meta, fa ] },
-        ch_phase_input.map { meta, fa, json -> json },
+        ch_phase_input.map { meta, fa, _json -> [ meta, fa ] },
+        ch_phase_input.map { _meta, _fa, json -> json },
         config,
-        ch_phase_input.map { meta, fa, json -> meta.genome }
+        ch_phase_input.map { meta, _fa, _json -> meta.genome }
     )
     ch_versions = ch_versions.mix(CIDERSEQ_PHASE.out.versions)
 

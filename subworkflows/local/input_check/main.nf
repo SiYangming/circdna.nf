@@ -10,7 +10,7 @@ workflow INPUT_CHECK {
     // 增量缓存（.trae/specs/incremental-cache）：channel 直接从原始 CSV 创建，
     // 任务哈希只依赖 fastq 内容与 meta，不依赖验证输出 CSV；增删样本时旧样本复用缓存。
     // SAMPLESHEET_CHECK 仍执行（验证 + versions），文件存在性由 create_*_channels 兜底。
-    Channel.fromPath(samplesheet)
+    channel.fromPath(samplesheet)
         .splitCsv ( header:true, sep:',' )
         .set { parsed_samplesheet }
 
@@ -18,16 +18,16 @@ workflow INPUT_CHECK {
     parsed_samplesheet
         .filter { row -> (row.platform ?: 'illumina') == 'illumina' }
         .map { it -> params.input_format == 'BAM' ? create_short_read_bam_channels(it) : create_short_read_fastq_channels(it) }
-        .set { reads_short }
+        .set { ch_reads_short }
 
     parsed_samplesheet
         .filter { row -> (row.platform ?: '') in ['pacbio', 'ont'] }
         .map { it -> create_long_read_channels(it) }
-        .set { reads_long }
+        .set { ch_reads_long }
 
     emit:
-    reads_short  // channel: [ val(meta), [ reads ] ] OR [ val(meta), bam ]
-    reads_long   // channel: [ val(meta), fastq, input_bam, entrypoint ]
+    reads_short = ch_reads_short  // channel: [ val(meta), [ reads ] ] OR [ val(meta), bam ]
+    reads_long  = ch_reads_long   // channel: [ val(meta), fastq, input_bam, entrypoint ]
     versions     = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 

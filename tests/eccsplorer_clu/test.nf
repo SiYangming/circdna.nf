@@ -9,12 +9,12 @@ include { REPEATEXPLORER2          } from '../../modules/local/repeatexplorer2/m
 workflow {
     def data_dir = "${projectDir}/../../testdatasets/ngs"
 
-    ch_treatment = Channel.of(
+    ch_treatment = channel.of(
         [ [id: 'circdna_1', pair: 'p1'],
           file("${data_dir}/circdna_1_R1.fastq.gz"),
           file("${data_dir}/circdna_1_R2.fastq.gz") ]
     )
-    ch_control = Channel.of(
+    ch_control = channel.of(
         [ [id: 'gdna_1', pair: 'p1'],
           file("${data_dir}/gdna_1_R1.fastq.gz"),
           file("${data_dir}/gdna_1_R2.fastq.gz") ]
@@ -33,7 +33,7 @@ workflow {
     )
 
     ECCSPLORER_CLU_CANDIDATES.out.cluster_candidates
-        .view { meta, csv -> "CLU CANDIDATES OK: ${csv}" }
+        .view { _meta, csv -> "CLU CANDIDATES OK: ${csv}" }
     ECCSPLORER_CLU_CANDIDATES.out.comparative_table
-        .view { meta, csv -> "CLU TABLE OK: ${csv}" }
+        .view { _meta, csv -> "CLU TABLE OK: ${csv}" }
 }

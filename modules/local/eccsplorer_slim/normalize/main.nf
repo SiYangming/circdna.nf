@@ -21,7 +21,7 @@ process ECCSPLORER_NORMALIZE {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
-    def stats_args = stats ? stats.collect { "-stats ${it}" }.join(' ') : ''
+    def stats_args = stats ? stats.collect { s -> "-stats ${s}" }.join(' ') : ''
     """
     # v2: mapped bases parsed from samtools stats (no hardcoded 1e6)
     normalize.R \\

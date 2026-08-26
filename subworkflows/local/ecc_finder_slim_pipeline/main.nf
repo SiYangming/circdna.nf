@@ -18,7 +18,7 @@ include { ECC_FINDER_ASM_FILTER } from '../../../modules/local/ecc_finder_slim/a
 workflow ECC_FINDER_SLIM_PIPELINE {
     take:
     bam_sorted                     // channel: [meta, bam] (from BAM_PREPROCESSING)
-    bam_sorted_bai                 // channel: [meta, bai]
+    _bam_sorted_bai                // channel: [meta, bai]
     fasta_meta                     // channel: [meta, ref_fasta]
     reads                          // channel: [meta, [r1, r2]] (ASM_SR needs FASTQ)
     run_map_sr                     // boolean: enable MAP_SR slim

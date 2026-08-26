@@ -102,7 +102,7 @@ workflow CIRCDNA {
         def use_blackbox_any = (run_eccsplorer_blackbox | run_ecc_finder_map_sr_blackbox | run_ecc_finder_asm_sr_blackbox | run_ecc_finder_map_ont_blackbox | run_ecc_finder_asm_ont_blackbox)
         def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)
         // slim 标识符（原子化链，不走 legacy 路径）
-        def use_slim_any = branch.any { it in ['eccsplorer_map_slim','eccsplorer_clu_slim','eccsplorer_all_slim','ecc_finder_map_sr_slim','ecc_finder_asm_sr_slim','ecc_finder_map_ont_slim','ecc_finder_asm_ont_slim'] }
+        def use_slim_any = branch.any { ident -> ident in ['eccsplorer_map_slim','eccsplorer_clu_slim','eccsplorer_all_slim','ecc_finder_map_sr_slim','ecc_finder_asm_sr_slim','ecc_finder_map_ont_slim','ecc_finder_asm_ont_slim'] }
         use_legacy_mode = use_legacy_any
         if (!use_legacy_any && !use_slim_any && !use_blackbox_any) {
             exit 1, 'circle_identifier param not valid. Please check!'
@@ -143,7 +143,7 @@ workflow CIRCDNA {
     }
 
     // ---------------- long-read identifier parsing (engine switches, §3) ----------------
-    def lr_branch = (params.long_read_identifier ?: '').split(',').collect { it.trim() }.findAll { it }
+    def lr_branch = (params.long_read_identifier ?: '').split(',').collect { ident -> ident.trim() }.findAll { ident -> ident }
     def run_cresil       = ("cresil" in lr_branch)
     def run_fled         = ("fled" in lr_branch)
     def run_flye         = ("flye" in lr_branch)
@@ -358,9 +358,9 @@ workflow CIRCDNA {
                         def ch_pair_treatment = ch_eccdna_reads.map { meta, reads -> [ meta.pair, meta, reads ] }
                         def ch_pair_control  = ch_gdna_reads.map { meta, reads -> [ meta.pair, meta, reads ] }
                         def ch_clu_paired = ch_pair_treatment.join(ch_pair_control, remainder: false)
-                            .map { pair, e_meta, e_reads, c_meta, c_reads -> [ e_meta, e_reads[0], e_reads[1] ] }
+                            .map { _pair, e_meta, e_reads, _c_meta, _c_reads -> [ e_meta, e_reads[0], e_reads[1] ] }
                         def ch_clu_control = ch_pair_treatment.join(ch_pair_control, remainder: false)
-                            .map { pair, e_meta, e_reads, c_meta, c_reads -> [ e_meta, c_reads[0], c_reads[1] ] }
+                            .map { _pair, e_meta, _e_reads, _c_meta, c_reads -> [ e_meta, c_reads[0], c_reads[1] ] }
                         def taxon_val = params.eccsplorer_taxon ?: 'vir'
                         ECCSPLORER_CLU_SLIM ( ch_clu_paired, ch_clu_control, taxon_val )
                         ch_versions = ch_versions.mix(ECCSPLORER_CLU_SLIM.out.versions)

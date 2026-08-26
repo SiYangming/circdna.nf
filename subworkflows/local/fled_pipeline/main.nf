@@ -1,4 +1,5 @@
 include { FLED } from '../../../modules/local/fled/main'
+include { FLED_JUNCTION_TO_BED } from '../../../modules/local/fled_junction_to_bed/main'
 
 workflow FLED_PIPELINE {
     take:
@@ -24,45 +25,4 @@ workflow FLED_PIPELINE {
     junctions = FLED.out.junctions      // channel: [ val(meta), <prefix>.fled_junctions.txt ]
     bed       = FLED_JUNCTION_TO_BED.out.bed   // channel: [ val(meta), <prefix>.fled.bed ] (BED6+read_count)
     versions  = ch_versions
-}
-
-process FLED_JUNCTION_TO_BED {
-    tag "$meta.id"
-    label 'process_low'
-
-    conda "${projectDir}/modules/local/ecc_finder_slim/environment.yml"
-    container "quay.io/biocontainers/python:3.12.12"
-
-    input:
-    tuple val(meta), path(junctions)
-
-    output:
-    tuple val(meta), path("${prefix}.fled.bed"), emit: bed
-    path "versions.yml", emit: versions
-
-    when:
-    task.ext.when == null || task.ext.when
-
-    script:
-    prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    fled_to_bed.py \\
-        ${junctions} \\
-        ${prefix}.fled.bed
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        fled_to_bed: 1.0.0
-    END_VERSIONS
-    """
-
-    stub:
-    prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    touch ${prefix}.fled.bed
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        fled_to_bed: 1.0.0
-    END_VERSIONS
-    """
 }

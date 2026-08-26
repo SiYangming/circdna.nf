@@ -64,7 +64,7 @@ process CIRCLESEEKER {
 
     # Convert the eccDNA summary CSV into a BED6+read_count table so the
     # standard LONG_READ_FILTERING machinery can be reused downstream.
-    python ${projectDir}/bin/circleseeker_to_bed.py \\
+    python circleseeker_to_bed.py \\
         ${prefix}_eccDNA_summary.csv \\
         ${prefix}.circleseeker.bed
 

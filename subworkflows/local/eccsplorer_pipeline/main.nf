@@ -86,7 +86,7 @@ workflow ECCSPLORER_PIPELINE {
         // With control: tuples where c_reads (5th element) is non-null
         ch_eccdna_with_control = ch_eccdna_joined
             .filter { row -> row.size() >= 5 && row[4] != null }
-            .map { group, e_meta, e_reads, e_fasta, c_reads ->
+            .map { _group, e_meta, e_reads, e_fasta, c_reads ->
                 def r = c_reads instanceof List ? c_reads : [c_reads]
                 def cr1 = r.size() > 0 ? r[0] : c_reads
                 def cr2 = r.size() > 1 ? r[1] : cr1

@@ -23,6 +23,7 @@ include { CDHIT_CDHITEST as CDHIT_ONT              } from '../../../modules/nf-c
 include { ECC_FINDER_ONT_PAF_FILTER } from '../../../modules/local/ecc_finder_slim/paf_filter/main'
 include { ECC_FINDER_ONT_MERGE       } from '../../../modules/local/ecc_finder_slim/ont_merge/main'
 include { ECC_FINDER_ONT_ASM         } from '../../../modules/local/ecc_finder_slim/ont_asm/main'
+include { ECC_FINDER_ONT_CSV_TO_BED } from '../../../modules/local/ecc_finder_ont_csv_to_bed/main'
 
 workflow ECC_FINDER_ONT_SLIM {
     take:
@@ -136,45 +137,4 @@ workflow ECC_FINDER_ONT_SLIM {
     asm_fasta  = ch_asm_fasta
     unit_fa    = ch_unit_fa
     versions   = ch_versions
-}
-
-process ECC_FINDER_ONT_CSV_TO_BED {
-    tag "$meta.id"
-    label 'process_low'
-
-    conda "${projectDir}/modules/local/ecc_finder_slim/environment.yml"
-    container "quay.io/biocontainers/python:3.12.12"
-
-    input:
-    tuple val(meta), path(csv)
-
-    output:
-    tuple val(meta), path("${prefix}.eccfinder_ont.bed"), emit: bed
-    path "versions.yml", emit: versions
-
-    when:
-    task.ext.when == null || task.ext.when
-
-    script:
-    prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    eccfinder_ont_to_bed.py \\
-        ${csv} \\
-        ${prefix}.eccfinder_ont.bed
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        eccfinder_ont_to_bed: 1.0.0
-    END_VERSIONS
-    """
-
-    stub:
-    prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    touch ${prefix}.eccfinder_ont.bed
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        eccfinder_ont_to_bed: 1.0.0
-    END_VERSIONS
-    """
 }

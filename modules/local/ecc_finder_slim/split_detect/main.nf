@@ -19,7 +19,6 @@ process ECC_FINDER_SPLIT_DETECT {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
     # BAM → BED (6 cols: chrom, start, end, name, score, strand)

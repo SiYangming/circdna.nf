@@ -18,8 +18,8 @@ workflow ECCSPLORER_PREXER_SLIM {
 
     // convert trimmed paired reads to FASTA (original eccPrepare converting)
     def ch_trim_fa_in = TRIMMOMATIC.out.trimmed_reads
-        .map { meta, reads ->
-            def rlist = reads instanceof List ? reads : [reads]
+        .map { meta, trimmed_reads ->
+            def rlist = trimmed_reads instanceof List ? trimmed_reads : [trimmed_reads]
             [ meta, rlist[0] ]
         }
     SEQTK_SEQ_PREXER ( ch_trim_fa_in )

@@ -13,6 +13,7 @@ include { SAMTOOLS_SORT as SAMTOOLS_SORT_REMAP } from '../../../modules/nf-core/
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_REMAP } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FAIDX } from '../../../modules/nf-core/samtools/faidx/main'
 include { BEDTOOLS_BAMTOBED } from '../../../modules/nf-core/bedtools/bamtobed/main'
+include { COLLAPSE_CIRCLE_ALIGNMENTS } from '../../../modules/local/collapse_circle_alignments/main'
 
 workflow REMAP_ASSEMBLED_CIRCLES {
     take:
@@ -65,49 +66,4 @@ workflow REMAP_ASSEMBLED_CIRCLES {
     emit:
     bed      = COLLAPSE_CIRCLE_ALIGNMENTS.out.bed   // channel: [ val(meta), *.collapsed.bed ] (BED6+read_count)
     versions = ch_versions
-}
-
-process COLLAPSE_CIRCLE_ALIGNMENTS {
-    tag "$meta.id"
-    label 'process_low'
-
-    conda "${projectDir}/modules/local/ecc_finder_slim/environment.yml"
-    container "quay.io/biocontainers/python:3.12.12"
-
-    input:
-    tuple val(meta), path(bed)
-
-    output:
-    tuple val(meta), path("${prefix}.collapsed.bed"), emit: bed
-    path "versions.yml", emit: versions
-
-    when:
-    task.ext.when == null || task.ext.when
-
-    script:
-    def args = task.ext.args ?: ''
-    prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    collapse_circle_alignments.py \\
-        --bed ${bed} \\
-        --out ${prefix}.collapsed.bed \\
-        --min-mapq ${params.remap_min_mapq} \\
-        --max-gap ${params.remap_max_gap} \\
-        $args
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        collapse_circle_alignments: 1.0.0
-    END_VERSIONS
-    """
-
-    stub:
-    prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    touch ${prefix}.collapsed.bed
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        collapse_circle_alignments: 1.0.0
-    END_VERSIONS
-    """
 }

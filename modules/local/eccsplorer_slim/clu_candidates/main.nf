@@ -25,10 +25,10 @@ process ECCSPLORER_CLU_CANDIDATES {
     prefix = task.ext.prefix ?: "${meta.id}"
     """
     # v3: 显式调用 pipeline bin/ 版 clu_candidates.py（镜像内 /opt/eccsplorer_slim/bin 旧版
-    #     优先于 PATH 中的 pipeline bin，需用 ${projectDir}/bin 绝对路径绕过）。
+    #     优先于 PATH 中的 pipeline bin，需用绝对路径绕过）。
     #     修正版兼容真实 seqclust 输出：normalize []/引号、按 cluster id 对齐、
     #     CLUSTER_TABLE.csv 缺失时回退到 COMPARATIVE_ANALYSIS_COUNTS.csv。
-    python3 ${projectDir}/bin/clu_candidates.py \\
+    python3 ${moduleDir}/../../../../bin/clu_candidates.py \\
         --clu_dir ${clu_dir} \\
         --pre_a ${pre_a} \\
         --pre_b ${pre_b} \\

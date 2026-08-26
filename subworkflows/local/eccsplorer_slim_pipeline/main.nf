@@ -126,8 +126,8 @@ workflow ECCSPLORER_SLIM_PIPELINE {
     ch_versions = ch_versions.mix(SAMTOOLS_STATS_TR.out.versions_samtools)
 
     // ---- Control (CO) chain: segemehl align → sorted BAM → all BED + stats ----
-    def ch_co_bed = Channel.empty()
-    def ch_co_stats = Channel.empty()
+    def ch_co_bed = channel.empty()
+    def ch_co_stats = channel.empty()
     if (control) {
         SEGEMEHL_ALIGN_CO ( control, ch_fasta_path, SEGEMEHL_INDEX.out.index )
         ch_versions = ch_versions.mix(SEGEMEHL_ALIGN_CO.out.versions)
@@ -167,7 +167,7 @@ workflow ECCSPLORER_SLIM_PIPELINE {
     def ch_windows = BEDTOOLS_MAKEWINDOWS.out.bed.collect()
     def ch_coverage_input = BEDTOOLS_BAMTOBED.out.bed
         .combine(ch_windows)
-        .map { meta_s, bed, meta_w, windows -> [ meta_s, windows, bed ] }
+        .map { meta_s, bed, _meta_w, windows -> [ meta_s, windows, bed ] }
     BEDTOOLS_COVERAGE ( ch_coverage_input, [] )
     ch_versions = ch_versions.mix(BEDTOOLS_COVERAGE.out.versions_bedtools)
 
@@ -182,11 +182,11 @@ workflow ECCSPLORER_SLIM_PIPELINE {
         .map { meta, bed -> [ meta.id, meta, bed ] }
         .join( ECCSPLORER_PEAK_DETECT.out.bed.map { meta, bed -> [ meta.id, meta, bed ] } )
         .join( ECCSPLORER_DR_DETECT.out.dr_regions.map { meta, bed -> [ meta.id, meta, bed ] } )
-        .map { id, ms, sr, mp, peak, md, dr -> [ ms, sr, peak, dr ] }
+        .map { _id, ms, sr, _mp, peak, _md, dr -> [ ms, sr, peak, dr ] }
     ECCSPLORER_CANDIDATE_EXTRACT (
-        ch_cand_input.map { ms, sr, peak, dr -> [ ms, sr ] },
-        ch_cand_input.map { ms, sr, peak, dr -> [ ms, peak ] },
-        ch_cand_input.map { ms, sr, peak, dr -> [ ms, dr ] }
+        ch_cand_input.map { ms, sr, _peak, _dr -> [ ms, sr ] },
+        ch_cand_input.map { ms, _sr, peak, _dr -> [ ms, peak ] },
+        ch_cand_input.map { ms, _sr, _peak, dr -> [ ms, dr ] }
     )
     ch_versions = ch_versions.mix(ECCSPLORER_CANDIDATE_EXTRACT.out.versions)
 
@@ -202,15 +202,15 @@ workflow ECCSPLORER_SLIM_PIPELINE {
     if (control) {
         ch_cov_in = ch_cov_in.join(ch_co_bed.map { meta, bed -> [ meta.id, meta, bed ] })
     }
-    def ch_cov_arg = ch_cov_in.map { id, mc, cand, t, trall, s, trsr, d, trdr, c, coal ->
+    def ch_cov_arg = ch_cov_in.map { _id, mc, cand, _t, trall, _s, trsr, _d, trdr, _c, coal ->
         def beds = [ trall, trsr, trdr ]
         if (coal) beds << coal
         [ mc, cand, beds, 'TR_all,TR_SR,TR_DR' + (coal ? ',CO_all' : '') ]
     }
     ECCSPLORER_COVERAGE_PROFILE (
-        ch_cov_arg.map { mc, cand, beds, names -> [ mc, cand ] },
-        ch_cov_arg.map { mc, cand, beds, names -> [ mc, beds ] },
-        ch_cov_arg.map { mc, cand, beds, names -> names },
+        ch_cov_arg.map { mc, cand, _beds, _names -> [ mc, cand ] },
+        ch_cov_arg.map { mc, _cand, beds, _names -> [ mc, beds ] },
+        ch_cov_arg.map { _mc, _cand, _beds, names -> names },
         fasta_meta
     )
     ch_versions = ch_versions.mix(ECCSPLORER_COVERAGE_PROFILE.out.versions)
@@ -231,9 +231,9 @@ workflow ECCSPLORER_SLIM_PIPELINE {
 
     // BLAST annotation (replicates ECCsplorer basic_setup + analyze_candidate_region)
     def ch_blast_db = params.eccsplorer_database
-        ? Channel.of([ [id:'combineddb'], file(params.eccsplorer_database) ])
-        : Channel.empty()
-    def ch_blast_out = Channel.empty()
+        ? channel.of([ [id:'combineddb'], file(params.eccsplorer_database) ])
+        : channel.empty()
+    def ch_blast_out = channel.empty()
     if (params.eccsplorer_database) {
         BLAST_COMBINEDDB ( ch_blast_db )
         // candidate sequences (BED → FASTA)

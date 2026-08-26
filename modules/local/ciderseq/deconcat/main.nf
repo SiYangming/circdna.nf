@@ -23,7 +23,7 @@ process CIDERSEQ_DECONCAT {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: (meta.genome ? "${meta.id}.${meta.genome}" : "${meta.id}")
     """
-    python ${projectDir}/bin/ciderseq_deconcat.py \\
+    python ciderseq_deconcat.py \\
         --config ${config} \\
         --outdir . \\
         --prefix ${prefix} \\

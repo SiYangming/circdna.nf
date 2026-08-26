@@ -64,7 +64,7 @@ workflow CRESIL_PIPELINE {
     // Annotate the standard identify output (gene/CpG/repeat/variant).
     // Optional annotation beds default to an empty tuple so the process
     // still runs even when no annotation files are provided.
-    ch_empty_bed = Channel.of([[:], []])
+    ch_empty_bed = channel.of([[:], []])
     CRESIL_ANNOTATE ( eccdna_candidates, ch_empty_bed, ch_empty_bed, ch_empty_bed )
     ch_versions = ch_versions.mix(CRESIL_ANNOTATE.out.versions_cresil)
 
@@ -82,7 +82,7 @@ workflow CRESIL_PIPELINE {
         CRESIL_ANNOTATE.out.cpg_annot,
         CRESIL_ANNOTATE.out.repeat_annot,
         CRESIL_ANNOTATE.out.variant_annot,
-        ch_visualize_input.map { meta, table, id -> id }
+        ch_visualize_input.map { _meta, _table, id -> id }
     )
     ch_versions = ch_versions.mix(CRESIL_VISUALIZE.out.versions_cresil)
 

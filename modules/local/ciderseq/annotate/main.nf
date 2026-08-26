@@ -23,7 +23,7 @@ process CIDERSEQ_ANNOTATE {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: (meta.genome ? "${meta.id}.${meta.genome}" : "${meta.id}")
     """
-    python ${projectDir}/bin/ciderseq_annotate.py \\
+    python ciderseq_annotate.py \\
         --config ${config} \\
         --protein_db ${protein_db} \\
         --outdir . \\

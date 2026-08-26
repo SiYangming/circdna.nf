@@ -15,7 +15,7 @@ process FILTER_ECCDNA_BY_SUPPORT {
 
     script:
     def ext = input_file.getExtension() ?: 'txt'
-    def bin_script = "${projectDir}/bin/filter_by_read_support.py"
+    def bin_script = "filter_by_read_support.py"
     """
     python ${bin_script} \\
         ${input_file} \\
