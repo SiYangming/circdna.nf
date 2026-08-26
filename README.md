@@ -120,19 +120,31 @@ Please specify the parameter `circle_identifier` depending on the pipeline branc
 
 > `unicycler` uses [Unicycler](https://github.com/rrwick/Unicycler) for de novo assembly of ecDNAs and [Minimap2](https://github.com/lh3/minimap2) for accurate mapping of the identified circular sequences.
 
-### Long-read eccDNA detection (PacBio HiFi / ONT)
+### Long-read eccDNA detection (PacBio HiFi / ONT) and mixed tables
 
-For long-read data, set `--protocol pacbio|ont` and select the detection engines with `--long_read_identifier`. `circleseeker` is an optional engine that runs [CircleSeeker](https://github.com/leoxqy/CircleSeeker) for comprehensive eccDNA detection and characterisation from PacBio HiFi reads, and feeds its results into the shared long-read candidate filtering (read support, blacklist and repeats):
+Long-read samplesheets carry per-row routing columns: `platform,assay,datatype,pair,concatemer,read_type,enrichment`.
+`assay` is required for long-read rows (`wgs|rca|ciderseq|enriched`) — `wgs` rows are long-read WGS **background** (minimap2 + mosdepth only, never detected). `concatemer=false` (linearized RCA / T7 debranching) skips TideHunter. `read_type=clr` must be written explicitly for PacBio RS / non-HiFi Sequel.
 
-> `circleseeker` uses [CircleSeeker](https://github.com/leoxqy/CircleSeeker) (CtcReads-Caller + SplitReads-Caller) for eccDNA detection from PacBio HiFi long reads
+`samplesheet_long_read.csv`:
+
+```csv
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+SAMPLE_RCA,SAMPLE.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,STUDY1,true,ont,circleseq
+SAMPLE_WGS,SAMPLE.fastq.gz,,,cleaned_fastq,pacbio,wgs,gdna,STUDY1,false,hifi,none
+SAMPLE_CIDER,SAMPLE.fastq.gz,,,cleaned_fastq,pacbio,ciderseq,eccdna,STUDY2,false,clr,ciderseq
+```
+
+One table may mix Illumina Circle-seq + PacBio WGS + ONT RCA + CIDER-seq: each row is routed on its own `platform × assay × datatype` (see `samplesheets/circdna_representative.csv` for a full 31-sample representative set derived from `samplesheets/metadata.csv` via `bin/metadata_to_samplesheet.py`).
 
 ```bash
 nextflow run nf-core/circdna --input samplesheet_long_read.csv --outdir <OUTDIR> \
     --fasta <reference.fa> --input_format FASTQ \
     --protocol pacbio --entrypoint cleaned_fastq \
-    --long_read_identifier cresil,fled,flye,eccfinder,circleseeker \
+    --long_read_identifier cresil,fled,flye,eccfinder \
     -profile docker
 ```
+
+`circleseeker` runs only for `assay=rca + concatemer=true + read_type=hifi` samples; `ciderseq` requires `--ciderseq_config` and its databases.
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;

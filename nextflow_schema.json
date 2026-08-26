@@ -69,8 +69,8 @@
                 "mode": {
                     "type": "string",
                     "default": "eccdna",
-                    "description": "Pipeline mode: 'reference' (gDNA background) or 'eccdna' (eccDNA detection)",
-                    "help_text": "Specify which mode to run. Reference mode runs QC + alignment + depth analysis. eccDNA mode runs full eccDNA detection.",
+                    "description": "Legacy pipeline mode: 'reference' or 'eccdna'. No longer a master switch.",
+                    "help_text": "§1.1: rows are routed on datatype/assay. mode only backfills the datatype (reference→gdna) when a row omits it. Integrated Mode was removed; scoring lives in eccdna.smk.",
                     "fa_icon": "fas fa-cogs",
                     "enum": ["reference", "eccdna"]
                 },
@@ -99,8 +99,8 @@
                     "type": "string",
                     "enum": ["short_read", "pacbio", "ont"],
                     "default": "short_read",
-                    "description": "Sequencing protocol to use. Options: 'short_read' (Illumina), 'pacbio', 'ont'.",
-                    "help_text": "Specify the sequencing protocol. 'short_read' runs the standard Illumina pipeline, 'pacbio' runs the PacBio long-read pipeline, 'ont' runs the Oxford Nanopore long-read pipeline.",
+                    "description": "Legacy global platform fallback. Only used when a samplesheet row lacks an explicit 'platform' column.",
+                    "help_text": "DEPRECATED as a routing key: rows are routed on platform × assay × datatype. This value only backfills the platform for rows without one (short_read→illumina).",
                     "fa_icon": "fas fa-dna"
                 },
                 "entrypoint": {
@@ -190,6 +190,57 @@
                     "help_text": "Subreads BAM files larger than this size are split into multiple chunks for parallel HiFi generation with PBCCS, then merged with samtools cat. Default 2 GB.",
                     "fa_icon": "fas fa-cut"
                 },
+                "assay": {
+                    "type": "string",
+                    "enum": ["wgs", "circleseq", "rca", "ciderseq", "enriched"],
+                    "description": "Global assay backfill for samplesheet rows that omit the 'assay' column.",
+                    "help_text": "Long-read rows without an explicit 'assay' column fall back to this value. Default null forces the assay to be written per row. Illumina+RCA must be written as circleseq.",
+                    "fa_icon": "fas fa-flask"
+                },
+                "remap_min_mapq": {
+                    "type": "integer",
+                    "default": 20,
+                    "minimum": 0,
+                    "description": "Minimum MAPQ for collapse_circle_alignments.py when remapping assembled circles.",
+                    "help_text": "Assembled FASTA (TideHunter consensus / ecc_finder asm / Flye contigs) are remapped to the reference; alignments below this MAPQ are dropped.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "remap_max_gap": {
+                    "type": "integer",
+                    "default": 100,
+                    "minimum": 0,
+                    "description": "Max gap (bp) for merging alignment blocks/loci in collapse_circle_alignments.py.",
+                    "fa_icon": "fas fa-arrows-alt-h"
+                },
+                "filter_organelle": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable organelle origin tagging of candidate BED entries.",
+                    "help_text": "When true and --organelle_genome is set, candidates are annotated with origin=nuclear|pt|mt|ambiguous. Default: tag only, never drop.",
+                    "fa_icon": "fas fa-seedling"
+                },
+                "organelle_genome": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Organelle genome FASTA (plastid/mitochondrial, optionally concatenated) for origin tagging.",
+                    "help_text": "Mapped to the nuclear reference; candidate regions overlapping organelle hits are tagged pt/mt by contig name keywords (mito/chloro/plastid).",
+                    "fa_icon": "fas fa-dna"
+                },
+                "drop_organelle_candidates": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Remove organelle-tagged candidates from the output instead of only annotating origin.",
+                    "help_text": "§4.7 default is false (annotate only). Set true to hard-remove pt/mt/ambiguous candidates.",
+                    "fa_icon": "fas fa-ban"
+                },
+                "organelle_min_overlap": {
+                    "type": "number",
+                    "default": 0.5,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Minimum overlap fraction for a candidate to be tagged as organelle origin.",
+                    "fa_icon": "fas fa-percentage"
+                },
                 "blacklist_bed": {
                     "type": "string",
                     "format": "file-path",
@@ -201,7 +252,7 @@
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to BED file containing repetitive genomic regions.",
-                    "help_text": "Filter out eccDNA candidates overlapping with highly repetitive regions.",
+                    "help_text": "§4.6: repeat regions are ANNOTATED (te_overlap column appended), never hard-deleted. Blacklist filtering remains hard.",
                     "fa_icon": "fas fa-repeat"
                 },
                 "save_long_read_intermediate": {

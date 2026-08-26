@@ -279,15 +279,33 @@ SRR5051136,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051136_
 - **`protocol` values**: `short_read`, `long_read`
 - **File path convention**: `/data1/users/siyangming/PlanteccDNADB/eccDNA/{Species}/{sample}_{1,2}.fastq.gz`
 
-### 4.2 TGS (Long-read) Format — single-end FASTQ
+### 4.2 TGS (Long-read) Format — single-end FASTQ with routing columns
 ```csv
-sample,fastq_1,fastq_2
-ERR11838731,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/ERR11838731.fastq.gz,
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+ERR11838731,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/ERR11838731.fastq.gz,,,cleaned_fastq,pacbio,wgs,gdna,PRJEB59090,false,hifi,none
+ERR12724336,/data1/users/siyangming/PlanteccDNADB/eccDNA/Triticum_aestivum/ERR12724336.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,PRJEB72688,true,ont,circleseq
 ```
+- 长读样本表必须含 `platform,assay,datatype,concatemer,read_type` 路由列（`assay` 长读必填；`protocol` 列仅做兼容映射，不再是路由键）
+- 长读 WGS 背景标 `assay=wgs,datatype=gdna`，绝不当作 RCA 检测
 - 与 `circdna_tgs_clean.csv`、`circdnalr_{species}_long_read.csv` 一致
-- 长读样本表使用 `sample,fastq_1,fastq_2` 三列（无 `data_type`）
 
-### 4.3 Key Samplesheet Files
+### 4.3 路由模型（v4.7，§1.1）
+
+| 字段 | 取值 | 职责 |
+|------|------|------|
+| `platform` | `illumina` / `pacbio` / `ont` | 预处理链（按行，支持混表） |
+| `assay` | `wgs` / `circleseq` / `rca` / `ciderseq` / `enriched` | 实验类型 → 引擎集合 |
+| `datatype` | `gdna` / `eccdna` | 背景 vs 检测 |
+| `pair` | 字符串，可空 | 研究分组键（clu join 仅 `illumina×circleseq×eccdna` ⋈ `illumina×wgs×gdna` 同 pair） |
+| `concatemer` | `true` / `false` | 长读 RCA 是否跑 TideHunter（`false`=线性化/T7，跳过） |
+| `read_type` | `hifi` / `clr` / `ont` / `pe` / `se` | minimap2 preset（`clr` 必须显式写） |
+| `enrichment` | `none` / `circleseq` / `mobilome` / `ciderseq` / `t7` / `exov` / `other` | 注释，不分流 |
+
+- 短读缺省：`datatype=gdna→assay=wgs`，`eccdna→circleseq`；Illumina+RCA 必须写成 `circleseq`
+- 长读缺省：`gdna→wgs`；eccdna 必须显式（或 `--assay` 回填），禁止猜 ciderseq
+- `mode` 不再作为总开关；仅全表同一角色且行上未写 datatype 时回填（`reference→gdna`）
+
+### 4.4 关键 Samplesheet 文件
 
 | File | Purpose | Notes |
 |------|---------|-------|

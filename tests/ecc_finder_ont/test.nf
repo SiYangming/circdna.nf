@@ -6,7 +6,7 @@ include { ECC_FINDER_ONT_SLIM } from '../../subworkflows/local/ecc_finder_ont_sl
 
 workflow {
     ch_reads = Channel.of(
-        [ [id: 'sim_ont'], file("${projectDir}/../tidehunter/data/sim_tandem.fa") ]
+        [ [id: 'sim_ont', concatemer: true, read_type: 'ont'], file("${projectDir}/../tidehunter/data/sim_tandem.fa") ]
     )
     ch_ref = Channel.of(
         [ [id: 'genome'], file("${projectDir}/../../testdatasets/reference/genome.fa") ]

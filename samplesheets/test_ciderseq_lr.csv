@@ -1,2 +1,2 @@
-sample,fastq_1,input_bam,entrypoint
-example1,/Users/siyangming/nextflow_nf_core/circdna.nf/modules/local/ciderseq/testdata/example1.fastq.gz,,cleaned_fastq
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+example1,/Users/siyangming/nextflow_nf_core/circdna.nf/modules/local/ciderseq/testdata/example1.fastq.gz,,,cleaned_fastq,pacbio,ciderseq,eccdna,ciderseq_smoke,false,clr,ciderseq

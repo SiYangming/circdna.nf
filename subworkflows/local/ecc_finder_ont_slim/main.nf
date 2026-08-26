@@ -1,14 +1,23 @@
 //
-// ECC_FINDER_ONT_SLIM — ONT (long-read) eccDNA 检测子工作流
-// map-ont: minimap2 → PAF 过滤 → TideHunter 拆 unit → unit 重比对 → Genrich → merge
-// asm-ont: TideHunter consensus → cd-hit-est 聚类 → 去 singleton
+// ECC_FINDER_ONT_SLIM — long-read (ONT/PacBio) eccDNA 检测子工作流（RCA 默认路径）
+// map:   minimap2 → PAF 过滤 → [concatemer=true → TideHunter 拆 unit → unit 重比对]
+//        → Genrich → merge
+// asm:   TideHunter consensus → cd-hit-est 聚类 → 去 singleton
+//
+// RCA 语义（§4.1）：
+//   * preset 跟 meta.read_type（map-hifi / map-pb / map-ont），不写死 map-ont
+//   * concatemer=false（线性化 RCA / T7 debranch）：不跑 TIDEHUNTER_UNIT/ASM，
+//     只跑 minimap2 map（BAM）+ Genrich + merge
+//   * asm 分支仅 concatemer=true 且 read_type != clr
 //
 
 include { MINIMAP2_ALIGN as MINIMAP2_ONT          } from '../../../modules/nf-core/minimap2/align/main'
 include { MINIMAP2_ALIGN as MINIMAP2_ONT_UNIT      } from '../../../modules/nf-core/minimap2/align/main'
+include { MINIMAP2_ALIGN as MINIMAP2_ONT_READBAM   } from '../../../modules/nf-core/minimap2/align/main'
 include { TIDEHUNTER as TIDEHUNTER_UNIT            } from '../../../modules/local/tidehunter/main'
 include { TIDEHUNTER as TIDEHUNTER_ASM             } from '../../../modules/local/tidehunter/main'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_NAME_ONT  } from '../../../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_SORT as SAMTOOLS_SORT_READ      } from '../../../modules/nf-core/samtools/sort/main'
 include { GENRICH as GENRICH_ONT                   } from '../../../modules/nf-core/genrich/main'
 include { CDHIT_CDHITEST as CDHIT_ONT              } from '../../../modules/nf-core/cdhit/cdhitest/main'
 include { ECC_FINDER_ONT_PAF_FILTER } from '../../../modules/local/ecc_finder_slim/paf_filter/main'
@@ -24,9 +33,14 @@ workflow ECC_FINDER_ONT_SLIM {
 
     main:
     ch_versions = channel.empty()
+    def ch_map_csv    = channel.empty()
+    def ch_map_fasta  = channel.empty()
+    def ch_map_bed    = channel.empty()
+    def ch_asm_fasta  = channel.empty()
+    def ch_unit_fa    = channel.empty()
 
     if (run_map_ont) {
-        // 1) minimap2 map-ont → PAF
+        // 1) minimap2 map → PAF（preset 由 modules.config 按 meta.read_type 决定）
         MINIMAP2_ONT ( reads, fasta_meta, false, '', false, false )
         ch_versions = ch_versions.mix(MINIMAP2_ONT.out.versions_minimap2)
 
@@ -34,60 +48,133 @@ workflow ECC_FINDER_ONT_SLIM {
         ECC_FINDER_ONT_PAF_FILTER ( MINIMAP2_ONT.out.paf )
         ch_versions = ch_versions.mix(ECC_FINDER_ONT_PAF_FILTER.out.versions)
 
-        // 3) TideHunter splits tandem repeats into units (args '-u' in modules.config → unit_fa)
-        TIDEHUNTER_UNIT ( reads, [], [] )
-        ch_versions = ch_versions.mix(TIDEHUNTER_UNIT.out.versions)
+        // 3) concatemer 分支：true → TideHunter 拆 unit；false → 直接对原始 reads 比对做 Genrich
+        def concat_reads   = reads.filter { meta, _f -> meta.concatemer }
+        def noconcat_reads = reads.filter { meta, _f -> !meta.concatemer }
 
-        // 4) unit re-alignment → name-sorted BAM
-        MINIMAP2_ONT_UNIT ( TIDEHUNTER_UNIT.out.unit_fa, fasta_meta, true, '', false, false )
-        SAMTOOLS_SORT_NAME_ONT (
-            MINIMAP2_ONT_UNIT.out.bam,
-            fasta_meta.map { meta, fa -> [ meta, fa, [] ] },
-            ''
-        )
-        ch_versions = ch_versions.mix(
-            MINIMAP2_ONT_UNIT.out.versions_minimap2,
-            SAMTOOLS_SORT_NAME_ONT.out.versions_samtools
-        )
+        def ch_unit_bam = channel.empty()
+        if (concat_reads) {
+            TIDEHUNTER_UNIT ( concat_reads, [], [] )
+            ch_versions = ch_versions.mix(TIDEHUNTER_UNIT.out.versions)
 
-        // 5) Genrich peak calling on unit alignments (nf-core GENRICH: treatment=[bam], control=[], blacklist=[])
+            // 4) unit re-alignment → name-sorted BAM
+            MINIMAP2_ONT_UNIT ( TIDEHUNTER_UNIT.out.unit_fa, fasta_meta, true, '', false, false )
+            SAMTOOLS_SORT_NAME_ONT (
+                MINIMAP2_ONT_UNIT.out.bam,
+                fasta_meta.map { meta, fa -> [ meta, fa, [] ] },
+                ''
+            )
+            ch_versions = ch_versions.mix(
+                MINIMAP2_ONT_UNIT.out.versions_minimap2,
+                SAMTOOLS_SORT_NAME_ONT.out.versions_samtools
+            )
+            ch_unit_bam = ch_unit_bam.mix(SAMTOOLS_SORT_NAME_ONT.out.bam)
+            ch_unit_fa  = ch_unit_fa.mix(TIDEHUNTER_UNIT.out.unit_fa)
+        }
+
+        if (noconcat_reads) {
+            // 无 TideHunter：原始 reads 比对成 BAM（coordinate sort）→ Genrich
+            MINIMAP2_ONT_READBAM ( noconcat_reads, fasta_meta, true, '', false, false )
+            SAMTOOLS_SORT_READ (
+                MINIMAP2_ONT_READBAM.out.bam,
+                fasta_meta.map { meta, fa -> [ meta, fa, [] ] },
+                ''
+            )
+            ch_versions = ch_versions.mix(
+                MINIMAP2_ONT_READBAM.out.versions_minimap2,
+                SAMTOOLS_SORT_READ.out.versions_samtools
+            )
+            ch_unit_bam = ch_unit_bam.mix(SAMTOOLS_SORT_READ.out.bam)
+        }
+
+        // 5) Genrich peak calling（nf-core GENRICH: treatment=[bam], control=[], blacklist=[]）
         GENRICH_ONT (
-            SAMTOOLS_SORT_NAME_ONT.out.bam.map { meta, bam -> [ meta, [bam], [] ] },
+            ch_unit_bam.map { meta, bam -> [ meta, [bam], [] ] },
             []
         )
         ch_versions = ch_versions.mix(GENRICH_ONT.out.versions_genrich)
 
         // 6) merge sites with genome alignments → candidates
-        // (narrowPeak 前 3 列即 BED chr/start/end，ont_merge 兼容多余列)
         ECC_FINDER_ONT_MERGE (
             GENRICH_ONT.out.peak,
             ECC_FINDER_ONT_PAF_FILTER.out.paf_bed,
             fasta_meta.map { _meta, f -> [ [id:'genome'], f ] }
         )
         ch_versions = ch_versions.mix(ECC_FINDER_ONT_MERGE.out.versions)
+        ch_map_csv   = ch_map_csv.mix(ECC_FINDER_ONT_MERGE.out.csv)
+        ch_map_fasta = ch_map_fasta.mix(ECC_FINDER_ONT_MERGE.out.fasta)
+        ECC_FINDER_ONT_CSV_TO_BED ( ECC_FINDER_ONT_MERGE.out.csv )
+        ch_versions = ch_versions.mix(ECC_FINDER_ONT_CSV_TO_BED.out.versions)
+        ch_map_bed  = ch_map_bed.mix(ECC_FINDER_ONT_CSV_TO_BED.out.bed)
     }
 
     if (run_asm_ont) {
-        // 1) TideHunter consensus (tandem repeat units per read)
-        TIDEHUNTER_ASM ( reads, [], [] )
-        ch_versions = ch_versions.mix(TIDEHUNTER_ASM.out.versions)
+        def asm_reads = reads.filter { meta, _f -> meta.concatemer && meta.read_type != 'clr' }
+        if (asm_reads) {
+            // 1) TideHunter consensus (tandem repeat units per read)
+            TIDEHUNTER_ASM ( asm_reads, [], [] )
+            ch_versions = ch_versions.mix(TIDEHUNTER_ASM.out.versions)
 
-        // 2) cd-hit-est clustering
-        CDHIT_ONT ( TIDEHUNTER_ASM.out.cons_fa )
-        ch_versions = ch_versions.mix(CDHIT_ONT.out.versions_cdhitest)
+            // 2) cd-hit-est clustering
+            CDHIT_ONT ( TIDEHUNTER_ASM.out.cons_fa )
+            ch_versions = ch_versions.mix(CDHIT_ONT.out.versions_cdhitest)
 
-        // 3) drop singletons
-        ECC_FINDER_ONT_ASM (
-            CDHIT_ONT.out.fasta,
-            CDHIT_ONT.out.clusters
-        )
-        ch_versions = ch_versions.mix(ECC_FINDER_ONT_ASM.out.versions)
+            // 3) drop singletons
+            ECC_FINDER_ONT_ASM (
+                CDHIT_ONT.out.fasta,
+                CDHIT_ONT.out.clusters
+            )
+            ch_versions = ch_versions.mix(ECC_FINDER_ONT_ASM.out.versions)
+            ch_asm_fasta = ch_asm_fasta.mix(ECC_FINDER_ONT_ASM.out.fasta)
+        }
     }
 
     emit:
-    map_csv         = run_map_ont ? ECC_FINDER_ONT_MERGE.out.csv     : channel.empty()
-    map_fasta       = run_map_ont ? ECC_FINDER_ONT_MERGE.out.fasta   : channel.empty()
-    asm_fasta       = run_asm_ont ? ECC_FINDER_ONT_ASM.out.fasta     : channel.empty()
-    unit_fa         = run_map_ont ? TIDEHUNTER_UNIT.out.unit_fa      : channel.empty()
-    versions        = ch_versions
+    map_csv    = ch_map_csv
+    map_fasta  = ch_map_fasta
+    map_bed    = ch_map_bed
+    asm_fasta  = ch_asm_fasta
+    unit_fa    = ch_unit_fa
+    versions   = ch_versions
+}
+
+process ECC_FINDER_ONT_CSV_TO_BED {
+    tag "$meta.id"
+    label 'process_low'
+
+    conda "${projectDir}/modules/local/ecc_finder_slim/environment.yml"
+    container "quay.io/biocontainers/python:3.12.12"
+
+    input:
+    tuple val(meta), path(csv)
+
+    output:
+    tuple val(meta), path("${prefix}.eccfinder_ont.bed"), emit: bed
+    path "versions.yml", emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    eccfinder_ont_to_bed.py \\
+        ${csv} \\
+        ${prefix}.eccfinder_ont.bed
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        eccfinder_ont_to_bed: 1.0.0
+    END_VERSIONS
+    """
+
+    stub:
+    prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.eccfinder_ont.bed
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        eccfinder_ont_to_bed: 1.0.0
+    END_VERSIONS
+    """
 }

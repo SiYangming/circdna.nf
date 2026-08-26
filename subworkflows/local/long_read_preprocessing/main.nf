@@ -27,94 +27,90 @@ workflow LONG_READ_PREPROCESSING {
         ch_nanoplot_qc = NANOPLOT.out.txt
     }
 
-    if ( params.protocol == "pacbio" ) {
-        def pb_branches = reads
-            .branch { _meta, fastq, input_bam, entrypoint ->
-                pbccs: entrypoint == "subreads" && input_bam
-                lima: (entrypoint == "hifi_bam" || entrypoint == "raw_fastq") && fastq
-                cleaned: entrypoint == "cleaned_fastq" && fastq
+    // 按行 meta.platform 分支（混表：ONT 行绝不进 PBCCS/LIMA）
+    def pb_branches = reads
+        .filter { meta, _f, _b, _ep -> meta.platform == 'pacbio' }
+        .branch { _meta, fastq, input_bam, entrypoint ->
+            pbccs: entrypoint == "subreads" && input_bam
+            lima: (entrypoint == "hifi_bam" || entrypoint == "raw_fastq") && fastq
+            cleaned: entrypoint == "cleaned_fastq" && fastq
+        }
+
+    def ont_branches = reads
+        .filter { meta, _f, _b, _ep -> meta.platform == 'ont' }
+        .branch { _meta, fastq, _input_bam, entrypoint ->
+            raw: entrypoint == "raw_fastq" && fastq
+            cleaned: entrypoint == "cleaned_fastq" && fastq
+        }
+
+    def lima_input = channel.empty()
+
+    if ( pb_branches.pbccs ) {
+        // nf-core PBCCS 分块模式：按 subreads BAM 大小计算分块数
+        pb_branches.pbccs
+            .map { meta, _fastq, input_bam, _entrypoint ->
+                def bai = input_bam.toString().replace('.bam', '.bai')
+                def n_chunks = Math.max(1, Math.ceil(input_bam.size() / (params.ccs_chunk_size * 1e9)) as int)
+                [ [ meta, input_bam, bai ], n_chunks ]
             }
-
-        def lima_input = channel.empty()
-
-        if ( pb_branches.pbccs ) {
-            // nf-core PBCCS 分块模式：按 subreads BAM 大小计算分块数
-            pb_branches.pbccs
-                .map { meta, _fastq, input_bam, _entrypoint ->
-                    def bai = input_bam.toString().replace('.bam', '.bai')
-                    def n_chunks = Math.max(1, Math.ceil(input_bam.size() / (params.ccs_chunk_size * 1e9)) as int)
-                    [ [ meta, input_bam, bai ], n_chunks ]
-                }
-                .flatMap { ccs_tuple, n_chunks ->
-                    (1..n_chunks).collect { cn -> [ ccs_tuple, cn, n_chunks ] }
-                }
-                .set { ch_ccs_chunks }
-
-            // nf-core PBCCS 拆分为 3 个独立输入通道：bam/pbi 元组、chunk 序号、chunk 总数
-            // （参考 isoseq.nf 的 SET_CHUNK_NUM_CHANNEL + PBCCS 设计）
-            PBCCS (
-                ch_ccs_chunks.map { ccs_tuple, _cn, _chunk_on -> ccs_tuple },
-                ch_ccs_chunks.map { _ccs_tuple, cn, _chunk_on -> cn },
-                ch_ccs_chunks.map { _ccs_tuple, _cn, chunk_on -> chunk_on }
-            )
-            ch_versions = ch_versions.mix(PBCCS.out.versions)
-
-            // 合并各分块 HiFi BAM（按 chunk 编号排序，保证拼接顺序稳定）
-            PBCCS.out.bam
-                .map { meta, bam -> [ meta, bam ] }
-                .groupTuple(by: 0)
-                .map { meta, bams -> [ meta, bams.sort { a, b -> chunk_no(a) <=> chunk_no(b) } ] }
-                .set { ch_ccs_bams }
-
-            SAMTOOLS_CAT ( ch_ccs_bams )
-            ch_versions = ch_versions.mix(SAMTOOLS_CAT.out.versions_samtools)
-
-            // 合并后的 HiFi BAM 进入 LIMA
-            lima_input = lima_input.mix(SAMTOOLS_CAT.out.bam)
-        }
-
-        if ( pb_branches.lima ) {
-            lima_input = lima_input.mix(pb_branches.lima.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] })
-        }
-
-        if ( lima_input ) {
-            LIMA ( lima_input, channel.value(params.primers) )
-            ch_versions = ch_versions.mix(LIMA.out.versions_lima)
-
-            // BAM 输入 → LIMA 输出 BAM → 转 FASTQ；FASTQ 输入 → 直接使用
-            SAMTOOLS_BAM2FQ ( LIMA.out.bam, false )
-            ch_versions = ch_versions.mix(SAMTOOLS_BAM2FQ.out.versions_samtools)
-
-            preprocessed_fastq = LIMA.out.fastqgz.mix(SAMTOOLS_BAM2FQ.out.reads)
-        }
-
-        if ( pb_branches.cleaned ) {
-            preprocessed_fastq = preprocessed_fastq.mix(pb_branches.cleaned.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] })
-        }
-
-    } else if ( params.protocol == "ont" ) {
-        def ont_branches = reads
-            .branch { _meta, fastq, _input_bam, entrypoint ->
-                raw: entrypoint == "raw_fastq" && fastq
-                cleaned: entrypoint == "cleaned_fastq" && fastq
+            .flatMap { ccs_tuple, n_chunks ->
+                (1..n_chunks).collect { cn -> [ ccs_tuple, cn, n_chunks ] }
             }
+            .set { ch_ccs_chunks }
 
-        if ( ont_branches.raw ) {
-            CHOPPER (
-                ont_branches.raw.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] },
-                []
-            )
-            ch_versions = ch_versions.mix(CHOPPER.out.versions_chopper)
+        PBCCS (
+            ch_ccs_chunks.map { ccs_tuple, _cn, _chunk_on -> ccs_tuple },
+            ch_ccs_chunks.map { _ccs_tuple, cn, _chunk_on -> cn },
+            ch_ccs_chunks.map { _ccs_tuple, _cn, chunk_on -> chunk_on }
+        )
+        ch_versions = ch_versions.mix(PBCCS.out.versions)
 
-            PYCHOPPER ( CHOPPER.out.fastq )
-            ch_versions = ch_versions.mix(PYCHOPPER.out.versions)
+        PBCCS.out.bam
+            .map { meta, bam -> [ meta, bam ] }
+            .groupTuple(by: 0)
+            .map { meta, bams -> [ meta, bams.sort { a, b -> chunk_no(a) <=> chunk_no(b) } ] }
+            .set { ch_ccs_bams }
 
-            preprocessed_fastq = PYCHOPPER.out.fastq
-        }
+        SAMTOOLS_CAT ( ch_ccs_bams )
+        ch_versions = ch_versions.mix(SAMTOOLS_CAT.out.versions_samtools)
 
-        if ( ont_branches.cleaned ) {
-            preprocessed_fastq = preprocessed_fastq.mix(ont_branches.cleaned.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] })
-        }
+        lima_input = lima_input.mix(SAMTOOLS_CAT.out.bam)
+    }
+
+    if ( pb_branches.lima ) {
+        lima_input = lima_input.mix(pb_branches.lima.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] })
+    }
+
+    if ( lima_input ) {
+        LIMA ( lima_input, channel.value(params.primers) )
+        ch_versions = ch_versions.mix(LIMA.out.versions_lima)
+
+        // BAM 输入 → LIMA 输出 BAM → 转 FASTQ；FASTQ 输入 → 直接使用
+        SAMTOOLS_BAM2FQ ( LIMA.out.bam, false )
+        ch_versions = ch_versions.mix(SAMTOOLS_BAM2FQ.out.versions_samtools)
+
+        preprocessed_fastq = LIMA.out.fastqgz.mix(SAMTOOLS_BAM2FQ.out.reads)
+    }
+
+    if ( pb_branches.cleaned ) {
+        preprocessed_fastq = preprocessed_fastq.mix(pb_branches.cleaned.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] })
+    }
+
+    if ( ont_branches.raw ) {
+        CHOPPER (
+            ont_branches.raw.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] },
+            []
+        )
+        ch_versions = ch_versions.mix(CHOPPER.out.versions_chopper)
+
+        PYCHOPPER ( CHOPPER.out.fastq )
+        ch_versions = ch_versions.mix(PYCHOPPER.out.versions)
+
+        preprocessed_fastq = preprocessed_fastq.mix(PYCHOPPER.out.fastq)
+    }
+
+    if ( ont_branches.cleaned ) {
+        preprocessed_fastq = preprocessed_fastq.mix(ont_branches.cleaned.map { meta, fastq, _input_bam, _entrypoint -> [ meta, fastq ] })
     }
 
     emit:

@@ -3,6 +3,7 @@ include { CIDERSEQ_ALIGN    } from '../../../modules/local/ciderseq/align/main'
 include { CIDERSEQ_DECONCAT } from '../../../modules/local/ciderseq/deconcat/main'
 include { CIDERSEQ_ANNOTATE } from '../../../modules/local/ciderseq/annotate/main'
 include { CIDERSEQ_PHASE    } from '../../../modules/local/ciderseq/phase/main'
+include { REMAP_ASSEMBLED_CIRCLES } from '../remap_assembled_circles/main'
 
 workflow CIDERSEQ_PIPELINE {
     take:
@@ -13,6 +14,7 @@ workflow CIDERSEQ_PIPELINE {
     protein_db      // channel: directory (or db file) of the tblastn protein database
     align_genomes   // val: list of genome names to align (keys of config align.targets)
     phase_genomes   // val: list of genome names to phase (keys of config phase.phasegenomes)
+    host_genome     // channel: [ val(meta), path(fasta) ] or channel.empty() — optional host anchoring (§4.2)
 
     main:
     ch_versions = channel.empty()
@@ -72,6 +74,19 @@ workflow CIDERSEQ_PIPELINE {
     )
     ch_versions = ch_versions.mix(CIDERSEQ_PHASE.out.versions)
 
+    // 可选宿主比对（--ciderseq_host_genome）：deconcat 单体 → 宿主坐标 BED
+    // 默认无宿主坐标 → 不进植物 ecc 统一 BED（§4.2）
+    if ( host_genome ) {
+        REMAP_ASSEMBLED_CIRCLES (
+            CIDERSEQ_DECONCAT.out.deconcat.map { meta, fa -> [ meta, fa ] },
+            host_genome
+        )
+        ch_host_bed = REMAP_ASSEMBLED_CIRCLES.out.bed
+        ch_versions = ch_versions.mix(REMAP_ASSEMBLED_CIRCLES.out.versions)
+    } else {
+        ch_host_bed = channel.empty()
+    }
+
     emit:
     separated   = CIDERSEQ_SEPARATE.out.separated
     aligned     = CIDERSEQ_ALIGN.out.aligned
@@ -79,5 +94,6 @@ workflow CIDERSEQ_PIPELINE {
     stat        = CIDERSEQ_DECONCAT.out.stat
     annotation  = CIDERSEQ_ANNOTATE.out.annotation
     phased      = CIDERSEQ_PHASE.out.phased
+    host_bed    = ch_host_bed
     versions    = ch_versions
 }

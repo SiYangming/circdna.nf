@@ -55,18 +55,18 @@ process CIRCLESEEKER {
         -t ${task.cpus} \\
         $args
 
-    # Convert the eccDNA summary CSV into a BED6+read_count table so the
-    # standard LONG_READ_FILTERING machinery can be reused downstream.
-    python ${projectDir}/bin/circleseeker_to_bed.py \\
-        ${prefix}_eccDNA_summary.csv \\
-        ${prefix}.circleseeker.bed
-
-    # CircleSeeker 无候选时不生成 summary/report 文件，补空文件满足 output 声明
+    # 无候选时 CircleSeeker 不生成 summary/report 文件；先补空文件再转 BED（§8）
     if [ ! -f ${prefix}_eccDNA_summary.csv ]; then
         echo "eccDNA_id,type,state,chr,start,end,strand,length" > ${prefix}_eccDNA_summary.csv
     fi
     touch ${prefix}_summary.txt
     touch ${prefix}_report.html
+
+    # Convert the eccDNA summary CSV into a BED6+read_count table so the
+    # standard LONG_READ_FILTERING machinery can be reused downstream.
+    python ${projectDir}/bin/circleseeker_to_bed.py \\
+        ${prefix}_eccDNA_summary.csv \\
+        ${prefix}.circleseeker.bed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

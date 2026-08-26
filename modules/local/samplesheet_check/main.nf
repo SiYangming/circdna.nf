@@ -23,7 +23,8 @@ process SAMPLESHEET_CHECK {
         $samplesheet \\
         samplesheet.valid.csv \\
         $params.input_format \\
-        $params.protocol
+        $params.protocol \\
+        $params.mode
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

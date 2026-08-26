@@ -3,6 +3,33 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.7.0 - [2026-08-26]
+
+### Breaking changes
+
+- **长读 samplesheet 新路由列**: 长读运行表新增 `platform,assay,datatype,pair,concatemer,read_type,enrichment` 列。`protocol` 列不再作为路由键（仅映射为 platform 缺省：`short_read→illumina`）；CLR（PacBio RS / 非 HiFi Sequel）必须显式写 `read_type=clr`，缺省 `pacbio→hifi`、`ont→ont`。
+- **按样本分流（混表）**: 同一张表可同时跑 Illumina Circle-seq + PacBio WGS 背景 + ONT/PacBio RCA + CIDER-seq；每行按其 `platform × assay × datatype` 路由。`--mode` 不再是总开关，仅在全表同一角色且行上未写 datatype 时回填（`reference→gdna`）。
+- **长读 WGS 背景不再被当 RCA 检测**: `assay=wgs, datatype=gdna` 的长读样本（如 `ERR11838731`）走新的 `LONG_READ_REFERENCE`（minimap2 + mosdepth），绝不进 CircleSeeker/TideHunter/CReSIL 等检测引擎。
+- **repeats 改注释**: `--repeats_bed` 不再硬删候选，改为追加 `te_overlap` 列（§4.6）；blacklist 仍为硬过滤。
+- **Integrated Mode 残留清理**: 移除 schema/datatype 文案中的 integrated 引用；评分仍在 eccdna.smk。
+
+### Enhancements
+
+- **新路由模型**: `check_samplesheet.py` 支持 `platform/assay/datatype/pair/concatemer/read_type/enrichment` 校验与 §1.3 组合断言（如 `rca+gdna`、`ciderseq+illumina`、`TRANSCRIPTOMIC` 拒绝）；长读输出 CSV 透传全部路由列。
+- **RCA 默认切分/组装路径**: `ECC_FINDER_ONT_SLIM` 升为 RCA 默认路径；minimap2 preset 跟 `meta.read_type`（map-hifi/map-pb/map-ont）；`concatemer=false`（线性化 RCA / T7）跳过 TideHunter，改对原始 reads 比对做 Genrich。
+- **长读 WGS 背景子流程**: 新增 `subworkflows/local/long_read_reference`（minimap2 → samtools → mosdepth）。
+- **无坐标组装物 remap**: 新增 `subworkflows/local/remap_assembled_circles` + `bin/collapse_circle_alignments.py`（TideHunter consensus / ecc_finder asm / Flye contig → 统一 BED6+read_count）。
+- **统一植物 eccDNA BED 契约**: `chr start end name score strand read_count [te_overlap] [origin]`；CReSIL/FLED/ecc_finder map 转换脚本对齐（`convert_cresil_to_bed.py` / `fled_to_bed.py` / `eccfinder_ont_to_bed.py`）。
+- **细胞器 origin 标记**: 新增 `organelle_tag` + `bin/tag_organelle_origin.py`，默认只打 `origin=nuclear|pt|mt|ambiguous`，不丢候选（`drop_organelle_candidates=true` 时才移除）。
+- **CircleSeeker 时序修正**: 空 CSV 在 bed 转换之前补齐（§8）。
+- **CIDER-Seq2 可选宿主锚定**: `--ciderseq_host_genome` 接入 deconcat → remap → 宿主坐标 BED（默认无宿主坐标不进统一 BED）。
+- **代表集 samplesheet**: 新增 `samplesheets/circdna_representative.csv`（31 条 circdna 按 §1.4 映射）+ `bin/metadata_to_samplesheet.py`（metadata.csv → 运行表；`--full-master` 迁移旧长读表）。2 条 circrna 被拒绝。
+- **混表测试**: 新增 `conf/test_mixed_assay.config` + `samplesheets/test_mixed_assay.csv`（illumina circleseq + illumina wgs gdna + pacbio wgs gdna + ont rca + pacbio ciderseq）。
+
+### Notes
+
+- 版本号同步：`nextflow.config` manifest `4.6.1 → 4.7.0`
+
 ## v4.6.1 - [2026-08-25]
 
 ### Credits

@@ -1,0 +1,6 @@
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+sr_circleseq,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/ngs/circdna_1_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/ngs/circdna_1_R2.fastq.gz,,,illumina,circleseq,eccdna,mixed,false,pe,circleseq
+sr_wgs_gdna,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/ngs/gdna_1_R1.fastq.gz,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/ngs/gdna_1_R2.fastq.gz,,,illumina,wgs,gdna,mixed,false,pe,none
+lr_wgs_gdna,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/pacbio/pacbio_eccdna_smoke.fastq.gz,,,cleaned_fastq,pacbio,wgs,gdna,mixed,false,hifi,none
+lr_rca_ont,/Users/siyangming/nextflow_nf_core/circdna.nf/testdatasets/ont/ont_eccdna_smoke.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,mixed,true,ont,circleseq
+lr_ciderseq,/Users/siyangming/nextflow_nf_core/circdna.nf/modules/local/ciderseq/testdata/example1.fastq.gz,,,cleaned_fastq,pacbio,ciderseq,eccdna,mixed,false,clr,ciderseq
