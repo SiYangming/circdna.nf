@@ -18,19 +18,23 @@ workflow CRESIL_PIPELINE {
         .map { fasta -> [[id: 'genome'], fasta] }
         .set { genome_fasta_meta }
 
-    // Build .fai index for the reference genome (samtools faidx handles .gz).
-    // cresil identify requires the -fai index to compute chromosome sizes.
-    genome_fasta_meta
-        .map { meta, fasta -> [ meta, fasta, [] ] }
-        .set { ch_fasta_fai_input }
+    // 索引由 reads 触发（空输入不建索引；Nextflow 26 中 if(ch) 恒 true，
+    // 纯短读/空调用时不能让无条件进程执行）
+    def ch_idx_trigger = reads.map { meta, _fq -> meta }.first()
+    def ch_faidx_input = ch_idx_trigger
+        .combine(genome_fasta_meta)
+        .map { _m_trigger, m_fasta, fa -> [m_fasta, fa, []] }
+    def ch_mmi_input = ch_idx_trigger
+        .combine(genome_fasta_meta)
+        .map { _m_trigger, m_fasta, fa -> [m_fasta, fa] }
 
-    SAMTOOLS_FAIDX ( ch_fasta_fai_input, false )
+    SAMTOOLS_FAIDX ( ch_faidx_input, false )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
     ch_fai = SAMTOOLS_FAIDX.out.fai
         .map { meta, fai -> [ meta, fai ] }
 
     // Build minimap2 .mmi index (cresil identify_wgls needs it; trim uses it too).
-    MINIMAP2_INDEX ( genome_fasta_meta )
+    MINIMAP2_INDEX ( ch_mmi_input )
     ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions_minimap2)
     ch_mmi = MINIMAP2_INDEX.out.index
         .map { meta, mmi -> [ meta, mmi ] }

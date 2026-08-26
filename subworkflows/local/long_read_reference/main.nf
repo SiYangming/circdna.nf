@@ -25,8 +25,14 @@ workflow LONG_READ_REFERENCE {
         .map { meta, fa -> [ meta, fa ] }
         .set { ch_fasta_meta }
 
-    // fai for SAMTOOLS_SORT / MOSDEPTH
-    SAMTOOLS_FAIDX ( ch_fasta_meta.map { meta, fa -> [ meta, fa, [] ] }, channel.value(false) )
+    // fai for SAMTOOLS_SORT / MOSDEPTH — 由 reads 触发（空输入不建索引）
+    def ch_faidx_trigger = reads.map { meta, _fq -> meta }.first()
+    SAMTOOLS_FAIDX (
+        ch_faidx_trigger
+            .combine(ch_fasta_meta)
+            .map { _m_trigger, m_fasta, fa -> [ m_fasta, fa, [] ] },
+        channel.value(false)
+    )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
 
     ch_fasta_fai = ch_fasta_meta

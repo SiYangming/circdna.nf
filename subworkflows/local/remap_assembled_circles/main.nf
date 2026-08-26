@@ -26,7 +26,14 @@ workflow REMAP_ASSEMBLED_CIRCLES {
         .map { meta, fa -> [ meta, fa ] }
         .set { ch_fasta_meta }
 
-    SAMTOOLS_FAIDX ( ch_fasta_meta.map { meta, fa -> [ meta, fa, [] ] }, channel.value(false) )
+    // fai for SAMTOOLS_SORT — 由 assemblies 触发（空输入不建索引）
+    def ch_faidx_trigger = assemblies.map { meta, _fa -> meta }.first()
+    SAMTOOLS_FAIDX (
+        ch_faidx_trigger
+            .combine(ch_fasta_meta)
+            .map { _m_trigger, m_fasta, fa -> [ m_fasta, fa, [] ] },
+        channel.value(false)
+    )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
 
     ch_fasta_fai = ch_fasta_meta

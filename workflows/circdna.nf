@@ -259,10 +259,14 @@ workflow CIRCDNA {
             ch_trimgalore_multiqc_log   = channel.empty()
         }
 
-        // BWA index：仅在存在 illumina 行且需要比对时构建
-        if (ch_short_reads && !bwa_index_exists) {
+        // BWA index：由短读行触发（Nextflow 26 中 if(ch) 恒 true，不能用空 channel 门控；
+        // 纯长读 run 时 trigger 为空 → BWA_INDEX 无任务）
+        if (!bwa_index_exists) {
+            def ch_bwa_trigger = ch_short_reads.map { meta, _r -> meta }.first()
             BWA_INDEX (
-                ch_fasta_meta
+                ch_bwa_trigger
+                    .combine(ch_fasta_meta)
+                    .map { _t, m_fa, fa -> [ m_fa, fa ] }
             )
             ch_bwa_index = BWA_INDEX.out.index.map{ _meta, index -> [[id: 'bwa_index'], index] }
             ch_versions = ch_versions.mix(BWA_INDEX.out.versions_bwa)
