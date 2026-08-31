@@ -1,0 +1,59 @@
+name: ampliconsuite
+description: Run AmpliconSuite-pipeline (AmpliconArchitect + AmpliconClassifier + CNVkit)
+keywords:
+  - ampliconarchitect
+  - ecdna
+  - amplicon
+tools:
+  - ampliconsuite-pipeline:
+      description: AmpliconSuite pipeline for focal amplification detection
+      homepage: https://github.com/AmpliconSuite/AmpliconSuite-pipeline
+      licence: ["BSD-3-Clause"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - bam:
+      type: file
+      description: Coordinate sorted BAM
+  - mosek_license_dir:
+      type: directory
+      description: Directory containing mosek.lic
+  - aa_data_repo:
+      type: directory
+      description: AmpliconArchitect data repository directory
+output:
+  - bed:
+      type: file
+      description: CNV seeds and amplicon BED files
+      pattern: "*.bed"
+  - cns:
+      type: file
+      description: CNVkit cns
+      pattern: "*.cns"
+  - cnr:
+      type: file
+      description: CNVkit cnr
+      pattern: "*.cnr.gz"
+  - log:
+      type: file
+      description: AmpliconSuite log
+      pattern: "*.log"
+  - run_metadata_json:
+      type: file
+      description: Run metadata
+      pattern: "*run_metadata.json"
+  - sample_metadata_json:
+      type: file
+      description: Sample metadata
+      pattern: "*sample_metadata.json"
+  - timing_log:
+      type: file
+      description: Timing log
+      pattern: "*timing_log.txt"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@SiYangming"

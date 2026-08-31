@@ -1,0 +1,35 @@
+name: eccsplorer_slim_visualize
+description: Generate Manhattan plot (genome-wide coverage) and per-candidate multi-line coverage plots using R ggplot2. Extracted from ECCsplorer rmanhattan_plot and rline_multiplot.
+keywords:
+  - visualization
+  - manhattan
+  - ggplot2
+  - eccDNA
+tools:
+  - visualize.R:
+      description: Standalone visualization R script from ECCsplorer slim
+      homepage: https://github.com/crimBubble/ECCsplorer
+      licence: ["GPL-3.0-or-later"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - normalized_data:
+      type: file
+      description: Normalized coverage CSV from normalize step
+      pattern: "*_normalized.csv"
+output:
+  - manhattan_plot:
+      type: file
+      description: Genome-wide Manhattan plot PNG
+      pattern: "*_manhattan.png"
+  - candidate_plots:
+      type: file
+      description: Per-candidate multi-line coverage plots
+      pattern: "*_candidate_*"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@siyangming"

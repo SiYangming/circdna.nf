@@ -1,0 +1,180 @@
+{
+    "test-annotate": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_gene.annotate.txt:md5,ea8866957a7c97a3455160a177012a8f"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_CpG.annotate.txt:md5,03033791ed6abe18fbce2763c3ede9f1"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_repeat.annotate.txt:md5,8d778e76232b28b0eea426de3d245864"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_variant.annotate.txt:md5,a798a0bb62759b29f05a9708f387e4d6"
+                    ]
+                ],
+                "4": [
+                    [
+                        "CRESIL_ANNOTATE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "cpg_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_CpG.annotate.txt:md5,03033791ed6abe18fbce2763c3ede9f1"
+                    ]
+                ],
+                "gene_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_gene.annotate.txt:md5,ea8866957a7c97a3455160a177012a8f"
+                    ]
+                ],
+                "repeat_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_repeat.annotate.txt:md5,8d778e76232b28b0eea426de3d245864"
+                    ]
+                ],
+                "variant_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_variant.annotate.txt:md5,a798a0bb62759b29f05a9708f387e4d6"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_ANNOTATE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:52:09.777349136",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test-annotate - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_gene.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_CpG.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_repeat.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_variant.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    [
+                        "CRESIL_ANNOTATE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "cpg_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_CpG.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "gene_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_gene.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "repeat_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_repeat.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "variant_annot": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_variant.annotate.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_ANNOTATE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:52:20.086376136",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

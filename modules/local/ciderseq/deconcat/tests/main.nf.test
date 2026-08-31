@@ -1,0 +1,34 @@
+nextflow_process {
+
+    name "Test Process CIDERSEQ_DECONCAT"
+    script "../main.nf"
+    process "CIDERSEQ_DECONCAT"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "ciderseq"
+
+    test("test-ciderseq-deconcat") {
+
+        options "-c ${projectDir}/modules/local/ciderseq/deconcat/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'example1', genome:'EACMV_DNA_A' ], // meta
+                             file("\${projectDir}/modules/local/ciderseq/testdata/align/example1.EACMV_DNA_A.fa", checkIfExists: true) ]
+                input[1] = file("\${projectDir}/modules/local/ciderseq/testdata/ciderseq_config.json", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.deconcat, process.out.stat, process.out.versions).match() }
+            )
+        }
+
+    }
+
+}

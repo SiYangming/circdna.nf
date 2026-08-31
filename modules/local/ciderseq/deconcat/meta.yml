@@ -1,0 +1,58 @@
+name: "ciderseq_deconcat"
+description: "CIDER-Seq2 deconcat step: the DeConcat algorithm for de-concatenating circular DNA reads."
+keywords:
+  - eccDNA
+  - ciderseq
+  - deconcatenation
+  - muscle
+tools:
+  - "ciderseq2":
+      description: "CIDER-Seq data analysis software for full-length sequencing of circular DNA viruses and extra-chromosomal circular DNA (eccDNA)."
+      homepage: "https://github.com/devang-mehta/ciderseq2"
+      documentation: "https://github.com/devang-mehta/ciderseq2"
+      licence: ["GPL-3.0-only"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - reads:
+        type: file
+        description: Aligned reads (FASTA)
+        pattern: "*.fa"
+  - - config:
+        type: file
+        description: CIDER-Seq2 config JSON (deconcat settings)
+        pattern: "*.json"
+output:
+  - deconcat:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.fa":
+          type: file
+          description: De-concatenated reads (FASTA)
+          pattern: "*.fa"
+  - stat:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.stat":
+          type: file
+          description: DeConcat statistics (when deconcat.statistics == 1)
+          pattern: "*.stat"
+  - versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

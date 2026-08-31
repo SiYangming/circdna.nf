@@ -1,0 +1,136 @@
+{
+    "test-visualize": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "circos.conf:md5,156f7759e68df93e003bd4307bb73aec",
+                                [
+                                    "chrom.tiles:md5,1a156e08a5ae8f49974723ef47e008b2",
+                                    "cpg.eccDNA.tiles:md5,fcc6b135644d5c23012011f80cd9365d",
+                                    "gene.eccDNA.exon.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "gene.eccDNA.intron.strand.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "gene.eccDNA.intron.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "gene.eccDNA.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "read.aligned.bam.wig.fill_ends.log10.bdg:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "read.close_gaps.aligned.bam.wig.fill_ends.log10.bdg:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "reads.depth20.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "repeat.eccDNA.tiles:md5,17121666315a03deec651ab157eaeb47",
+                                    "snp_indel.eccDNA.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "text.labels.txt:md5,c08352392690245ad9f7a23e9aea8c6b"
+                                ],
+                                "ideogram.conf:md5,64b1f9234ba3a7bfe0ebfb1a482eba4f",
+                                "karyotype.conf:md5,8124c49c2802920c4596e746e6b8b4b1",
+                                "ticks.conf:md5,d90017acc2523facd9cf81ae26a3fd9d",
+                                [
+                                    
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_VISUALIZE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "circos_config": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "circos.conf:md5,156f7759e68df93e003bd4307bb73aec",
+                                [
+                                    "chrom.tiles:md5,1a156e08a5ae8f49974723ef47e008b2",
+                                    "cpg.eccDNA.tiles:md5,fcc6b135644d5c23012011f80cd9365d",
+                                    "gene.eccDNA.exon.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "gene.eccDNA.intron.strand.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "gene.eccDNA.intron.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "gene.eccDNA.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "read.aligned.bam.wig.fill_ends.log10.bdg:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "read.close_gaps.aligned.bam.wig.fill_ends.log10.bdg:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "reads.depth20.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "repeat.eccDNA.tiles:md5,17121666315a03deec651ab157eaeb47",
+                                    "snp_indel.eccDNA.tiles:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                    "text.labels.txt:md5,c08352392690245ad9f7a23e9aea8c6b"
+                                ],
+                                "ideogram.conf:md5,64b1f9234ba3a7bfe0ebfb1a482eba4f",
+                                "karyotype.conf:md5,8124c49c2802920c4596e746e6b8b4b1",
+                                "ticks.conf:md5,d90017acc2523facd9cf81ae26a3fd9d",
+                                [
+                                    
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_VISUALIZE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:34:31.351949981",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test-visualize - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "circos.conf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_VISUALIZE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "circos_config": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "circos.conf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_VISUALIZE",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:34:41.567187241",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

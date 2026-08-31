@@ -64,20 +64,20 @@
             "title": "Circular DNA identifier options",
             "type": "object",
             "fa_icon": "fas fa-circle-notch",
-            "description": "Options to adjust inital circular DNA identifier",
+            "description": "Options to adjust inital circular DNA identifier (required for short-read protocol only)",
             "properties": {
                 "mode": {
                     "type": "string",
                     "default": "eccdna",
-                    "description": "Pipeline mode: 'reference' (gDNA background) or 'eccdna' (eccDNA detection)",
-                    "help_text": "Specify which mode to run. Reference mode runs QC + alignment + depth analysis. eccDNA mode runs full eccDNA detection.",
+                    "description": "Legacy pipeline mode: 'reference' or 'eccdna'. No longer a master switch.",
+                    "help_text": "§1.1: rows are routed on datatype/assay. mode only backfills the datatype (reference→gdna) when a row omits it. Integrated Mode was removed; scoring lives in eccdna.smk.",
                     "fa_icon": "fas fa-cogs",
                     "enum": ["reference", "eccdna"]
                 },
                 "circle_identifier": {
                     "type": "string",
-                    "description": "Specifies the circular DNA identification algorithm to use - available 'circle_map_realign', 'circle_map_repeats', 'circle_finder', 'circexplorer2', and 'ampliconarchitect'. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`.",
-                    "help_text": "Specify the circle_identifier branch used. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`.",
+                    "description": "Specifies the circular DNA identification algorithm to use - available 'circle_map_realign', 'circle_map_repeats', 'circle_finder', 'circexplorer2', and 'ampliconarchitect'. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`. Required when --protocol is 'short_read'; ignored for 'pacbio'/'ont'.",
+                    "help_text": "Specify the circle_identifier branch used. Multiple circle_identifier's can be specified with a comma-separated string. E.g. `--circle_identifier 'circle_map_realign,unicycler'`. Leave empty for long-read protocols (pacbio/ont).",
                     "fa_icon": "fas fa-circle-notch"
                 },
                 "repeat_gff": {
@@ -86,6 +86,188 @@
                     "description": "Path to EDTA/RepeatMasker GFF3 or BED file for TE repeat annotation",
                     "help_text": "TE repeat annotation file passed to reference mode.",
                     "fa_icon": "fas fa-file-code"
+                }
+            }
+        },
+        "long_read_options": {
+            "title": "Long-read sequencing options",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Options for PacBio/ONT long-read eccDNA analysis",
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "enum": ["short_read", "pacbio", "ont"],
+                    "default": "short_read",
+                    "description": "Legacy global platform fallback. Only used when a samplesheet row lacks an explicit 'platform' column.",
+                    "help_text": "DEPRECATED as a routing key: rows are routed on platform × assay × datatype. This value only backfills the platform for rows without one (short_read→illumina).",
+                    "fa_icon": "fas fa-dna"
+                },
+                "entrypoint": {
+                    "type": "string",
+                    "enum": ["cleaned_fastq", "raw_fastq", "subreads", "hifi_bam"],
+                    "default": "cleaned_fastq",
+                    "description": "Input entrypoint for long-read data. Controls preprocessing depth.",
+                    "help_text": "For PacBio: 'subreads' (raw subreads BAM → PBCCS → LIMA), 'hifi_bam' (HiFi BAM → LIMA), 'raw_fastq' (raw FASTQ → LIMA), 'cleaned_fastq' (ready-to-use FASTQ). For ONT: 'raw_fastq' (raw FASTQ → CHOPPER → PYCHOPPER), 'cleaned_fastq' (ready-to-use FASTQ).",
+                    "fa_icon": "fas fa-arrow-right"
+                },
+                "primers": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Path to primers FASTA file for adapter trimming with Lima/Pychopper.",
+                    "help_text": "Required for PacBio (Lima) and ONT (Pychopper) adapter trimming. Provide a FASTA file containing the primer sequences.",
+                    "fa_icon": "fas fa-file-code"
+                },
+                "long_read_identifier": {
+                    "type": "string",
+                    "default": "cresil,fled,flye,eccfinder",
+                    "description": "Long-read eccDNA identification algorithms to use. Options: 'cresil', 'fled', 'flye', 'eccfinder', 'circleseeker', 'ciderseq'. Multiple can be specified with comma-separated string.",
+                    "help_text": "Specify the long-read eccDNA identification engines. 'cresil' and 'fled' are mapping-based tools; 'flye' is an assembly-based tool; 'eccfinder' supports both mapping and assembly modes; 'circleseeker' is a repeat-based tool; 'ciderseq' runs the CIDER-Seq2 five-step pipeline (requires --ciderseq_config and its databases). E.g. `--long_read_identifier 'cresil,flye'`.",
+                    "fa_icon": "fas fa-circle-notch"
+                },
+                "eccfinder_mode": {
+                    "type": "string",
+                    "enum": ["map", "asm", "both"],
+                    "default": "map",
+                    "description": "ecc_finder detection mode. 'map' = mapping-based, 'asm' = assembly-based, 'both' = run both.",
+                    "help_text": "Controls which ecc_finder sub-pipeline runs. map-ont/map-sr for mapping-based detection; asm-ont/asm-sr for assembly-based detection.",
+                    "fa_icon": "fas fa-search"
+                },
+                "ciderseq_config": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "CIDER-Seq2 config JSON (see ciderseq2 examples/ciderseq_config.json).",
+                    "help_text": "Required when 'ciderseq' is in --long_read_identifier. The config holds the blast database path, align targets, protein database, and phasing parameters; file paths are re-resolved by basename inside --ciderseq_blastdb / --ciderseq_align_targets / --ciderseq_protein_db.",
+                    "fa_icon": "fas fa-file-code"
+                },
+                "ciderseq_blastdb": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "description": "Directory (or db file) of the blastn database for the CIDER-Seq2 separate step.",
+                    "help_text": "Directory containing the pre-built blastn database (fasta + .nhr/.nin/.nsq). If only a fasta is given, makeblastdb is run automatically.",
+                    "fa_icon": "fas fa-database"
+                },
+                "ciderseq_align_targets": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "description": "Directory of the align target fasta files for the CIDER-Seq2 align step.",
+                    "help_text": "Directory containing one FASTA per target genome, named after the align.targets keys of the CIDER-Seq2 config (e.g. EACMV_DNA_A.fa).",
+                    "fa_icon": "fas fa-database"
+                },
+                "ciderseq_protein_db": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "description": "Directory (or db file) of the tblastn protein database for the CIDER-Seq2 annotate step.",
+                    "help_text": "Directory containing the pre-built tblastn protein database (fasta + .phr/.pin/.psq). If only a fasta is given, makeblastdb is run automatically.",
+                    "fa_icon": "fas fa-database"
+                },
+                "ciderseq_host_genome": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Host genome FASTA for the optional CIDER-Seq2 cs-eccDNA detection step.",
+                    "help_text": "When provided, CIDER-Seq2 deconcatenated outputs are screened against the host genome with cs-eccDNA.py to report likely eccDNA candidates.",
+                    "fa_icon": "fas fa-dna"
+                },
+                "min_read_support": {
+                    "type": "integer",
+                    "default": 2,
+                    "minimum": 1,
+                    "description": "Minimum number of supporting reads to retain an eccDNA candidate.",
+                    "help_text": "Filter out eccDNA candidates with fewer supporting reads than this threshold.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "ccs_chunk_size": {
+                    "type": "number",
+                    "default": 2,
+                    "minimum": 0.1,
+                    "description": "Chunk size in GB for PBCCS (ccs) chunked processing of PacBio subreads BAM.",
+                    "help_text": "Subreads BAM files larger than this size are split into multiple chunks for parallel HiFi generation with PBCCS, then merged with samtools cat. Default 2 GB.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "assay": {
+                    "type": "string",
+                    "enum": ["wgs", "circleseq", "rca", "ciderseq", "enriched"],
+                    "description": "Global assay backfill for samplesheet rows that omit the 'assay' column.",
+                    "help_text": "Long-read rows without an explicit 'assay' column fall back to this value. Default null forces the assay to be written per row. Illumina+RCA must be written as circleseq.",
+                    "fa_icon": "fas fa-flask"
+                },
+                "remap_min_mapq": {
+                    "type": "integer",
+                    "default": 20,
+                    "minimum": 0,
+                    "description": "Minimum MAPQ for collapse_circle_alignments.py when remapping assembled circles.",
+                    "help_text": "Assembled FASTA (TideHunter consensus / ecc_finder asm / Flye contigs) are remapped to the reference; alignments below this MAPQ are dropped.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "remap_max_gap": {
+                    "type": "integer",
+                    "default": 100,
+                    "minimum": 0,
+                    "description": "Max gap (bp) for merging alignment blocks/loci in collapse_circle_alignments.py.",
+                    "fa_icon": "fas fa-arrows-alt-h"
+                },
+                "filter_organelle": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable organelle origin tagging of candidate BED entries.",
+                    "help_text": "When true and --organelle_genome is set, candidates are annotated with origin=nuclear|pt|mt|ambiguous. Default: tag only, never drop.",
+                    "fa_icon": "fas fa-seedling"
+                },
+                "organelle_genome": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Organelle genome FASTA (plastid/mitochondrial, optionally concatenated) for origin tagging.",
+                    "help_text": "Mapped to the nuclear reference; candidate regions overlapping organelle hits are tagged pt/mt by contig name keywords (mito/chloro/plastid).",
+                    "fa_icon": "fas fa-dna"
+                },
+                "drop_organelle_candidates": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Remove organelle-tagged candidates from the output instead of only annotating origin.",
+                    "help_text": "§4.7 default is false (annotate only). Set true to hard-remove pt/mt/ambiguous candidates.",
+                    "fa_icon": "fas fa-ban"
+                },
+                "organelle_min_overlap": {
+                    "type": "number",
+                    "default": 0.5,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Minimum overlap fraction for a candidate to be tagged as organelle origin.",
+                    "fa_icon": "fas fa-percentage"
+                },
+                "blacklist_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to BED file containing blacklisted genomic regions.",
+                    "help_text": "Filter out eccDNA candidates overlapping with blacklisted regions (e.g., centromeres, telomeres).",
+                    "fa_icon": "fas fa-ban"
+                },
+                "repeats_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to BED file containing repetitive genomic regions.",
+                    "help_text": "§4.6: repeat regions are ANNOTATED (te_overlap column appended), never hard-deleted. Blacklist filtering remains hard.",
+                    "fa_icon": "fas fa-repeat"
+                },
+                "save_long_read_intermediate": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Save intermediate files from long-read preprocessing.",
+                    "help_text": "Set this parameter to save intermediate files from PBCCS, LIMA, CHOPPER, and PYCHOPPER.",
+                    "fa_icon": "fas fa-save"
+                },
+                "skip_long_read_qc": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Skip quality control steps for long-read data.",
+                    "help_text": "Set this parameter to skip QC steps for long-read preprocessing.",
+                    "fa_icon": "fas fa-fast-forward"
                 }
             }
         },
@@ -229,6 +411,13 @@
                     "default": false,
                     "description": "Save the merged FastQ files in the results directory.",
                     "help_text": "By default, merged FastQ files will not be saved to the results directory. Specify this flag (or set to true in your config file) to copy these files to the results directory when complete.",
+                    "fa_icon": "fas fa-save"
+                },
+                "save_all_intermediates": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Save all process outputs that have no dedicated publish rule.",
+                    "help_text": "When enabled, process outputs without an explicit publishDir are copied to <outdir>/intermediate/<process-path>. The server profile enables this for traceability.",
                     "fa_icon": "fas fa-save"
                 }
             }
@@ -546,6 +735,7 @@
         { "$ref": "#/definitions/max_job_request_options" },
         { "$ref": "#/definitions/process_skipping_options" },
         { "$ref": "#/definitions/circdna_identifier_options" },
+        { "$ref": "#/definitions/long_read_options" },
         { "$ref": "#/definitions/circle_map_options" },
         { "$ref": "#/definitions/circle_finder_options" },
         { "$ref": "#/definitions/unicycler_options" },

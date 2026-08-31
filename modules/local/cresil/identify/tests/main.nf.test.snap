@@ -1,0 +1,84 @@
+{
+    "test-identify - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ref"
+                        },
+                        "ref.eccDNA_final.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_IDENTIFY",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "identify": [
+                    [
+                        {
+                            "id": "ref"
+                        },
+                        "ref.eccDNA_final.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_IDENTIFY",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:53:23.716912507",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test-identify": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ref"
+                        },
+                        "ref.eccDNA_final.txt:md5,fc7276fc1c2bc2e093aca6c8eaa7ddfc"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_IDENTIFY",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "identify": [
+                    [
+                        {
+                            "id": "ref"
+                        },
+                        "ref.eccDNA_final.txt:md5,fc7276fc1c2bc2e093aca6c8eaa7ddfc"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_IDENTIFY",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:55:58.00324218",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

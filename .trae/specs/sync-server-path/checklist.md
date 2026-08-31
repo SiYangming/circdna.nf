@@ -1,0 +1,6 @@
+- [x] SERVER_RUN_GUIDE.md 中所有服务器 `cd` 命令路径已更新为 `/data1/users/siyangming/PlanteccDNADB/circdna.nf/`
+- [x] SERVER_RUN_GUIDE.md 中本地 Mac rsync 路径未被误改
+- [x] samplesheets/data_issues.txt 中服务器路径已更新
+- [x] errors.txt 中服务器路径已更新
+- [x] AGENTS.md 跨项目路径表已更新
+- [x] 本地 Mac 路径 (`/Users/siyangming/nextflow_nf_core/`) 未被误改

@@ -1,0 +1,43 @@
+{
+    "test-asm-sr - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "ecc.asm.sr.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "ECC_FINDER_ASM_SR",
+                        "ecc_finder",
+                        "v1.0.0"
+                    ]
+                ],
+                "fasta": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "ecc.asm.sr.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_ecc_finder": [
+                    [
+                        "ECC_FINDER_ASM_SR",
+                        "ecc_finder",
+                        "v1.0.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-25T17:02:49.149182",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

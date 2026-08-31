@@ -1,0 +1,7 @@
+name: ampliconsuite
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::ampliconsuite=1.6.0

@@ -1,0 +1,33 @@
+name: eccsplorer_slim_clu_prepare
+description: Prepare paired-end reads for RepeatExplorer2 clustering (read-length normalization, subsampling, readID prefixing)
+keywords: eccdna, clustering, repeatsexplorer, prepare
+tools:
+  - python
+input:
+  - meta:
+      type: map
+      description: Sample metadata
+  - r1:
+      type: file
+      description: R1 reads (dataset A / treatment)
+  - r2:
+      type: file
+      description: R2 reads (dataset A / treatment)
+  - c1:
+      type: file
+      description: R1 reads (dataset B / control)
+  - c2:
+      type: file
+      description: R2 reads (dataset B / control)
+  - taxon:
+      type: string
+      description: Taxon for RepeatExplorer2 (vir/met)
+output:
+  - ready_fa:
+      type: file
+      description: REPEATEXPLORER_READY.fa for seqclust clustering
+  - versions:
+      type: file
+      description: File containing software versions
+authors:
+  - "@siyangming"

@@ -1,5 +1,7 @@
 .nextflow*
 data/
+results/
+results_test_*/
 .DS_Store
 ._*
 testing*
@@ -11,6 +13,17 @@ null
 /results*
 server.txt
 
+# Temporary capture files
+genome.txt
+program.txt
+scripts/err
+scripts/errors.txt
+scripts/reslts
+scripts/*_trace.txt
+scripts/命令.txt
+*.log
+
 # Long-read consistency test data (large, generated locally by extract_test_data.sh)
 testdatasets/ont/*consistency.fastq.gz
 testdatasets/pacbio/*consistency.fastq.gz
+.nf-test/

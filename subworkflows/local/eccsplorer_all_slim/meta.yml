@@ -1,0 +1,34 @@
+name: eccsplorer_all_slim
+description: ECCsplorer all-mode orchestration (map + clu + comparative)
+keywords: eccdna, all, comparative
+modules:
+  - eccsplorer_slim_pipeline
+  - eccsplorer_clu_slim
+  - comparative_blast
+  - comparative_plot
+input:
+  - reads:
+      type: channel
+      description: Treatment reads
+  - fasta_meta:
+      type: channel
+      description: Reference genome
+  - control:
+      type: channel
+      description: Control reads (optional)
+  - taxon:
+      type: val
+      description: Taxon (vir/met)
+output:
+  - candidates_bed:
+      type: channel
+  - normalized:
+      type: channel
+  - cluster_candidates:
+      type: channel
+  - comparative_m6:
+      type: channel
+  - comparative_html:
+      type: channel
+authors:
+  - "@siyangming"

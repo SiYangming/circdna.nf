@@ -1,0 +1,9 @@
+name: repeatexplorer2
+channels:
+  - yangmingsi
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.8
+  - yangmingsi::mgblast==2.2.14
+  - yangmingsi::repeatexplorer==2.3.8

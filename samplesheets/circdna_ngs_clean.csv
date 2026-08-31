@@ -108,3 +108,11 @@ CRR924679,/data1/users/siyangming/PlanteccDNADB/eccDNA/Solanum_lycopersicum/CRR9
 ERR6004146,/data1/users/siyangming/PlanteccDNADB/eccDNA/Beta_vulgaris/ERR6004146_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Beta_vulgaris/ERR6004146_2.fastq.gz,eccDNA
 ERR11535563,/data1/users/siyangming/PlanteccDNADB/eccDNA/Artemisia_annua/ERR11535563_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Artemisia_annua/ERR11535563_2.fastq.gz,gDNA
 ERR11535566,/data1/users/siyangming/PlanteccDNADB/eccDNA/Tragopogon_porrifolius/ERR11535566_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Tragopogon_porrifolius/ERR11535566_2.fastq.gz,gDNA
+ecc-ct-L1,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L1_R2.fastq.gz,eccDNA
+ecc-ct-L2,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L2_R2.fastq.gz,eccDNA
+ecc-ct-R1,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R1_R2.fastq.gz,eccDNA
+ecc-ct-R2,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R2_R2.fastq.gz,eccDNA
+ecc-dt4-L1,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L1_R2.fastq.gz,eccDNA
+ecc-dt4-L2,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L2_R2.fastq.gz,eccDNA
+ecc-dt4-R1,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R1_R2.fastq.gz,eccDNA
+ecc-dt4-R2,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R2_R2.fastq.gz,eccDNA

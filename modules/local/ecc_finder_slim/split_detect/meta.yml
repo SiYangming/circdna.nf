@@ -1,0 +1,21 @@
+name: ecc_finder_slim_split_detect
+description: Detect split and discordant reads from name-sorted BAM (pybedtools)
+keywords: eccdna, split-read, discordant
+tools:
+  - pybedtools
+input:
+  - meta:
+      type: map
+      description: Sample metadata
+  - bam:
+      type: file
+      description: Name-sorted BAM alignment file
+output:
+  - split_bed:
+      type: file
+      description: Split-read regions BED
+  - disc_bed:
+      type: file
+      description: Discordant-read regions BED
+authors:
+  - "@siyangming"

@@ -1,0 +1,23 @@
+{
+    "test-ciderseq-annotate": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "example1",
+                        "genome": "EACMV_DNA_A"
+                    },
+                    "example1.EACMV_DNA_A.json:md5,5687391c8520cc5f468cea73a61d092f"
+                ]
+            ],
+            [
+                "versions.yml:md5,01231fa6532ee529d6cf3dd8217214b3"
+            ]
+        ],
+        "timestamp": "2026-08-25T12:10:18.315763",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

@@ -48,13 +48,13 @@ process UNICYCLER {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
 
-    cat "" | gzip > ${prefix}.scaffolds.fa.gz
-    cat "" | gzip >  ${prefix}.assembly.gfa.gz
+    gzip < /dev/null > ${prefix}.scaffolds.fa.gz
+    gzip < /dev/null > ${prefix}.assembly.gfa.gz
     touch ${prefix}.unicycler.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        unicycler: \$(echo \$(unicycler --version 2>&1) | sed 's/^.*Unicycler v//; s/ .*\$//')
+        unicycler: 0.5.1
     END_VERSIONS
     """
 
