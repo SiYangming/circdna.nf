@@ -9,6 +9,8 @@ SPECIES_NAME_MAP = {
     "Oryza_sativa_Japonica_Group": "Oryza_sativa",
 }
 
+HUAZHAN_SUBSET_FILE = "circdna_Oryza_sativa_Huazhan_eccDNA.csv"
+
 # 非 SRA 下载目录 → 物种映射（按最长前缀匹配；优先级高于 /eccDNA/ 正则）
 PATH_SPECIES_MAP = {
     "/data2/users/liuqi/eccdna/drought/ecc": "Oryza_sativa",  # liuqi 干旱实验（水稻）
@@ -90,6 +92,8 @@ def update_circdna_ngs():
     existing_files = [f for f in os.listdir(BASE_DIR) if f.startswith("circdna_") and f.endswith("_eccDNA.csv")]
 
     for f in existing_files:
+        if f == HUAZHAN_SUBSET_FILE:
+            continue
         fp = os.path.join(BASE_DIR, f)
         os.remove(fp)
         print(f"  Deleted: {f} (will be regenerated)")
@@ -102,6 +106,13 @@ def update_circdna_ngs():
 
         species_df.to_csv(file_path, index=False)
         print(f"  Created: {file_name} ({len(rows)} entries)")
+
+        if sp == "Oryza_sativa":
+            huazhan_df = species_df[species_df["sample"].astype(str).str.startswith("ecc-")].copy()
+            if len(huazhan_df) > 0:
+                huazhan_file = os.path.join(BASE_DIR, HUAZHAN_SUBSET_FILE)
+                huazhan_df.to_csv(huazhan_file, index=False)
+                print(f"  Created: {HUAZHAN_SUBSET_FILE} ({len(huazhan_df)} entries)")
 
 def update_circdna_tgs():
     print("\n" + "=" * 60)

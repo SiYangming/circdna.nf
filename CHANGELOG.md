@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.7.2 - [2026-08-30]
+
+### Enhancements & fixes
+
+- **服务器保留全部中间产物**: `conf/server.config` 启用所有 `save_*` 开关，并新增全局兜底发布 `save_all_intermediates`；未显式配置 publish 规则的 process 输出复制到 `<outdir>/intermediate/<完整流程路径>`。同时补齐 BWA sorted BAM、Circle-Map 候选 BAM、minimap2 index、Unicycler seqtk、长读过滤 BED 的发布规则。
+- **服务器运行后自动清理 work**: `cleanup = true`，成功运行后删除 Nextflow `work/` 目录；需要 `-resume` 时可临时覆盖，或使用 `nextflow clean -f -before <run_name>` 清理旧缓存。`SERVER_RUN_GUIDE.md` 与输出文档已同步说明。
+
+## v4.7.1 - [2026-08-28]
+
+### Enhancements & fixes
+
+- **服务器新增 Oryza_sativa_Huazhan 参考基因组**: `conf/server.config` 的 `genomes` 记录新增 `Oryza_sativa_Huazhan`，指向 `PublicDB/reference/Oryza_sativa/Oryza_sativa.Huazhan.genome.fa.gz`；新增 `samplesheets/circdna_Oryza_sativa_Huazhan_eccDNA.csv` 专用样本表（8 个 `ecc-*` 样本），`SERVER_RUN_GUIDE.md` 明确该基因组仅用于这些短读样本，不用于其他水稻样本或长读背景。
+
 ## v4.7.0 - [2026-08-26]
 
 ### Breaking changes

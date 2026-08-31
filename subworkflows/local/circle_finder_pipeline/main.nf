@@ -15,7 +15,7 @@ workflow CIRCLE_FINDER_PIPELINE {
     _bam_sorted_bai          // channel: [ val(meta), path(bai) ] (unused)
     full_bam_sorted         // channel: [ val(meta), path(bam) ]
     full_bam_sorted_bai     // channel: [ val(meta), path(bai) ]
-    _fasta_fai              // channel (value): [ val(meta), path(fasta), path(fai) ] (unused)
+    fasta_fai               // channel (value): [ val(meta), path(fasta), path(fai) ]
 
     main:
     ch_versions = channel.empty()
@@ -24,7 +24,7 @@ workflow CIRCLE_FINDER_PIPELINE {
     // （.repeat() 是旧写法，Nextflow 26 中可能触发 ArrayList.repeat() 错误）
     SAMTOOLS_SORT_QNAME_CF (
         full_bam_sorted,
-        channel.value([[], null, null]),
+        fasta_fai,
         ''
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_QNAME_CF.out.versions_samtools)

@@ -93,7 +93,7 @@ nextflow run ./circdna.nf/main.nf \
     -resume <run_name>
 
 # 查看历史 run name
-ls -lat circdna.nf/work/ | head -5
+nextflow log -q
 # 或查看 .nextflow.log 开头
 head -5 circdna.nf/.nextflow.log
 ```
@@ -111,7 +111,7 @@ head -5 circdna.nf/.nextflow.log
 - 向日葵（Helianthus_annuus）
 - 黑果枸杞（Lycium_ruthenicum）
 - 本氏烟草（Nicotiana_benthamiana）
-- 水稻（Oryza_sativa）
+- 水稻（Oryza_sativa；IRGSP-1.0 默认；Oryza_sativa_Huazhan 仅用于 ecc-* 样本）
 - 番茄（Solanum_lycopersicum）
 - 婆罗门参（Tragopogon_porrifolius）
 - 普通小麦（Triticum_aestivum）
@@ -132,11 +132,21 @@ nextflow run ./circdna.nf/main.nf \
 
 ### 水稻 (Oryza_sativa)
 
+`Oryza_sativa`（IRGSP-1.0）为水稻默认基因组；`Oryza_sativa_Huazhan` 目前只用于 `ecc-*` 开头的 8 个样本，必须搭配下方 Huazhan 专用表使用，不用于其他水稻样本或长读样本。
+
 ```bash
+# 常规水稻运行（IRGSP-1.0；若只跑非 ecc-* 样本，先过滤表内 ecc-* 行）
 nextflow run ./circdna.nf/main.nf \
     --input circdna.nf/samplesheets/circdna_Oryza_sativa_eccDNA.csv \
     --genome Oryza_sativa \
     --outdir eccDNA_results/Oryza_sativa \
+    -profile server
+
+# ecc-* 样本专用（Huazhan）
+nextflow run ./circdna.nf/main.nf \
+    --input circdna.nf/samplesheets/circdna_Oryza_sativa_Huazhan_eccDNA.csv \
+    --genome Oryza_sativa_Huazhan \
+    --outdir eccDNA_results/Oryza_sativa_Huazhan \
     -profile server
 ```
 
@@ -324,8 +334,11 @@ head -3 circdna.nf/.nextflow.log
 # 查看运行进度
 nextflow log <run_name> -f
 
-# 清理 work 目录 (解决 root 权限问题)
-docker run --rm -v $(pwd):/work -w /work alpine rm -rf circdna.nf/work/
+# 清理指定 run 之前的 work 缓存
+nextflow clean -f -before <run_name>
+
+# 只查看会被清理的目录，不实际删除
+nextflow clean -n -f -before <run_name>
 
 # 快速重启某个物种
 nextflow run ./circdna.nf/main.nf \
@@ -334,6 +347,16 @@ nextflow run ./circdna.nf/main.nf \
     --outdir eccDNA_results/<species> \
     -profile server
 ```
+
+## 中间产物与 work 清理
+
+`-profile server` 的 `conf/server.config` 已默认开启：
+
+- `save_reference`、`save_trimmed`、`save_merged_fastq`、`save_markduplicates_bam`、`save_sorted_bam`、`save_circle_map_intermediate`、`save_circle_finder_intermediate`、`save_unicycler_intermediate`、`save_long_read_intermediate` 全部为 `true`。
+- 没有专门 publish 路径的 process 输出，会复制到 `<outdir>/intermediate/<完整流程路径>/`。
+- `cleanup = true`：运行成功后自动删除 `work/` 目录。
+
+因此，正式产出放在 `<outdir>`，`work/` 只作为临时计算目录，不用于长期保存。失败运行不会自动清理；需要手动清理旧缓存时使用 `nextflow clean -f -before <run_name>`，需要删除全部缓存时使用 `nextflow clean -f`。若某个运行仍需 `-resume`，先不要执行清理，或用临时 `cleanup=false` 覆盖 server 配置。
 
 
 ## 大基因组说明
@@ -355,7 +378,7 @@ nextflow run ./circdna.nf/main.nf \
 - **样本数据**：需存在于 `eccDNA/` 目录
 - **大基因组**：染色体超过 512 Mb 的物种需加 `-c circdna.nf/conf/large_genome.config`，详见上方「大基因组说明」
 - **`circle_identifier`、`input_format`** 等参数已在 `circdna.nf/conf/server.config` 中配置，无需在命令中指定
-- **清理旧 work 目录**：root 权限文件需用 Docker 删除
+- **清理旧 work 目录**：优先使用 `nextflow clean -f -before <run_name>`；如遇 root 权限文件，再退回 Docker 删除
 
 ## 常见错误
 
@@ -466,7 +489,7 @@ for sp in Oryza_sativa Triticum_aestivum Amaranthus_palmeri Arabidopsis_thaliana
     echo "$sp: $(ls eccDNA/$sp/*.fastq.gz 2>/dev/null | wc -l) fastq.gz"
 done
 
-# 2. 参考基因组（server.config 中 9 个路径已验证全部存在）
+# 2. 参考基因组（server.config 中 18 个基因组路径已验证全部存在，含 Oryza_sativa_Huazhan）
 ls /data1/users/siyangming/PublicDB/reference/*/   # 核对各物种 .fa.gz
 
 # 3. 当前代码版本（应含 v4.7 路由改造）
@@ -555,6 +578,8 @@ nextflow run ./circdna.nf/main.nf \
     --outdir eccDNA_results/Oryza_sativa_longread \
     -profile server
 ```
+
+> 长读水稻仍使用 `--genome Oryza_sativa`（IRGSP-1.0）。`Oryza_sativa_Huazhan` 目前仅用于 `circdna_Oryza_sativa_Huazhan_eccDNA.csv` 中的短读 `ecc-*` 样本，不用于长读背景或其他样本。
 
 #### ⑧ 小麦（80 样本 ONT RCA，大基因组 + CSI；计算量最大，务必先抽样验证）
 

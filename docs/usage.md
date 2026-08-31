@@ -162,6 +162,11 @@ work                # Directory containing the nextflow working files
 <OUTDIR>            # Finished results in specified location (defined with --outdir)
 .nextflow_log       # Log file from Nextflow
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
+````
+
+:::note
+When using `-profile server`, all intermediate outputs are retained in `<OUTDIR>` and `work/` is automatically removed after a successful run. Processes without a dedicated output path are copied under `<OUTDIR>/intermediate/<process-path>/`.
+:::
 
 :::tip
 If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.

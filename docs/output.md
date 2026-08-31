@@ -6,6 +6,10 @@ This document describes the output produced by the pipeline. Most of the plots a
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
+### Server profile intermediate outputs
+
+When running with `-profile server`, `conf/server.config` enables all `save_*` intermediate-output flags. In addition, every process without a dedicated `publishDir` rule copies its outputs to `<outdir>/intermediate/<process-path>/`, so intermediate files can be traced back after a run. The server profile also sets `cleanup = true`, so Nextflow removes `work/` after a successful run.
+
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
