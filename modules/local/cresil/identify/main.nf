@@ -1,20 +1,19 @@
 process CRESIL_IDENTIFY {
-    tag "$meta.id"
+    tag "$meta3.id"
     label 'process_high'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/cresil:1.2.0--hdfd78af_0' :
-        'quay.io/bioinfortools/cresil:1.2.1' }"
+        'quay.io/bioinfortools/cresil:1.2.2' }"
 
     input:
     tuple val(meta), path(fasta)
     tuple val(meta2), path(fai)
-    tuple val(meta3), path(reads)
-    tuple val(meta4), path(trim)
+    tuple val(meta3), path(reads), path(trim)
 
     output:
-    tuple val(meta), path("${prefix}.eccDNA_final.txt"), emit: identify
+    tuple val(meta3), path("${prefix}.eccDNA_final.txt"), emit: identify
     tuple val("${task.process}"), val('cresil'), eval("cresil --version | sed 's/cresil //'"), topic: versions, emit: versions_cresil
 
     when:
@@ -22,7 +21,7 @@ process CRESIL_IDENTIFY {
 
     script:
     def args = task.ext.args ?: ''
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta3.id}"
     def trim_arg = trim ? "-trim ${trim}" : ''
 
     """
@@ -52,19 +51,26 @@ process CRESIL_IDENTIFY {
         FAIIN="${fai}"
     fi
 
-    # CRESIL aborts (exit != 0) when no eccDNA passes the filters. Treat
-    # that as a valid empty result so the pipeline can continue.
-    if ! cresil identify \\
+    # CRESIL aborts (exit != 0) for valid empty results. Preserve real
+    # crashes instead of turning every nonzero exit into an empty table.
+    set +e
+    cresil identify \\
         -t ${task.cpus} \\
         -fa \${FASTAIN} \\
         -fai \${FAIIN} \\
         -fq \${READS_IN} \\
         ${trim_arg} \\
-        $args
-    then
-        if [ ! -f eccDNA_final.txt ] && [ ! -f cresil_result/eccDNA_final.txt ]; then
+        $args > cresil_identify.log 2>&1
+    cresil_status=\$?
+    set -e
+
+    if [ \$cresil_status -ne 0 ] && [ ! -f eccDNA_final.txt ] && [ ! -f cresil_result/eccDNA_final.txt ]; then
+        if grep -qE '\\[ABORT\\].*(no eccDNA|no (potential )?merge region|zero trimmed region)' cresil_identify.log; then
             echo "# no eccDNA detected by CRESIL identify" > ${prefix}.eccDNA_final.txt
             SKIP_MV=1
+        else
+            cat cresil_identify.log >&2
+            exit \$cresil_status
         fi
     fi
 
@@ -82,7 +88,7 @@ process CRESIL_IDENTIFY {
     """
 
     stub:
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta3.id}"
     """
     touch ${prefix}.eccDNA_final.txt
     """

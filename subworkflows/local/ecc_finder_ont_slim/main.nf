@@ -18,9 +18,12 @@ include { TIDEHUNTER as TIDEHUNTER_UNIT            } from '../../../modules/loca
 include { TIDEHUNTER as TIDEHUNTER_ASM             } from '../../../modules/local/tidehunter/main'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_NAME_ONT  } from '../../../modules/nf-core/samtools/sort/main'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_READ      } from '../../../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_PRIMARY     } from '../../../modules/nf-core/samtools/view/main'
 include { GENRICH as GENRICH_ONT                   } from '../../../modules/nf-core/genrich/main'
 include { CDHIT_CDHITEST as CDHIT_ONT              } from '../../../modules/nf-core/cdhit/cdhitest/main'
 include { ECC_FINDER_ONT_PAF_FILTER } from '../../../modules/local/ecc_finder_slim/paf_filter/main'
+include { GENRICH_ONT_PREP          } from '../../../modules/local/ecc_finder_slim/genrich_ont_prep/main'
+include { GENRICH_ONT_PREP as GENRICH_ONT_PREP_CONCAT } from '../../../modules/local/ecc_finder_slim/genrich_ont_prep/main'
 include { ECC_FINDER_ONT_MERGE       } from '../../../modules/local/ecc_finder_slim/ont_merge/main'
 include { ECC_FINDER_ONT_ASM         } from '../../../modules/local/ecc_finder_slim/ont_asm/main'
 include { ECC_FINDER_ONT_CSV_TO_BED } from '../../../modules/local/ecc_finder_ont_csv_to_bed/main'
@@ -53,7 +56,7 @@ workflow ECC_FINDER_ONT_SLIM {
         def concat_reads   = reads.filter { meta, _f -> meta.concatemer }
         def noconcat_reads = reads.filter { meta, _f -> !meta.concatemer }
 
-        def ch_unit_bam = channel.empty()
+        def ch_genrich_input = channel.empty()
         if (concat_reads) {
             TIDEHUNTER_UNIT ( concat_reads, [], [] )
             ch_versions = ch_versions.mix(TIDEHUNTER_UNIT.out.versions)
@@ -69,12 +72,25 @@ workflow ECC_FINDER_ONT_SLIM {
                 MINIMAP2_ONT_UNIT.out.versions_minimap2,
                 SAMTOOLS_SORT_NAME_ONT.out.versions_samtools
             )
-            ch_unit_bam = ch_unit_bam.mix(SAMTOOLS_SORT_NAME_ONT.out.bam)
             ch_unit_fa  = ch_unit_fa.mix(TIDEHUNTER_UNIT.out.unit_fa)
+            // Genrich 0.6.1 overflows on long SEQ/QUAL records, so compact
+            // every concatemer unit alignment before peak calling.
+            SAMTOOLS_VIEW_PRIMARY (
+                SAMTOOLS_SORT_NAME_ONT.out.bam.map { meta, bam -> [ meta, bam, [] ] },
+                fasta_meta.map { meta, fa -> [ meta, fa, [] ] },
+                [[id:'no_qname'], []],
+                [[id:'no_bed'], []],
+                []
+            )
+            ch_versions = ch_versions.mix(SAMTOOLS_VIEW_PRIMARY.out.versions_samtools)
+
+            GENRICH_ONT_PREP_CONCAT ( SAMTOOLS_VIEW_PRIMARY.out.bam )
+            ch_versions = ch_versions.mix(GENRICH_ONT_PREP_CONCAT.out.versions)
+            ch_genrich_input = ch_genrich_input.mix(GENRICH_ONT_PREP_CONCAT.out.sam)
         }
 
         if (noconcat_reads) {
-            // 无 TideHunter：原始 reads 比对成 BAM（coordinate sort）→ Genrich
+            // 无 TideHunter：原始 reads 比对成 BAM（queryname sort）→ Genrich
             MINIMAP2_ONT_READBAM ( noconcat_reads, fasta_meta, true, '', false, false )
             SAMTOOLS_SORT_READ (
                 MINIMAP2_ONT_READBAM.out.bam,
@@ -85,17 +101,21 @@ workflow ECC_FINDER_ONT_SLIM {
                 MINIMAP2_ONT_READBAM.out.versions_minimap2,
                 SAMTOOLS_SORT_READ.out.versions_samtools
             )
-            ch_unit_bam = ch_unit_bam.mix(SAMTOOLS_SORT_READ.out.bam)
+            // Strip secondary/supplementary alignments and long SEQ/QUAL fields.
+            // Genrich 0.6.1's BAM parser overflows on raw long-read records, so feed compact SAM.
+            GENRICH_ONT_PREP ( SAMTOOLS_SORT_READ.out.bam )
+            ch_versions = ch_versions.mix(GENRICH_ONT_PREP.out.versions)
+            ch_genrich_input = ch_genrich_input.mix(GENRICH_ONT_PREP.out.sam)
         }
 
-        // 5) Genrich peak calling（nf-core GENRICH: treatment=[bam], control=[], blacklist=[]）
+        // 6) Genrich peak calling（nf-core GENRICH: treatment=[bam/sam], control=[], blacklist=[]）
         GENRICH_ONT (
-            ch_unit_bam.map { meta, bam -> [ meta, [bam], [] ] },
+            ch_genrich_input.map { meta, bam -> [ meta, [bam], [] ] },
             []
         )
         ch_versions = ch_versions.mix(GENRICH_ONT.out.versions_genrich)
 
-        // 6) merge sites with genome alignments → candidates
+        // 7) merge sites with genome alignments → candidates
         ECC_FINDER_ONT_MERGE (
             GENRICH_ONT.out.peak,
             ECC_FINDER_ONT_PAF_FILTER.out.paf_bed,

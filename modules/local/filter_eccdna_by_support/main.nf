@@ -7,7 +7,11 @@ process FILTER_ECCDNA_BY_SUPPORT {
     val min_support
 
     output:
-    tuple val(meta), path("${meta.id}.filtered.${input_file.getExtension()}"), emit: filtered
+    // 前缀可经 task.ext.prefix 覆盖：多个长读引擎的 filtered 文件发布到同一目录，
+    // 统一用 ${meta.id} 会互相覆盖，只留下最后一个引擎的产物。
+    def ext = input_file.getExtension() ?: 'txt'
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    tuple val(meta), path("${prefix}.filtered.${ext}"), emit: filtered
     path "versions.yml", emit: versions
 
     when:
@@ -15,11 +19,12 @@ process FILTER_ECCDNA_BY_SUPPORT {
 
     script:
     def ext = input_file.getExtension() ?: 'txt'
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def bin_script = "filter_by_read_support.py"
     """
-    python ${bin_script} \\
+    ${bin_script} \\
         ${input_file} \\
-        ${meta.id}.filtered.${ext} \\
+        ${prefix}.filtered.${ext} \\
         --min_support ${min_support}
 
     cat <<-END_VERSIONS > versions.yml
@@ -30,8 +35,9 @@ process FILTER_ECCDNA_BY_SUPPORT {
 
     stub:
     def ext = input_file.getExtension() ?: 'txt'
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    cp ${input_file} ${meta.id}.filtered.${ext}
+    cp ${input_file} ${prefix}.filtered.${ext}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

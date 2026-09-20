@@ -45,13 +45,13 @@ workflow REMAP_ASSEMBLED_CIRCLES {
         assemblies,
         ch_fasta_meta,
         channel.value(true),   // bam output
-        channel.value('bai'),
+        channel.value(params.use_csi_index ? 'csi' : 'bai'),
         channel.value(false),
         channel.value(false)
     )
     ch_versions = ch_versions.mix(MINIMAP2_REMAP.out.versions_minimap2)
 
-    SAMTOOLS_SORT_REMAP ( MINIMAP2_REMAP.out.bam, ch_fasta_fai, channel.value('bai') )
+    SAMTOOLS_SORT_REMAP ( MINIMAP2_REMAP.out.bam, ch_fasta_fai, channel.value(params.use_csi_index ? 'csi' : 'bai') )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_REMAP.out.versions_samtools)
 
     SAMTOOLS_INDEX_REMAP ( SAMTOOLS_SORT_REMAP.out.bam )

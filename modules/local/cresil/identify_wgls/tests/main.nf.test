@@ -24,8 +24,7 @@ nextflow_process {
                 input[2] = [ [ id:'ref' ], // meta3
                              file("\${projectDir}/modules/local/cresil/testdata/ref.fa.fai", checkIfExists: true) ]
                 input[3] = [ [ id:'test' ], // meta4
-                             file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
-                input[4] = [ [ id:'test' ], // meta5
+                             file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true),
                              file("\${projectDir}/modules/local/cresil/testdata/trim.txt", checkIfExists: true) ]
                 """
             }
@@ -54,8 +53,7 @@ nextflow_process {
                 input[2] = [ [ id:'ref' ], // meta3
                              file("\${projectDir}/modules/local/cresil/testdata/ref.fa.fai", checkIfExists: true) ]
                 input[3] = [ [ id:'test' ], // meta4
-                             file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
-                input[4] = [ [ id:'test' ], // meta5
+                             file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true),
                              file("\${projectDir}/modules/local/cresil/testdata/trim.txt", checkIfExists: true) ]
                 """
             }

@@ -5,7 +5,7 @@ process CRESIL_VISUALIZE {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/cresil:1.2.0--hdfd78af_0' :
-        'quay.io/bioinfortools/cresil:1.2.1' }"
+        'quay.io/bioinfortools/cresil:1.2.2' }"
 
     input:
     tuple val(meta), path(identify_table)
@@ -26,6 +26,12 @@ process CRESIL_VISUALIZE {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
+    # Skip CRESIL visualize for comment-only empty identify tables.
+    if [ ! -s "${identify_table}" ] || grep -q '^# no eccDNA' "${identify_table}"; then
+        mkdir -p "${prefix}_for_Circos"
+        exit 0
+    fi
+
     mkdir -p cresil_gAnnotation
     cp ${gene_annot} cresil_gAnnotation/gene.annotate.txt
     cp ${cpg_annot} cresil_gAnnotation/CpG.annotate.txt

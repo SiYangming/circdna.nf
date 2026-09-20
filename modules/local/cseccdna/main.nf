@@ -22,7 +22,7 @@ process CS_ECCDNA {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    python ciderseq_eccdna.py \\
+    ciderseq_eccdna.py \\
         --genome ${genome} \\
         --input_dir ${input_dir} \\
         --outdir . \\

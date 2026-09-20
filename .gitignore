@@ -27,3 +27,6 @@ scripts/命令.txt
 testdatasets/ont/*consistency.fastq.gz
 testdatasets/pacbio/*consistency.fastq.gz
 .nf-test/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

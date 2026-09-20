@@ -5,7 +5,7 @@ process CRESIL_ANNOTATE {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/cresil:1.2.0--hdfd78af_0' :
-        'quay.io/bioinfortools/cresil:1.2.1' }"
+        'quay.io/bioinfortools/cresil:1.2.2' }"
 
     input:
     tuple val(meta), path(identify_table)
@@ -31,17 +31,16 @@ process CRESIL_ANNOTATE {
     def gene_arg = gene_bed && gene_bed.exists() ? "-gb ${gene_bed}" : ''
 
     """
-    # Patch: CRESIL 1.2.1 identify writes `consensus_status` but annotate
-    # reads `eccdna_status` from the identify table, crashing with KeyError.
-    # Only the readEccData (8-space indent) and the df lookup read the
-    # identify table; the eccbed.iterrows() loop (12-space indent) reads the
-    # readEccData output whose header is still `eccdna_status`.
-    mkdir -p cresil_patch
-    cp -r \$(python -c "import cresil, os; print(os.path.dirname(cresil.__file__))") cresil_patch/cresil
-    patch_cresil.py --line cresil_patch/cresil/cli/annotate.py "        eccdna_status = value['eccdna_status']" "        eccdna_status = value['consensus_status']"
-    patch_cresil.py cresil_patch/cresil/cli/annotate.py "df_identify[df_identify['id'] == id_]['eccdna_status']" "df_identify[df_identify['id'] == id_]['consensus_status']"
-    export PYTHONPATH=\$PWD/cresil_patch:\${PYTHONPATH:-}
+    # Identify may emit a comment-only placeholder when CRESIL finds no
+    # eccDNA; annotate expects a tabular identify table, so emit empty files.
+    if [ ! -s "${identify_table}" ] || grep -q '^# no eccDNA' "${identify_table}"; then
+        for suffix in gene CpG repeat variant; do
+            touch "${prefix}_\${suffix}.annotate.txt"
+        done
+        exit 0
+    fi
 
+    # consensus_status / CSI / empty-abort fixes are baked into cresil:1.2.2.
     cresil annotate \\
         -t ${task.cpus} \\
         -identify ${identify_table} \\

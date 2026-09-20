@@ -24,7 +24,7 @@ process CIDERSEQ_ALIGN {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}.${genome}"
     """
-    python ciderseq_align.py \\
+    ciderseq_align.py \\
         --config ${config} \\
         --targets ${targets} \\
         --genome ${genome} \\

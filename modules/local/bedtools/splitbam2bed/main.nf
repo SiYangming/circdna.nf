@@ -19,17 +19,28 @@ process BEDTOOLS_SPLITBAM2BED {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    bedtools bamtobed $args -i $split_bam | \
-        sed -e 's/_2\\/2/ 2/g' | \
-        sed -e 's/_1\\/1/ 1/g' |
-        awk '{printf "%s\t%d\t%d\t%s\t%d\t%d\t%s\t%s\\n", \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8}' |
-        awk 'BEGIN{FS=OFS="\t"} {gsub("M", " M ", \$8)} 1' | \
-        awk 'BEGIN{FS=OFS="\t"} {gsub("S", " S ", \$8)} 1' | \
-        awk 'BEGIN{FS=OFS="\t"} {gsub("H", " H ", \$8)} 1' | \
-        awk 'BEGIN{FS=OFS=" "} {if ((\$9=="M" && \$NF=="H") || \
-        (\$9=="M" && \$NF=="S"))  {printf ("%s\tfirst\\n",\$0)} else if ((\$9=="S" && \$NF=="M") || \
-        (\$9=="H" && \$NF=="M")) {printf ("%s\tsecond\\n",\$0)} }' | \
-        awk 'BEGIN{FS=OFS="\t"} {gsub(" ", "", \$8)} 1' > '${prefix}.txt'
+    # 输出 9 个空白分隔字段：chr start end readID readNo mapq strand cigar tag
+    # CIRCLEFINDER 的后续 awk 以 FS=" " 解析，字段位置是硬约束：
+    #   $1=chr $2=start $3=end $4=readID $6=mapq $7=strand
+    # 且两行合并后 $10 必须是第二行的 chr —— 所以每行必须恰好 9 个字段。
+    # 旧实现的三个问题：
+    #   1) CIGAR 在 bedtools bamtobed -cigar 的第 7 列，却去展开/匹配第 8 列 → 恒不匹配；
+    #   2) 依赖 read name 的 _1/1、_2/2 后缀，而 SRA 数据名为 ERR10889838.1234 → 永不命中；
+    #   3) 字段数因此不足 9，step8 的 $10/$16 全部错位。
+    # 结果 split.txt 恒为空 → CIRCLEFINDER 以 "No split reads found" 提前退出（全样本 0 检出）。
+    bedtools bamtobed $args -i $split_bam | \\
+        awk 'BEGIN{FS=OFS="\t"} {
+            name=\$4; rn="0";
+            if (substr(name, length(name)-3) == "_1/1") { rn="1"; name=substr(name,1,length(name)-4) }
+            else if (substr(name, length(name)-3) == "_2/2") { rn="2"; name=substr(name,1,length(name)-4) }
+            else if (substr(name, length(name)-1) == "/1") { rn="1"; name=substr(name,1,length(name)-2) }
+            else if (substr(name, length(name)-1) == "/2") { rn="2"; name=substr(name,1,length(name)-2) }
+            cig=\$7; last=substr(cig, length(cig), 1); tag="";
+            if (cig ~ /^[0-9]+M/ && (last == "S" || last == "H")) tag="first";
+            else if (cig ~ /^[0-9]+[SH]/ && last == "M") tag="second";
+            if (tag == "") next;
+            print \$1, \$2, \$3, name, rn, \$5, \$6, cig, tag
+        }' > '${prefix}.txt'
 
     # Software Version
     cat <<-END_VERSIONS > versions.yml

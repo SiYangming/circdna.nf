@@ -36,6 +36,7 @@ include { LONG_READ_FILTERING as LONG_READ_FILTERING_CIRCLESEEKER } from '../sub
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_ECCFINDER } from '../subworkflows/local/long_read_filtering/main'
 include { LONG_READ_FILTERING as LONG_READ_FILTERING_ECCFINDER_ASM } from '../subworkflows/local/long_read_filtering/main'
 include { CIRCLESEEKER_PIPELINE         } from '../subworkflows/local/circleseeker_pipeline/main'
+include { CRESIL_TO_BED                   } from '../modules/local/cresil_to_bed/main'
 include { CIDERSEQ_PIPELINE             } from '../subworkflows/local/ciderseq_pipeline/main'
 include { ORGANELLE_TAG                 } from '../subworkflows/local/organelle_tag/main'
 include { REFERENCE_MODE                } from '../subworkflows/local/reference_mode/main'
@@ -534,9 +535,17 @@ workflow CIRCDNA {
                 )
                 .eccdna_candidates
                 .map { meta, file -> [ meta, file ] }
-                .set { ch_cresil_candidates }
+                .set { ch_cresil_raw }
 
-                LONG_READ_FILTERING_CRESIL ( ch_cresil_candidates )
+                // CReSIL 原始表（id / merge_region / numreads ...）必须先用
+                // convert_cresil_to_bed.py 转成统一 BED 契约再进 LONG_READ_FILTERING。
+                // 旧实现直接把 10 列原始表喂进去：filter_by_read_support.py 既识别不到
+                // 支持度列（回退到第 5 列 ctc，int("False") 抛错后整行保留）、也无法产出
+                // BED，导致长读终集几乎为空。
+                CRESIL_TO_BED ( ch_cresil_raw )
+                ch_versions = ch_versions.mix(CRESIL_TO_BED.out.versions)
+
+                LONG_READ_FILTERING_CRESIL ( CRESIL_TO_BED.out.bed )
                 ch_long_read_bed = ch_long_read_bed.mix(LONG_READ_FILTERING_CRESIL.out.filtered_candidates)
                 ch_versions = ch_versions.mix(CRESIL_PIPELINE.out.versions)
                 ch_versions = ch_versions.mix(LONG_READ_FILTERING_CRESIL.out.versions)

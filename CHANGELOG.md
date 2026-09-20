@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.7.3 - [2026-09-18]
+
+### Enhancements & fixes
+
+- **CircleFinder 修复（全样本 0 检出）**: `BEDTOOLS_SPLITBAM2BED` / `BEDTOOLS_SORTEDBAM2BED` 原先按 tab 第 8 列处理 CIGAR，而 `bedtools bamtobed -cigar` 的 CIGAR 在第 7 列，导致 `split.txt` 恒为空、`CIRCLEFINDER` 以 "No split reads found" 提前退出；同时旧的 `sed 's/_1\/1/ 1/g'` 依赖 read name 后缀（SRA 数据无此后缀），字段数与 CIRCLEFINDER 索引不符。改为输出固定的 9/8 列（含独立 readNo 列），CIGAR 分类改为对 CIGAR 本身做正则判定。实测 10% 子集：旧链 0 条 → 新链 957 条 microDNA。
+- **ecc_finder ONT BED 修复**: `bin/eccfinder_ont_to_bed.py` 兼容 `ont_merge.py` 实际输出的 4 列 `refID rstart rend read_count`（原先要求 ≥6 列，导致中间 BED 只有表头）。
+- **CReSIL 接入统一 BED 契约**: 新增 `CRESIL_TO_BED` 模块（`modules/local/cresil_to_bed/`），在长读分支先经 `bin/convert_cresil_to_bed.py` 转换再进 `LONG_READ_FILTERING`；重写 `convert_cresil_to_bed.py` 的列映射（原实现把 `id`/`merge_region` 当作 chrom/start/end，且该脚本此前从未被引用）。
+- **长读过滤阈值与命名**: `min_read_support` 默认 2 → 1（FLEd junction 支持数普遍为 1，原值会整批滤掉）；`FILTER_ECCDNA_BY_SUPPORT` 支持 `task.ext.prefix`，并在 `conf/modules.config` 为 6 个长读引擎设置独立前缀，消除 `long_read/filtering/<sample>/` 下 `<sample>.filtered.bed` 的相互覆盖。
+- **元数据修正**: `samplesheets/metadata.csv` 中 `ERR6326020` 由 Arabidopsis 改为 Triticum aestivum（ENA PRJEB46420，wheat ecDNA-seq ONT rep1，SAMEA8987722）。
+- **CReSIL / FLED 补丁固化进镜像**: identify_wgls / annotate / FLED PseudoReference·CSI·`--split-prefix` 等运行时 PYTHONPATH 补丁已写入 [SiYangming/cresil](https://github.com/SiYangming/cresil) 与 [SiYangming/FLED](https://github.com/SiYangming/FLED) 源码；流程容器切至 `quay.io/bioinfortools/cresil:1.2.2` 与 `quay.io/bioinfortools/fled:1.7.1`，去掉 `cp`/`patch_*.py`/`PYTHONPATH` 运行时改写。
+
+详见 `CHANGES&FIX/20260918.md`。
+
 ## v4.7.2 - [2026-08-30]
 
 ### Enhancements & fixes

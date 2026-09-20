@@ -38,6 +38,9 @@ workflow LONG_READ_REFERENCE {
     ch_fasta_fai = ch_fasta_meta
         .join(SAMTOOLS_FAIDX.out.fai, by: [0])
         .map { meta, fa, fai -> [ meta, fa, fai ] }
+        // 单元素队列通道会与多样本 bam one-to-one 配对导致只跑 1 个样本；
+        // 转 value 后广播给所有 gdna 样本。
+        .first()
 
     MINIMAP2_REFERENCE (
         reads,

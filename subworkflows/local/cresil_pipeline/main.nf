@@ -50,13 +50,22 @@ workflow CRESIL_PIPELINE {
         .set { trimmed_reads }
     ch_versions = ch_versions.mix(CRESIL_TRIM.out.versions_cresil)
 
-    CRESIL_IDENTIFY ( genome_fasta_meta, ch_fai, reads, trimmed_reads )
+    // CRESIL trim outputs can finish out of sample order. Join by sample id
+    // instead of relying on channel order, which can pair reads from one
+    // sample with trim from another and cause pysam KeyError in identify.
+    reads
+        .map { meta, fastq -> [ meta.id, meta, fastq ] }
+        .join( trimmed_reads.map { meta, trim -> [ meta.id, meta, trim ] } )
+        .map { _id, meta, fastq, _trim_meta, trim -> [ meta, fastq, trim ] }
+        .set { reads_trimmed }
+
+    CRESIL_IDENTIFY ( genome_fasta_meta, ch_fai, reads_trimmed )
         .identify
         .set { eccdna_candidates }
     ch_versions = ch_versions.mix(CRESIL_IDENTIFY.out.versions_cresil)
 
     // Whole-genome long-read (WGLS) identification: takes the .mmi index.
-    CRESIL_IDENTIFY_WGLS ( ch_mmi, genome_fasta_meta, ch_fai, reads, trimmed_reads )
+    CRESIL_IDENTIFY_WGLS ( ch_mmi, genome_fasta_meta, ch_fai, reads_trimmed )
         .identify_wgls
         .set { eccdna_candidates_wgls }
     ch_versions = ch_versions.mix(CRESIL_IDENTIFY_WGLS.out.versions_cresil)

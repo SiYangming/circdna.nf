@@ -24,7 +24,7 @@ process CIDERSEQ_PHASE {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}.${genome}"
     """
-    python ciderseq_phase.py \\
+    ciderseq_phase.py \\
         --config ${config} \\
         --genome ${genome} \\
         --outdir . \\
