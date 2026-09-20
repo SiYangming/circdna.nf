@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CReSIL 接入统一 BED 契约**: 新增 `CRESIL_TO_BED` 模块（`modules/local/cresil_to_bed/`），在长读分支先经 `bin/convert_cresil_to_bed.py` 转换再进 `LONG_READ_FILTERING`；重写 `convert_cresil_to_bed.py` 的列映射（原实现把 `id`/`merge_region` 当作 chrom/start/end，且该脚本此前从未被引用）。
 - **长读过滤阈值与命名**: `min_read_support` 默认 2 → 1（FLEd junction 支持数普遍为 1，原值会整批滤掉）；`FILTER_ECCDNA_BY_SUPPORT` 支持 `task.ext.prefix`，并在 `conf/modules.config` 为 6 个长读引擎设置独立前缀，消除 `long_read/filtering/<sample>/` 下 `<sample>.filtered.bed` 的相互覆盖。
 - **元数据修正**: `samplesheets/metadata.csv` 中 `ERR6326020` 由 Arabidopsis 改为 Triticum aestivum（ENA PRJEB46420，wheat ecDNA-seq ONT rep1，SAMEA8987722）。
-- **CReSIL / FLED 补丁固化进镜像**: identify_wgls / annotate / FLED PseudoReference·CSI·`--split-prefix` 等运行时 PYTHONPATH 补丁已写入 [SiYangming/cresil](https://github.com/SiYangming/cresil) 与 [SiYangming/FLED](https://github.com/SiYangming/FLED) 源码；流程容器切至 `quay.io/bioinfortools/cresil:1.2.2` 与 `quay.io/bioinfortools/fled:1.7.1`，去掉 `cp`/`patch_*.py`/`PYTHONPATH` 运行时改写。
+- **CReSIL / FLED 补丁固化进镜像**: identify_wgls / annotate / FLED PseudoReference·CSI·`--split-prefix` 等运行时 PYTHONPATH 补丁已写入 [SiYangming/cresil](https://github.com/SiYangming/cresil) 与 [SiYangming/FLED](https://github.com/SiYangming/FLED) 源码，并**原地覆盖**推送 `quay.io/bioinfortools/cresil:1.2.1` 与 `quay.io/bioinfortools/fled:1.7.0`（不新增旁路 tag）；流程去掉 `cp`/`patch_*.py`/`PYTHONPATH` 运行时改写。
 
 详见 `CHANGES&FIX/20260918.md`。
 

@@ -5,7 +5,7 @@ process CRESIL_ANNOTATE {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/cresil:1.2.0--hdfd78af_0' :
-        'quay.io/bioinfortools/cresil:1.2.2' }"
+        'quay.io/bioinfortools/cresil:1.2.1' }"
 
     input:
     tuple val(meta), path(identify_table)
@@ -40,7 +40,7 @@ process CRESIL_ANNOTATE {
         exit 0
     fi
 
-    # consensus_status / CSI / empty-abort fixes are baked into cresil:1.2.2.
+    # consensus_status / CSI / empty-abort fixes are baked into cresil:1.2.1.
     cresil annotate \\
         -t ${task.cpus} \\
         -identify ${identify_table} \\

@@ -5,7 +5,7 @@ process CRESIL_IDENTIFY_WGLS {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/cresil:1.2.0--hdfd78af_0' :
-        'quay.io/bioinfortools/cresil:1.2.2' }"
+        'quay.io/bioinfortools/cresil:1.2.1' }"
 
     input:
     tuple val(meta), path(mmi)
@@ -52,7 +52,7 @@ process CRESIL_IDENTIFY_WGLS {
     fi
     samtools faidx "\${READS_IN}"
 
-    # Strand/contig/empty-abort/CSI fixes are baked into cresil:1.2.2.
+    # Strand/contig/empty-abort/CSI fixes are baked into cresil:1.2.1.
     # CRESIL aborts (exit != 0) for valid empty results. Preserve real
     # crashes instead of turning every nonzero exit into an empty table.
     set +e
