@@ -22,7 +22,9 @@ process SAMPLESHEET_CHECK {
     check_samplesheet.py \\
         $samplesheet \\
         samplesheet.valid.csv \\
-        $params.input_format
+        $params.input_format \\
+        $params.protocol \\
+        $params.mode
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

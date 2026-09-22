@@ -1,0 +1,36 @@
+name: ecc_finder_ont_slim
+description: ONT (long-read) eccDNA detection (map-ont + asm-ont)
+keywords: eccdna, ont, tandem repeat
+modules:
+  - minimap2
+  - tidehunter
+  - genrich
+  - cdhit
+  - paf_filter
+  - ont_merge
+  - ont_asm
+input:
+  - reads:
+      type: channel
+      description: Long-read sequences [meta, reads]
+  - fasta_meta:
+      type: channel
+      description: Reference genome [meta, fasta]
+  - run_map_ont:
+      type: boolean
+      description: Enable map-ont branch
+  - run_asm_ont:
+      type: boolean
+      description: Enable asm-ont branch
+output:
+  - map_csv:
+      type: channel
+      description: ONT map candidates CSV
+  - map_fasta:
+      type: channel
+      description: ONT map candidate sequences
+  - asm_fasta:
+      type: channel
+      description: ONT asm non-singleton consensus sequences
+authors:
+  - "@siyangming"

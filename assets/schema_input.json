@@ -13,9 +13,17 @@
                 "errorMessage": "Sample name must be provided and cannot contain spaces"
             },
             "fastq_1": {
-                "type": "string",
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "errorMessage": "FastQ file for reads 1 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^\\S+\\.f(ast)?q\\.gz$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
             },
             "fastq_2": {
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
@@ -30,6 +38,25 @@
                     }
                 ]
             },
+            "input_bam": {
+                "errorMessage": "BAM file cannot contain spaces and must have extension '.bam'",
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^\\S+\\.bam$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ],
+                "help_text": "Optional raw BAM input for long-read (PacBio/ONT) samples when entrypoint is subreads or hifi_bam."
+            },
+            "entrypoint": {
+                "type": "string",
+                "enum": ["cleaned_fastq", "raw_fastq", "subreads", "hifi_bam"],
+                "errorMessage": "Entrypoint must be one of: cleaned_fastq, raw_fastq, subreads, hifi_bam"
+            },
             "lane": {
                 "type": "string",
                 "pattern": "^\\S+$",
@@ -40,21 +67,51 @@
                 "type": "string",
                 "enum": ["gdna", "eccdna"],
                 "errorMessage": "Datatype must be one of: gdna, eccdna",
-                "help_text": "Sample datatype. Required for Integrated Mode (mode=integrated) to distinguish gDNA (background) from eccDNA samples."
+                "help_text": "Sample datatype: gdna (background/WGS) or eccdna (detection). Routing field; Integrated Mode was removed (scoring lives in eccdna.smk)."
             },
             "platform": {
                 "type": "string",
                 "enum": ["illumina", "pacbio", "ont"],
                 "errorMessage": "Platform must be one of: illumina, pacbio, ont",
-                "help_text": "Sequencing platform."
+                "help_text": "Sequencing platform. Determines the pre-processing chain per row (mixed tables are allowed)."
+            },
+            "assay": {
+                "type": "string",
+                "enum": ["wgs", "circleseq", "rca", "ciderseq", "enriched"],
+                "errorMessage": "Assay must be one of: wgs, circleseq, rca, ciderseq, enriched",
+                "help_text": "Experimental type → engine set. Short-read defaults: gdna→wgs, eccdna→circleseq. Long-read must be explicit (or backfilled with --assay). Illumina+RCA must be written as circleseq."
+            },
+            "pair": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Pair value cannot contain spaces",
+                "help_text": "Study grouping key (e.g. bioproject). Used by ECCsplorer clu joins (only illumina circleseq ⋈ illumina wgs with the same pair) and kept for downstream eccdna.smk."
+            },
+            "concatemer": {
+                "type": "string",
+                "enum": ["true", "false"],
+                "errorMessage": "Concatemer must be true or false",
+                "help_text": "Long-read RCA only. true → TideHunter unit/asm runs; false (linearized RCA / T7 debranching) → TideHunter skipped."
+            },
+            "read_type": {
+                "type": "string",
+                "enum": ["hifi", "clr", "ont", "pe", "se"],
+                "errorMessage": "read_type must be one of: hifi, clr, ont, pe, se",
+                "help_text": "Alignment preset. Defaults: ont→ont, pacbio→hifi, illumina→pe/se. CLR (PacBio RS / non-HiFi Sequel) must be written explicitly."
+            },
+            "enrichment": {
+                "type": "string",
+                "enum": ["none", "circleseq", "mobilome", "ciderseq", "t7", "exov", "other"],
+                "errorMessage": "enrichment must be one of: none, circleseq, mobilome, ciderseq, t7, exov, other",
+                "help_text": "Annotation only — does not route. Describes the enrichment method."
             },
             "protocol": {
                 "type": "string",
                 "enum": ["short_read", "long_read"],
                 "errorMessage": "Protocol must be one of: short_read, long_read",
-                "help_text": "Sequencing protocol."
+                "help_text": "DEPRECATED: legacy column, only mapped to a platform fallback (short_read→illumina); no longer a routing key."
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["sample"]
     }
 }

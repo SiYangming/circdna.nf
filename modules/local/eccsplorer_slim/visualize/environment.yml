@@ -1,0 +1,11 @@
+name: eccsplorer_slim_visualize
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-base>=4.0
+  - r-ggplot2
+  - r-ggrepel
+  - r-gridextra
+  - r-dplyr

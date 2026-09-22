@@ -1,8 +1,8 @@
-sample,fastq_1,fastq_2
-SRR26069819,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069819.fastq.gz,
-SRR26069818,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069818.fastq.gz,
-SRR26069821,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069821.fastq.gz,
-SRR26069820,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069820.fastq.gz,
-SRR26069822,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069822.fastq.gz,
-SRR26069823,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069823.fastq.gz,
-SRR26069824,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069824.fastq.gz,
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+SRR26069818,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069818.fastq.gz,,,cleaned_fastq,pacbio,rca,eccdna,,false,clr,other
+SRR26069819,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069819.fastq.gz,,,cleaned_fastq,pacbio,rca,eccdna,PRJNA1017797,true,hifi,other
+SRR26069820,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069820.fastq.gz,,,cleaned_fastq,pacbio,rca,eccdna,PRJNA1017797,true,hifi,other
+SRR26069821,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069821.fastq.gz,,,cleaned_fastq,pacbio,rca,eccdna,PRJNA1017797,true,hifi,other
+SRR26069822,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069822.fastq.gz,,,cleaned_fastq,pacbio,rca,eccdna,PRJNA1017797,true,hifi,other
+SRR26069823,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069823.fastq.gz,,,cleaned_fastq,pacbio,rca,eccdna,PRJNA1017797,true,hifi,other
+SRR26069824,/data1/users/siyangming/PlanteccDNADB/eccDNA/Alopecurus_myosuroides/SRR26069824.fastq.gz,,,cleaned_fastq,pacbio,rca,eccdna,PRJNA1017797,true,hifi,other

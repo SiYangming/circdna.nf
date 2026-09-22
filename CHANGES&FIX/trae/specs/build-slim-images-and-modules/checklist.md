@@ -1,0 +1,24 @@
+# Checklist
+
+- [x] ecc_finder 仓库已创建 `slim` 分支，main 分支 Dockerfile/conda-recipe 未被修改
+- [x] ECCsplorer 仓库已创建 `slim` 分支，master 分支 Dockerfile/conda-recipe 未被修改
+- [x] `ecc_finder_slim/bin/merge_score.py` 已创建（功能：enrichment.bed + split_reads.bed + ref.fa → candidates.csv + candidates.fasta）
+- [x] `ecc_finder_slim/bin/asm_filter.py` 已创建（功能：assembly.fasta → eccDNA_asm.fasta）
+- [x] `ecc_finder_slim/environment.yml` 仅含 numpy/pandas/matplotlib/pybedtools/bedtools
+- [ ] `yangmingsi::ecc_finder_slim=1.0.0` conda 包已推送（需手动执行 conda build + anaconda upload）
+- [ ] `quay.io/bioinfortools/ecc_finder_slim:1.0.0` Docker 镜像已推送（需手动执行 docker build + push）
+- [x] `ECCsplorer_slim/bin/peak_detect.py` 已创建（coverage.tsv → peak_regions.bed）
+- [x] `ECCsplorer_slim/bin/candidate_extract.py` 已创建（SR.bed + peak_all + peak_DR → candidates.bed）
+- [x] `ECCsplorer_slim/bin/coverage_profile.py` 已创建（candidates.bed + all.bed + ref.fa → coverage.tsv）
+- [x] `ECCsplorer_slim/bin/normalize.R` 已创建（原始覆盖度 → RPM + enrichment）
+- [x] `ECCsplorer_slim/bin/visualize.R` 已创建（归一化数据 → PNG）
+- [x] `ECCsplorer_slim/bin/html_report.py` 已创建（候选数据 → HTML）
+- [x] `ECCsplorer_slim/environment.yml` 仅含 python/numpy/scipy/biopython/r-base/r-ggplot2
+- [ ] `yangmingsi::eccsplorer_slim=1.0.0` conda 包已推送（需手动执行 conda build + anaconda upload）
+- [ ] `quay.io/bioinfortools/eccsplorer_slim:1.0.0` Docker 镜像已推送（需手动执行 docker build + push）
+- [x] bio.nf 中 ecc_finder_slim 的 merge_score 和 asm_filter 模块已创建并引用 slim 镜像
+- [x] bio.nf 中 eccsplorer_slim 的 6 个模块已创建并引用 slim 镜像
+- [x] ecc_finder_slim_pipeline 已接入 merge_score 和 asm_filter 调用
+- [x] eccsplorer_slim_pipeline 已接入 6 个专有逻辑模块调用
+- [x] modules.config 已添加新模块的 publishDir 配置
+- [x] `nextflow run main.nf -profile test_local -stub` 通过（16 个 slim 进程全部成功编译提交）

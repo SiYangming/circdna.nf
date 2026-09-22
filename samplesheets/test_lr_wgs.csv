@@ -1,0 +1,2 @@
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+lr_wgs_smoke,testdatasets/pacbio/pacbio_eccdna_smoke.fastq.gz,,,cleaned_fastq,pacbio,wgs,gdna,wgs_smoke,false,hifi,none

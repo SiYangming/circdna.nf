@@ -1,0 +1,253 @@
+================================================================================
+REPRESENTATIVE SRR SELECTION SUMMARY
+================================================================================
+
+Total SRAStudies: 19
+Total Technology Groups: 9
+Total Representative Runs to Select: 27
+
+================================================================================
+
+Study: DRP012371
+  Species: Cryptomeria japonica
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 2
+  Selected: DRR426558 (spots=89363.0, bases=32875036.0)
+  Reason: Selected by highest spots (89363.0)
+
+Study: ERP015098
+  Species: Oryza sativa Japonica Group
+  Technology: ILLUMINA_WGS_PAIRED
+  Runs in group: 11
+  Selected: ERR1830503 (spots=2006406.0, bases=629478911.0)
+  Reason: Selected by highest spots (2006406.0)
+
+Study: ERP130605
+  Species: Triticum aestivum
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 7
+  Selected: ERR6326085 (spots=4192164.0, bases=2104466328.0)
+  Reason: Selected by highest spots (4192164.0)
+
+Study: ERP130605
+  Species: Triticum aestivum
+  Technology: OXFORD_NANOPORE_OTHER_SINGLE
+  Runs in group: 2
+  Selected: ERR6326020 (spots=154105.0, bases=430691964.0)
+  Reason: Selected by highest spots (154105.0)
+
+Study: ERP138467
+  Species: Arabidopsis thaliana
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 6
+  Selected: ERR9968613 (spots=1630989.0, bases=544681665.0)
+  Reason: Selected by highest spots (1630989.0)
+
+Study: ERP144157
+  Species: Oryza sativa
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 27
+  Selected: ERR10889841 (spots=452280081.0, bases=135684000000.0)
+  Reason: Selected by highest spots (452280081.0)
+
+Study: ERP144157
+  Species: Oryza sativa
+  Technology: ILLUMINA_RNA-Seq_PAIRED
+  Runs in group: 16
+  Selected: ERR10889834 (spots=90105225.0, bases=27031567500.0)
+  Reason: Selected by highest spots (90105225.0)
+
+Study: ERP144157
+  Species: Oryza sativa
+  Technology: ILLUMINA_WGS_PAIRED
+  Runs in group: 1
+  Selected: ERR11838732 (spots=156709160.0, bases=31341832000.0)
+  Reason: Only one run in group
+
+Study: ERP144157
+  Species: Oryza sativa
+  Technology: PACBIO_SMRT_WGS_SINGLE
+  Runs in group: 1
+  Selected: ERR11838731 (spots=404251.0, bases=7548320019.0)
+  Reason: Only one run in group
+
+Study: ERP148217
+  Species: Tragopogon porrifolius
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 4
+  Selected: ERR11535567 (spots=20357622.0, bases=6148001844.0)
+  Reason: Selected by highest spots (20357622.0)
+
+Study: ERP157467
+  Species: Triticum aestivum
+  Technology: ILLUMINA_RNA-Seq_PAIRED
+  Runs in group: 6
+  Selected: ERR12724679 (spots=32485277.0, bases=9745583100.0)
+  Reason: Selected by highest spots (32485277.0)
+
+Study: ERP157467
+  Species: Triticum aestivum
+  Technology: OXFORD_NANOPORE_OTHER_SINGLE
+  Runs in group: 78
+  Selected: ERR12724408 (spots=1808772.0, bases=3444973566.0)
+  Reason: Selected by highest spots (1808772.0)
+
+Study: ERP157467
+  Species: Triticum aestivum
+  Technology: OXFORD_NANOPORE_WGS_SINGLE
+  Runs in group: 9
+  Selected: ERR16977911 (spots=22713105.0, bases=63762686856.0)
+  Reason: Selected by highest spots (22713105.0)
+
+Study: SRP093854
+  Species: Oryza sativa Japonica Group
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 4
+  Selected: SRR5051139 (spots=411331.0, bases=206488162.0)
+  Reason: Selected by highest spots (411331.0)
+
+Study: SRP222959
+  Species: Arabidopsis thaliana
+  Technology: ILLUMINA_WGS_PAIRED
+  Runs in group: 12
+  Selected: SRR10163236 (spots=31949919.0, bases=9584975700.0)
+  Reason: Selected by highest spots (31949919.0)
+
+Study: SRP310078
+  Species: Daucus carota
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 4
+  Selected: SRR13922190 (spots=651930.0, bases=263022374.0)
+  Reason: Selected by highest spots (651930.0)
+
+Study: SRP346396
+  Species: Amaranthus palmeri
+  Technology: PACBIO_SMRT_AMPLICON_SINGLE
+  Runs in group: 10
+  Selected: SRR16958684 (spots=65791.0, bases=474514869.0)
+  Reason: Selected by highest spots (65791.0)
+
+Study: SRP435029
+  Species: Arabidopsis thaliana
+  Technology: ILLUMINA_OTHER_PAIRED
+  Runs in group: 18
+  Selected: SRR24335769 (spots=5253439.0, bases=775495229.0)
+  Reason: Selected by highest spots (5253439.0)
+
+Study: SRP435029
+  Species: Arabidopsis thaliana
+  Technology: OXFORD_NANOPORE_OTHER_SINGLE
+  Runs in group: 3
+  Selected: SRR24335764 (spots=241650.0, bases=1037819415.0)
+  Reason: Selected by highest spots (241650.0)
+
+Study: SRP435029
+  Species: Arabidopsis thaliana
+  Technology: OXFORD_NANOPORE_WGS_SINGLE
+  Runs in group: 12
+  Selected: SRR24335759 (spots=3888097.0, bases=6900061407.0)
+  Reason: Selected by highest spots (3888097.0)
+
+Study: SRP439050
+  Species: Arabidopsis thaliana
+  Technology: OXFORD_NANOPORE_OTHER_SINGLE
+  Runs in group: 12
+  Selected: SRR24693341 (spots=490838.0, bases=1237792569.0)
+  Reason: Selected by highest spots (490838.0)
+
+Study: SRP460731
+  Species: Alopecurus myosuroides
+  Technology: PACBIO_SMRT_AMPLICON_SINGLE
+  Runs in group: 7
+  Selected: SRR26069822 (spots=92112.0, bases=555821200.0)
+  Reason: Selected by highest spots (92112.0)
+
+Study: SRP490261
+  Species: Solanum lycopersicum
+  Technology: OXFORD_NANOPORE_AMPLICON_SINGLE
+  Runs in group: 2
+  Selected: SRR28004411 (spots=64000.0, bases=180375555.0)
+  Reason: Selected by highest spots (64000.0)
+
+Study: SRP528384
+  Species: Amaranthus palmeri
+  Technology: PACBIO_SMRT_WGS_SINGLE
+  Runs in group: 6
+  Selected: SRR30359587 (spots=935872.0, bases=14019760898.0)
+  Reason: Selected by highest spots (935872.0)
+
+Study: SRP552546
+  Species: Helianthus annuus
+  Technology: OXFORD_NANOPORE_WGS_SINGLE
+  Runs in group: 4
+  Selected: SRR31773426 (spots=380826.0, bases=1000305153.0)
+  Reason: Selected by highest spots (380826.0)
+
+Study: SRP565534
+  Species: Nicotiana benthamiana
+  Technology: ILLUMINA_WGS_PAIRED
+  Runs in group: 3
+  Selected: SRR32429748 (spots=18645927.0, bases=5929404786.0)
+  Reason: Selected by highest spots (18645927.0)
+
+Study: SRP658070
+  Species: Nicotiana benthamiana
+  Technology: OXFORD_NANOPORE_OTHER_SINGLE
+  Runs in group: 4
+  Selected: SRR36603441 (spots=255247.0, bases=390666818.0)
+  Reason: Selected by highest spots (255247.0)
+
+================================================================================
+SELECTION STATISTICS BY PLATFORM
+================================================================================
+  ILLUMINA: 14 reps from 12 studies
+  OXFORD_NANOPORE: 9 reps from 7 studies
+  PACBIO_SMRT: 4 reps from 4 studies
+
+================================================================================
+SELECTION STATISTICS BY SPECIES
+================================================================================
+  Arabidopsis thaliana: 6 reps from 4 studies
+  Triticum aestivum: 5 reps from 2 studies
+  Oryza sativa: 4 reps from 1 studies
+  Amaranthus palmeri: 2 reps from 2 studies
+  Nicotiana benthamiana: 2 reps from 2 studies
+  Oryza sativa Japonica Group: 2 reps from 2 studies
+  Alopecurus myosuroides: 1 reps from 1 studies
+  Cryptomeria japonica: 1 reps from 1 studies
+  Daucus carota: 1 reps from 1 studies
+  Helianthus annuus: 1 reps from 1 studies
+  Solanum lycopersicum: 1 reps from 1 studies
+  Tragopogon porrifolius: 1 reps from 1 studies
+
+================================================================================
+COMPLETE REPRESENTATIVE LIST
+================================================================================
+
+  DRP012371 | ILLUMINA_OTHER_PAIRED | DRR426558
+  ERP015098 | ILLUMINA_WGS_PAIRED | ERR1830503
+  ERP130605 | ILLUMINA_OTHER_PAIRED | ERR6326085
+  ERP130605 | OXFORD_NANOPORE_OTHER_SINGLE | ERR6326020
+  ERP138467 | ILLUMINA_OTHER_PAIRED | ERR9968613
+  ERP144157 | ILLUMINA_OTHER_PAIRED | ERR10889841
+  ERP144157 | ILLUMINA_RNA-Seq_PAIRED | ERR10889834
+  ERP144157 | ILLUMINA_WGS_PAIRED | ERR11838732
+  ERP144157 | PACBIO_SMRT_WGS_SINGLE | ERR11838731
+  ERP148217 | ILLUMINA_OTHER_PAIRED | ERR11535567
+  ERP157467 | ILLUMINA_RNA-Seq_PAIRED | ERR12724679
+  ERP157467 | OXFORD_NANOPORE_OTHER_SINGLE | ERR12724408
+  ERP157467 | OXFORD_NANOPORE_WGS_SINGLE | ERR16977911
+  SRP093854 | ILLUMINA_OTHER_PAIRED | SRR5051139
+  SRP222959 | ILLUMINA_WGS_PAIRED | SRR10163236
+  SRP310078 | ILLUMINA_OTHER_PAIRED | SRR13922190
+  SRP346396 | PACBIO_SMRT_AMPLICON_SINGLE | SRR16958684
+  SRP435029 | ILLUMINA_OTHER_PAIRED | SRR24335769
+  SRP435029 | OXFORD_NANOPORE_OTHER_SINGLE | SRR24335764
+  SRP435029 | OXFORD_NANOPORE_WGS_SINGLE | SRR24335759
+  SRP439050 | OXFORD_NANOPORE_OTHER_SINGLE | SRR24693341
+  SRP460731 | PACBIO_SMRT_AMPLICON_SINGLE | SRR26069822
+  SRP490261 | OXFORD_NANOPORE_AMPLICON_SINGLE | SRR28004411
+  SRP528384 | PACBIO_SMRT_WGS_SINGLE | SRR30359587
+  SRP552546 | OXFORD_NANOPORE_WGS_SINGLE | SRR31773426
+  SRP565534 | ILLUMINA_WGS_PAIRED | SRR32429748
+  SRP658070 | OXFORD_NANOPORE_OTHER_SINGLE | SRR36603441

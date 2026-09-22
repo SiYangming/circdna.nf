@@ -1,0 +1,3 @@
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+sr_circleseq,testdatasets/ngs/circdna_1_R1.fastq.gz,testdatasets/ngs/circdna_1_R2.fastq.gz,,,illumina,circleseq,eccdna,mixed,false,pe,circleseq
+sr_wgs_gdna,testdatasets/ngs/gdna_1_R1.fastq.gz,testdatasets/ngs/gdna_1_R2.fastq.gz,,,illumina,wgs,gdna,mixed,false,pe,none

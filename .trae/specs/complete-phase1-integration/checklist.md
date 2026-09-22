@@ -1,0 +1,19 @@
+- [x] ECCsplorer 模块容器镜像为 `quay.io/biocontainers/python:3.12.12`
+- [x] CANDIDATE_MERGE 模块容器镜像为 `quay.io/biocontainers/python:3.12.12`
+- [x] ECC_SCORE 模块容器镜像为 `quay.io/biocontainers/python:3.12.12`
+- [x] mosdepth 模块有 publishDir 配置
+- [x] ECCsplorer 模块有 publishDir 配置
+- [x] CANDIDATE_MERGE 模块有 publishDir 配置
+- [x] ECC_SCORE 模块有 publishDir 配置
+- [x] CIRCLE_MAP_PIPELINE 暴露 `bed` 输出 channel
+- [x] Integrated Mode 不依赖 meta.id 直接 join gDNA 与 eccDNA depth
+- [x] repeat_gff 参数能从主工作流传递到 ECC_SCORE 模块（使用空字符串替代 null 避免值通道未绑定）
+- [x] MultiQC channel 收集包含 mosdepth summary
+- [x] assets/multiqc_config.yml 包含新 section 配置
+- [x] gDNA 测试数据文件存在于 `testdatasets/testdata/`
+- [x] samplesheet_integrated.csv 包含 gDNA 和 eccDNA 样本且带 datatype 字段
+- [x] test_integrated.config 配置文件存在且 mode=integrated
+- [x] test_local.config 包含 mode 参数
+- [x] Reference Mode stub 测试通过（37 tasks, 2m40s）
+- [x] eccDNA Mode stub 测试通过（55 tasks, 3m16s）
+- [x] Integrated Mode stub 测试通过（34 tasks, 2m17s，含 ECC_SCORE 与 MultiQC）

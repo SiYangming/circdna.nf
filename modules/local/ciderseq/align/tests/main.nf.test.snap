@@ -1,0 +1,23 @@
+{
+    "test-ciderseq-align": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "example1",
+                        "genome": "EACMV_DNA_A"
+                    },
+                    "example1.EACMV_DNA_A.fa:md5,9324d032ced8b23aa9311b2a2d348c61"
+                ]
+            ],
+            [
+                "versions.yml:md5,2101a40b2003724f79deabb4df1a1683"
+            ]
+        ],
+        "timestamp": "2026-08-25T12:09:55.955952",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

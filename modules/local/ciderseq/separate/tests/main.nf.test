@@ -1,0 +1,35 @@
+nextflow_process {
+
+    name "Test Process CIDERSEQ_SEPARATE"
+    script "../main.nf"
+    process "CIDERSEQ_SEPARATE"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "ciderseq"
+
+    test("test-ciderseq-separate") {
+
+        options "-c ${projectDir}/modules/local/ciderseq/separate/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'example1' ], // meta
+                             file("\${projectDir}/modules/local/ciderseq/testdata/example1.fastq", checkIfExists: true) ]
+                input[1] = file("\${projectDir}/modules/local/ciderseq/testdata/ciderseq_config.json", checkIfExists: true)
+                input[2] = file("\${projectDir}/modules/local/ciderseq/testdata/blastdb", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.separated, process.out.versions).match() }
+            )
+        }
+
+    }
+
+}

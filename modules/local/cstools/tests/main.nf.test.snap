@@ -1,0 +1,25 @@
+{
+    "test-cstools-split": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "example1"
+                    },
+                    [
+                        "example1.0.fa:md5,c040ee2c9eab930cb3dd6e409295cfde",
+                        "example1.1.fa:md5,8567ae11b520fdf5df7483812de3888c"
+                    ]
+                ]
+            ],
+            [
+                "versions.yml:md5,21f3f2271841c25dbf9151defebd8168"
+            ]
+        ],
+        "timestamp": "2026-08-25T12:15:29.020618",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

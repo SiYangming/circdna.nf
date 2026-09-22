@@ -102,7 +102,50 @@ sample3, sample3.bam
 
 An [example samplesheet](../assets/samplesheet_bam.csv) has been provided with the pipeline.
 
-## Running the pipeline
+## Long-read input (PacBio HiFi / ONT)
+
+For long-read (TGS) data the pipeline provides a dedicated branch. Set `--protocol` to `pacbio` or `ont` and provide a samplesheet with the following columns:
+
+```csv title="samplesheet_long_read.csv"
+sample,fastq_1,input_bam,entrypoint
+SAMPLE_A,/path/to/SAMPLE_A.hifi.fastq.gz,,cleaned_fastq
+SAMPLE_B,,/path/to/SAMPLE_B.subreads.bam,subreads
+```
+
+| Column      | Description                                                                                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `sample`    | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq_1`   | Full path to the long-read FastQ file (optional if `input_bam` is given).                                                                                                 |
+| `input_bam` | Full path to a raw PacBio subreads BAM (optional if `fastq_1` is given, only for `entrypoint=subreads`).                                                                 |
+| `entrypoint`| Input entry point: `cleaned_fastq` (already QC'ed FastQ), `raw_fastq`, `hifi_bam`, or `subreads`.                                                                        |
+
+The long-read detection engines are selected with `--long_read_identifier` (comma-separated, default `cresil,fled,flye,eccfinder`). Add `circleseeker` to run [CircleSeeker](https://github.com/leoxqy/CircleSeeker) for comprehensive eccDNA detection from PacBio HiFi reads:
+
+```bash
+nextflow run nf-core/circdna --input samplesheet_long_read.csv --outdir <OUTDIR> \
+    --fasta <reference.fa> --input_format FASTQ \
+    --protocol pacbio --entrypoint cleaned_fastq \
+    --long_read_identifier cresil,fled,flye,eccfinder,circleseeker \
+    -profile docker
+```
+
+All engine outputs are filtered by the shared long-read candidate filtering step (`--min_read_support` read-support filter, plus optional `--blacklist_bed` and `--repeats_bed`), and CircleSeeker results are written to `results/long_read/circleseeker/<SAMPLE>/`.
+
+Add `ciderseq` to run the [CIDER-Seq2](https://github.com/devang-mehta/ciderseq2) five-step pipeline (separate → align → deconcatenate → annotate → phase) on long reads. CIDER-Seq2 is configured through a config JSON and its databases:
+
+```bash
+nextflow run nf-core/circdna --input samplesheet_long_read.csv --outdir <OUTDIR> \
+    --fasta <reference.fa> --input_format FASTQ \
+    --protocol pacbio --entrypoint cleaned_fastq \
+    --long_read_identifier ciderseq \
+    --ciderseq_config <ciderseq_config.json> \
+    --ciderseq_blastdb <blastn_db_dir> \
+    --ciderseq_align_targets <align_targets_dir> \
+    --ciderseq_protein_db <tblastn_db_dir> \
+    -profile docker
+```
+
+The `--ciderseq_config` file (see the `examples/ciderseq_config.json` shipped with CIDER-Seq2) holds the blast database path, the align target genomes, the protein database and the phasing parameters. File paths inside the config are re-resolved by basename inside `--ciderseq_blastdb` / `--ciderseq_align_targets` / `--ciderseq_protein_db`, so the config can be reused across machines. Each of the five steps runs as an independent Nextflow process and can be resumed separately. Results are written to `results/long_read/ciderseq/<SAMPLE>/{separate,align,deconcat,annotate,phase}/`. If `--ciderseq_host_genome` is provided, the deconcatenated outputs are additionally screened against the host genome with `cs-eccDNA.py` (`results/long_read/ciderseq/<SAMPLE>/eccdna/`).
 
 The typical command for running the pipeline is as follows:
 
@@ -119,6 +162,11 @@ work                # Directory containing the nextflow working files
 <OUTDIR>            # Finished results in specified location (defined with --outdir)
 .nextflow_log       # Log file from Nextflow
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
+````
+
+:::note
+When using `-profile server`, all intermediate outputs are retained in `<OUTDIR>` and `work/` is automatically removed after a successful run. Processes without a dedicated output path are copied under `<OUTDIR>/intermediate/<process-path>/`.
+:::
 
 :::tip
 If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.

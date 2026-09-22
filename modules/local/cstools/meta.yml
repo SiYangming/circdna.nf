@@ -1,0 +1,48 @@
+name: "cstools"
+description: "CIDER-Seq2 cs-tools.py: split / join / plot helpers for processing large sequence datasets."
+keywords:
+  - eccDNA
+  - ciderseq
+  - split
+  - join
+  - plot
+tools:
+  - "ciderseq2":
+      description: "CIDER-Seq data analysis software for full-length sequencing of circular DNA viruses and extra-chromosomal circular DNA (eccDNA)."
+      homepage: "https://github.com/devang-mehta/ciderseq2"
+      documentation: "https://github.com/devang-mehta/ciderseq2"
+      licence: ["GPL-3.0-only"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - reads:
+        type: file
+        description: Input reads (FASTA/FASTQ) for split, or results input for join/plot
+        pattern: "*.{fasta,fa,fastq,fq}"
+  - - config:
+        type: file
+        description: CIDER-Seq2 config JSON
+        pattern: "*.json"
+output:
+  - output:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}*":
+          type: file
+          description: Files/directories produced by the requested command
+  - versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

@@ -1,0 +1,15 @@
+- [x] `modules/nf-core/seqkit/concat/` 已从 modules 仓库拷贝到位（含 main.nf, meta.yml, environment.yml）
+- [x] `bin/eccsplorer_prepare_read_length.py` + `modules/local/eccsplorer_prepare_read_length/main.nf` 已创建（numpy 替代 scipy，samplesheet_check 模式，含 stub）
+- [x] `bin/eccsplorer_prepare_read_count.py` + `modules/local/eccsplorer_prepare_read_count/main.nf` 已创建（Bio.SeqIO PE 配对计数，含 stub）
+- [x] `bin/eccsplorer_prepare_prexing.py` + `modules/local/eccsplorer_prepare_prexing/main.nf` 已创建（PE 配对子采样+截断+`_#0/1` `_#0/2` 后缀，种子 12，含 stub）
+- [x] `subworkflows/local/ecc_preprocessing/main.nf` 正确编排 SEQTK_SEQ → ECCSplorer_PREPARE_READ_LENGTH → ECCSplorer_PREPARE_READ_COUNT → ECCSplorer_PREPARE_PREXING → SEQKIT_CONCAT 数据流
+- [x] `nextflow.config` 新增 `run_eccprepare`(false)、`eccprepare_fold_cov`(0.1)、`eccprepare_target_read_count`('auto')
+- [x] `conf/modules.config` 为 4 个新 process 配置资源标签
+- [x] `workflows/circdna.nf` 仅当 `--run_eccprepare` 时执行子流程，不影响现有分支
+- [x] 第一轮 baseline run（无 --run_eccprepare）51 任务全部成功
+- [x] 第二轮 resume run（加 --run_eccprepare）执行成功，99% cached
+- [x] 第二轮中 FASTQC/TRIMGALORE/BWA_INDEX/BWA_MEM/ECCsplorer 等已有进程均为 CACHED
+- [x] 第二轮中 SEQTK_SEQ_R1/R2 + ECCSPLORER_PREPARE_READ_LENGTH/READ_COUNT/PREXING + SEQKIT_CONCAT 均为 NEW
+- [x] 第二轮中 REPEATEXPLORER_READY.fa 已产出
+- [x] 不加 `--run_eccprepare` 时流程行为与变更前一致（Round 1 基线通过）
+- [x] CHANGELOG.md 已记录（v4.5.0）

@@ -1,0 +1,47 @@
+name: "cs_eccdna"
+description: "CIDER-Seq2 eccDNA detection: filters CIDER-Seq outputs (deconcat fasta + stat) against a host genome and reports likely eccDNA candidates and their source loci."
+keywords:
+  - eccDNA
+  - ciderseq
+  - blast
+  - detection
+tools:
+  - "ciderseq2":
+      description: "CIDER-Seq data analysis software for full-length sequencing of circular DNA viruses and extra-chromosomal circular DNA (eccDNA)."
+      homepage: "https://github.com/devang-mehta/ciderseq2"
+      documentation: "https://github.com/devang-mehta/ciderseq2"
+      licence: ["GPL-3.0-only"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - input_dir:
+        type: directory
+        description: Directory containing deconcat FASTA/STAT file pairs (paired by file stem)
+  - - genome:
+        type: file
+        description: Host genome FASTA file
+        pattern: "*.{fasta,fa}"
+output:
+  - candidates:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.fasta":
+          type: file
+          description: Candidate eccDNA sequences (assess/replicate fasta files)
+          pattern: "*.fasta"
+  - versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

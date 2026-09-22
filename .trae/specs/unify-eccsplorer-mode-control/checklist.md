@@ -1,0 +1,4 @@
+- [ ] `circle_identifier=eccsplorer_map` → 仅 map
+- [ ] `circle_identifier=eccsplorer_clu` → map + clu（自动启用 map）
+- [ ] `--eccsplorer_clu true` 已移除
+- [ ] `-stub` 两种模式均通过

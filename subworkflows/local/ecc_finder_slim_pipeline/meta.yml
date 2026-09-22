@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "ECC_FINDER_SLIM_PIPELINE"
+description: |
+  Atomic ecc_finder alternative — reuses BAM_PREPROCESSING output (no BWA re-run).
+  MAP_SR: samtools name-sort → Genrich (enrichment) → TideHunter (split-read)
+  ASM_SR: raw FASTQ → nf-core unicycler (de novo assembly)
+  Uses biocontainers images (genrich ~6MB, tidehunter ~15MB, unicycler ~500MB).
+keywords:
+  - eccdna
+  - circular dna
+  - ecc_finder_slim
+  - genrich
+  - tidehunter
+  - unicycler
+components:
+  - genrich
+  - tidehunter
+  - unicycler
+  - samtools
+input:
+  - bam_sorted:
+      description: Sorted BAM from BAM_PREPROCESSING [ val(meta), path(bam) ]
+  - bam_sorted_bai:
+      description: BAM index [ val(meta), path(bai) ]
+  - fasta_meta:
+      description: Reference genome [ val(meta), path(fasta) ]
+  - reads:
+      description: Raw FASTQ reads (ASM_SR needs) [ val(meta), [r1, r2] ]
+  - run_map_sr:
+      type: boolean
+      description: Enable MAP_SR slim detection
+  - run_asm_sr:
+      type: boolean
+      description: Enable ASM_SR slim detection
+output:
+  - genrich_bed:
+      description: Genrich enrichment sites (MAP_SR)
+      type: file
+      pattern: "*.bed"
+  - tidehunter_bed:
+      description: TideHunter split-read regions (MAP_SR)
+      type: file
+      pattern: "*.bed"
+  - unicycler_scaffolds:
+      description: Unicycler assembly scaffolds (ASM_SR)
+      type: file
+      pattern: "*.scaffolds.fa.gz"
+  - versions:
+      description: Software versions
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

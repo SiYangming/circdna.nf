@@ -32,7 +32,7 @@ process CIRCLEFINDER {
     awk '\$1=="2" {print \$2}' ${prefix}.split.id-freq.txt > ${prefix}.split.id-freq2.txt
     # awk '\$1=="4" {print \$2}' ${prefix}.split.id-freq.txt > ${prefix}.split.id-freq4.txt
 
-    awk '{print $4}' ${concordant} | sort -T ./ | uniq -c > ${prefix}.concordant.id-freq.txt
+    awk '{print \$4}' ${concordant} | sort -T ./ | uniq -c > ${prefix}.concordant.id-freq.txt
     #The following command will chose (may not be always true) one concordant and 2 split read
 
     awk '\$1=="3" {print \$2}' ${prefix}.concordant.id-freq.txt > ${prefix}.concordant.id-freq3.txt
@@ -65,7 +65,7 @@ process CIRCLEFINDER {
         ${prefix}.split_freq2.oneline.S-R-S-CHR-S-ST.ID.txt
 
     #Step 9: Based on unique id I am extracting one continuously mapped reads and their partner mapped as split read (3 lines for each id)
-    # grep -w -Ff "${prefix}.split_freq2.oneline.S-R-S-CHR-S-ST.ID.txt" "${prefix}.concordant_freq3.txt" > \
+    # grep -w -Ff "${prefix}.split_freq2.oneline.S-R-S-CHR-S-ST.ID.txt" "${prefix}.concordant_freq3.txt" > "${prefix}.concordant_freq3.txt"    
     awk 'NR==FNR{a[\$1]; next} \$4 in a' "${prefix}.split_freq2.oneline.S-R-S-CHR-S-ST.ID.txt" "${prefix}.concordant_freq3.txt" > \
         "${prefix}.concordant_freq3.2SPLIT-1M.txt"
 

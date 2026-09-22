@@ -1,0 +1,84 @@
+{
+    "test-trim - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.trim.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_TRIM",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "trim": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.trim.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_TRIM",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:53:50.455396195",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test-trim": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.trim.txt:md5,baeb902d795a7fb6939dd255417496b2"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_TRIM",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "trim": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.trim.txt:md5,baeb902d795a7fb6939dd255417496b2"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_TRIM",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:53:39.591930217",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

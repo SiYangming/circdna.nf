@@ -1,0 +1,34 @@
+nextflow_process {
+
+    name "Test Process CS_ECCDNA"
+    script "../main.nf"
+    process "CS_ECCDNA"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "ciderseq"
+
+    test("test-cs-eccdna") {
+
+        options "-c ${projectDir}/modules/local/cseccdna/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test' ], // meta
+                             file("\${projectDir}/modules/local/cseccdna/testdata/input", checkIfExists: true) ]
+                input[1] = file("\${projectDir}/modules/local/cseccdna/testdata/genome.fasta", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.candidates, process.out.versions).match() }
+            )
+        }
+
+    }
+
+}

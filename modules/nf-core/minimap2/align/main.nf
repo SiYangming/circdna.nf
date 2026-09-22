@@ -31,6 +31,8 @@ process MINIMAP2_ALIGN {
     def args3 = task.ext.args3 ?: ''
     def args4 = task.ext.args4 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    // Keep @SQ records when a very large reference is split into multiple index parts.
+    def split_prefix = bam_format ? "--split-prefix ${prefix}.mmi" : ''
     def bam_index = bam_index_extension ? "${prefix}.bam##idx##${prefix}.bam.${bam_index_extension} --write-index" : "${prefix}.bam"
     def bam_output = bam_format ? "-a | samtools sort -@ ${task.cpus-1} -o ${bam_index} ${args2}" : "-o ${prefix}.paf"
     def cigar_paf = cigar_paf_format && !bam_format ? "-c" : ''
@@ -44,6 +46,7 @@ process MINIMAP2_ALIGN {
     minimap2 \\
         ${args} \\
         -t ${task.cpus} \\
+        ${split_prefix} \\
         ${target} \\
         ${query} \\
         ${cigar_paf} \\

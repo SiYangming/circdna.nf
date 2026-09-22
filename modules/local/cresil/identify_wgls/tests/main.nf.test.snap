@@ -1,0 +1,84 @@
+{
+    "test-identify_wgls": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.eccDNA_final.txt:md5,9c391ba96b19c06c88ddf1b29acda818"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_IDENTIFY_WGLS",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "identify_wgls": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.eccDNA_final.txt:md5,9c391ba96b19c06c88ddf1b29acda818"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_IDENTIFY_WGLS",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:32:53.045855319",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test-identify_wgls - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.eccDNA_final.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CRESIL_IDENTIFY_WGLS",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ],
+                "identify_wgls": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.eccDNA_final.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_cresil": [
+                    [
+                        "CRESIL_IDENTIFY_WGLS",
+                        "cresil",
+                        "1.2.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-18T11:33:03.007986032",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

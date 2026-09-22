@@ -30,3 +30,11 @@ SRR5051136,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051136_
 SRR5051137,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051137_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051137_2.fastq.gz,eccDNA
 SRR5051138,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051138_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051138_2.fastq.gz,eccDNA
 SRR5051139,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051139_1.fastq.gz,/data1/users/siyangming/PlanteccDNADB/eccDNA/Oryza_sativa/SRR5051139_2.fastq.gz,eccDNA
+ecc-ct-L1,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L1_R2.fastq.gz,eccDNA
+ecc-ct-L2,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-L2_R2.fastq.gz,eccDNA
+ecc-ct-R1,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R1_R2.fastq.gz,eccDNA
+ecc-ct-R2,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-ct-R2_R2.fastq.gz,eccDNA
+ecc-dt4-L1,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L1_R2.fastq.gz,eccDNA
+ecc-dt4-L2,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-L2_R2.fastq.gz,eccDNA
+ecc-dt4-R1,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R1_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R1_R2.fastq.gz,eccDNA
+ecc-dt4-R2,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R2_R1.fastq.gz,/data2/users/liuqi/eccdna/drought/ecc/ecc-dt4-R2_R2.fastq.gz,eccDNA

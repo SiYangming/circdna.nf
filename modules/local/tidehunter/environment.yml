@@ -1,0 +1,6 @@
+name: tidehunter
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::tidehunter=1.5.6

@@ -1,0 +1,65 @@
+
+
+nextflow_process {
+
+    name "Test Process CIRCLESEEKER"
+    script "../main.nf"
+    process "CIRCLESEEKER"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "circleseeker"
+
+    test("test-circleseeker") {
+
+        options "-c ${projectDir}/modules/local/circleseeker/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test' ], // meta
+                             file("\${projectDir}/modules/local/circleseeker/testdata/test_reads.fa", checkIfExists: true) ]
+                input[1] = [ [ id:'ref' ], // meta2
+                             file("\${projectDir}/modules/local/circleseeker/testdata/test_ref.fa", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // summary.txt / report.html embed run timestamps and are not
+                // reproducible; snapshot the stable outputs only.
+                { assert snapshot(process.out.merged, process.out.bed, process.out.versions).match() }
+            )
+        }
+
+    }
+
+    test("test-circleseeker - stub") {
+
+        options "-stub -c ${projectDir}/modules/local/circleseeker/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test' ], // meta
+                             file("\${projectDir}/modules/local/circleseeker/testdata/test_reads.fa", checkIfExists: true) ]
+                input[1] = [ [ id:'ref' ], // meta2
+                             file("\${projectDir}/modules/local/circleseeker/testdata/test_ref.fa", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // summary.txt / report.html embed run timestamps and are not
+                // reproducible; snapshot the stable outputs only.
+                { assert snapshot(process.out.merged, process.out.bed, process.out.versions).match() }
+            )
+        }
+
+    }
+
+}

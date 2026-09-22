@@ -1,0 +1,7 @@
+name: circleseeker
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::circleseeker=1.1.2

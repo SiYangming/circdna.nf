@@ -1,0 +1,43 @@
+name: "ecc_finder_slim/asm_filter"
+description: "Filter assembled contigs for eccDNA candidates by minimum length and circular structure detection."
+keywords:
+  - eccdna
+  - circular dna
+  - assembly
+  - filtering
+  - unicycler
+tools:
+  - "ecc_finder_slim":
+      description: "Minimal ecc_finder analysis scripts for assembly filtering (no external bioinfo tools)"
+      homepage: "https://quay.io/bioinfortools/ecc_finder_slim"
+      licence: ["MIT"]
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - assembly:
+        type: file
+        description: Assembly FASTA file (from unicycler or other assembler)
+        pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
+output:
+  - fasta:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - "*.fasta":
+          type: file
+          description: Filtered eccDNA candidate contigs
+          pattern: "*.fasta"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

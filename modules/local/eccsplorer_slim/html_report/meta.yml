@@ -1,0 +1,33 @@
+name: eccsplorer_slim_html_report
+description: Generate HTML summary report for eccDNA candidates, including mapping statistics, BLAST hits, enrichment scores, and per-candidate coverage plots.
+keywords:
+  - html
+  - report
+  - eccDNA
+tools:
+  - html_report.py:
+      description: Standalone HTML report script from ECCsplorer slim
+      homepage: https://github.com/crimBubble/ECCsplorer
+      licence: ["GPL-3.0-or-later"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - candidate_data:
+      type: file
+      description: TSV file with candidate data including enrich.all and id columns
+      pattern: "*.tsv"
+  - blast_results:
+      type: directory
+      description: Directory containing per-candidate BLAST result files (*_blast.m6)
+output:
+  - html:
+      type: file
+      description: HTML summary report
+      pattern: "*.html"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@siyangming"

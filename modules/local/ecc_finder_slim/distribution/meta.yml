@@ -1,0 +1,21 @@
+name: ecc_finder_slim_distribution
+description: Plot eccDNA candidate size distribution (replicates map-sr.py distribution.png)
+keywords: eccdna, distribution, plot
+tools:
+  - python
+input:
+  - meta:
+      type: map
+      description: Sample metadata
+  - csv:
+      type: file
+      description: candidates CSV (chr,start,end,num_s,num_d,len)
+output:
+  - distribution:
+      type: file
+      description: Size distribution PNG
+  - versions:
+      type: file
+      description: File containing software versions
+authors:
+  - "@siyangming"

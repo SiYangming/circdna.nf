@@ -1,0 +1,33 @@
+name: eccsplorer_slim_peak_detect
+description: Detect peaks in windowed coverage data using scipy.signal.find_peaks. Extracted from ECCsplorer get_rough_coverage peak detection logic.
+keywords:
+  - peak
+  - coverage
+  - eccDNA
+tools:
+  - peak_detect.py:
+      description: Standalone peak detection script from ECCsplorer slim
+      homepage: https://github.com/crimBubble/ECCsplorer
+      licence: ["GPL-3.0-or-later"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - coverage_tsv:
+      type: file
+      description: Windowed coverage TSV (chr, start, end, coverage_value) from bedtools coverage -mean
+      pattern: "*.tsv"
+output:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - bed:
+      type: file
+      description: BED file containing peak region boundaries
+      pattern: "*.bed"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@siyangming"
