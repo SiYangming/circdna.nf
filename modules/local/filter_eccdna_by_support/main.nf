@@ -9,9 +9,7 @@ process FILTER_ECCDNA_BY_SUPPORT {
     output:
     // 前缀可经 task.ext.prefix 覆盖：多个长读引擎的 filtered 文件发布到同一目录，
     // 统一用 ${meta.id} 会互相覆盖，只留下最后一个引擎的产物。
-    def ext = input_file.getExtension() ?: 'txt'
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    tuple val(meta), path("${prefix}.filtered.${ext}"), emit: filtered
+    tuple val(meta), path("${task.ext.prefix ?: meta.id}.filtered.${input_file.getExtension() ?: 'txt'}"), emit: filtered
     path "versions.yml", emit: versions
 
     when:
