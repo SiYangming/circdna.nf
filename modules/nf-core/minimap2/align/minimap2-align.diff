@@ -1,0 +1,1359 @@
+Changes in component 'nf-core/minimap2/align'
+Changes in 'minimap2/align/environment.yml':
+--- modules/nf-core/minimap2/align/environment.yml
++++ modules/nf-core/minimap2/align/environment.yml
+@@ -1,8 +1,9 @@
+-name: minimap2_align
++---
++# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+ channels:
+   - conda-forge
+   - bioconda
+-  - defaults
++
+ dependencies:
+-  - bioconda::minimap2=2.24
+-  - bioconda::samtools=1.18
++  - bioconda::minimap2=2.30
++  - bioconda::samtools=1.23.1
+
+Changes in 'minimap2/align/meta.yml':
+--- modules/nf-core/minimap2/align/meta.yml
++++ modules/nf-core/minimap2/align/meta.yml
+@@ -14,29 +14,35 @@
+       homepage: https://github.com/lh3/minimap2
+       documentation: https://github.com/lh3/minimap2#uguide
+       licence: ["MIT"]
++      identifier: ""
+ input:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - reads:
+-      type: file
+-      description: |
+-        List of input FASTA or FASTQ files of size 1 and 2 for single-end
+-        and paired-end data, respectively.
+-  - meta2:
+-      type: map
+-      description: |
+-        Groovy Map containing reference information
+-        e.g. [ id:'test_ref']
+-  - reference:
+-      type: file
+-      description: |
+-        Reference database in FASTA format.
++  - - meta:
++        type: map
++        description: |
++          Groovy Map containing sample information
++          e.g. [ id:'test', single_end:false ]
++    - reads:
++        type: file
++        description: |
++          List of input FASTA or FASTQ files of size 1 and 2 for single-end
++          and paired-end data, respectively.
++        ontologies: []
++  - - meta2:
++        type: map
++        description: |
++          Groovy Map containing reference information
++          e.g. [ id:'test_ref']
++    - reference:
++        type: file
++        description: |
++          Reference database in FASTA format.
++        ontologies: []
+   - bam_format:
+       type: boolean
+       description: Specify that output should be in BAM format
++  - bam_index_extension:
++      type: string
++      description: BAM alignment index extension (e.g. "bai")
+   - cigar_paf_format:
+       type: boolean
+       description: Specify that output CIGAR should be in PAF format
+@@ -46,30 +52,69 @@
+         Write CIGAR with >65535 ops at the CG tag. This is recommended when
+         doing XYZ (https://github.com/lh3/minimap2#working-with-65535-cigar-operations)
+ output:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - paf:
+-      type: file
+-      description: Alignment in PAF format
+-      pattern: "*.paf"
+-  - bam:
+-      type: file
+-      description: Alignment in BAM format
+-      pattern: "*.bam"
+-  - versions:
+-      type: file
+-      description: File containing software versions
+-      pattern: "versions.yml"
++  paf:
++    - - meta:
++          type: map
++          description: |
++            Groovy Map containing sample information
++            e.g. [ id:'test', single_end:false ]
++      - "*.paf":
++          type: file
++          description: Alignment in PAF format
++          pattern: "*.paf"
++          ontologies: []
++  bam:
++    - - meta:
++          type: map
++          description: |
++            Groovy Map containing sample information
++            e.g. [ id:'test', single_end:false ]
++      - "*.bam":
++          type: file
++          description: Alignment in BAM format
++          pattern: "*.bam"
++          ontologies: []
++  index:
++    - - meta:
++          type: map
++          description: |
++            Groovy Map containing sample information
++            e.g. [ id:'test', single_end:false ]
++      - "*.bam.${bam_index_extension}":
++          type: file
++          description: BAM alignment index
++          pattern: "*.bam.*"
++          ontologies: []
++  versions_minimap2:
++    - - ${task.process}:
++          type: string
++          description: The process name
++      - minimap2:
++          type: string
++          description: The tool name
++      - minimap2 --version:
++          type: eval
++          description: The tool version
++topics:
++  versions:
++    - - ${task.process}:
++          type: string
++          description: The process name
++      - minimap2:
++          type: string
++          description: The tool name
++      - minimap2 --version:
++          type: eval
++          description: The tool version
+ authors:
+   - "@heuermh"
+   - "@sofstam"
+   - "@sateeshperi"
+   - "@jfy133"
++  - "@fellen31"
+ maintainers:
+   - "@heuermh"
+   - "@sofstam"
+   - "@sateeshperi"
+   - "@jfy133"
++  - "@fellen31"
+
+Changes in 'minimap2/align/main.nf':
+--- modules/nf-core/minimap2/align/main.nf
++++ modules/nf-core/minimap2/align/main.nf
+@@ -1,48 +1,69 @@
+ process MINIMAP2_ALIGN {
+     tag "$meta.id"
+-    label 'process_medium'
++    label 'process_high'
+ 
+     // Note: the versions here need to match the versions used in the mulled container below and minimap2/index
+     conda "${moduleDir}/environment.yml"
+-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/mulled-v2-66534bcbb7031a148b13e2ad42583020b9cd25c4:365b17b986c1a60c1b82c6066a9345f38317b763-0' :
+-        'biocontainers/mulled-v2-66534bcbb7031a148b13e2ad42583020b9cd25c4:365b17b986c1a60c1b82c6066a9345f38317b763-0' }"
++    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
++        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/37/37671219cfd244eb9b33db9345d3543ffd83037419a1c57f4648aace493ec2c2/data' :
++        'community.wave.seqera.io/library/minimap2_samtools:b09096fc890429ce' }"
+ 
+     input:
+     tuple val(meta), path(reads)
+     tuple val(meta2), path(reference)
+     val bam_format
++    val bam_index_extension
+     val cigar_paf_format
+     val cigar_bam
+ 
+     output:
+-    tuple val(meta), path("*.paf"), optional: true, emit: paf
+-    tuple val(meta), path("*.bam"), optional: true, emit: bam
+-    path "versions.yml"           , emit: versions
++    tuple val(meta), path("*.paf")                       , optional: true, emit: paf
++    tuple val(meta), path("*.bam")                       , optional: true, emit: bam
++    tuple val(meta), path("*.bam.${bam_index_extension}"), optional: true, emit: index
++    tuple val("${task.process}"), val("minimap2"), eval("minimap2 --version"), topic: versions, emit: versions_minimap2
+ 
+     when:
+     task.ext.when == null || task.ext.when
+ 
+     script:
+-    def args = task.ext.args ?: ''
++    def args  = task.ext.args ?: ''
++    def args2 = task.ext.args2 ?: ''
++    def args3 = task.ext.args3 ?: ''
++    def args4 = task.ext.args4 ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
+-    def bam_output = bam_format ? "-a | samtools sort | samtools view -@ ${task.cpus} -b -h -o ${prefix}.bam" : "-o ${prefix}.paf"
++    // Keep @SQ records when a very large reference is split into multiple index parts.
++    def split_prefix = bam_format ? "--split-prefix ${prefix}.mmi" : ''
++    def bam_index = bam_index_extension ? "${prefix}.bam##idx##${prefix}.bam.${bam_index_extension} --write-index" : "${prefix}.bam"
++    def bam_output = bam_format ? "-a | samtools sort -@ ${task.cpus-1} -o ${bam_index} ${args2}" : "-o ${prefix}.paf"
+     def cigar_paf = cigar_paf_format && !bam_format ? "-c" : ''
+     def set_cigar_bam = cigar_bam && bam_format ? "-L" : ''
++    def bam_input = "${reads.extension}".matches('sam|bam|cram')
++    def samtools_reset_fastq = bam_input ? "samtools reset --threads ${task.cpus-1} $args3 $reads | samtools fastq --threads ${task.cpus-1} $args4 |" : ''
++    def query = bam_input ? "-" : reads
++    def target = reference ?: (bam_input ? error("Error: minimap2/align BAM input mode requires reference") : reads)
+     """
++    $samtools_reset_fastq \\
+     minimap2 \\
+-        $args \\
+-        -t $task.cpus \\
+-        "${reference ?: reads}" \\
+-        "$reads" \\
+-        $cigar_paf \\
+-        $set_cigar_bam \\
+-        $bam_output
++        ${args} \\
++        -t ${task.cpus} \\
++        ${split_prefix} \\
++        ${target} \\
++        ${query} \\
++        ${cigar_paf} \\
++        ${set_cigar_bam} \\
++        ${bam_output}
++    """
+ 
+-
+-    cat <<-END_VERSIONS > versions.yml
+-    "${task.process}":
+-        minimap2: \$(minimap2 --version 2>&1)
+-    END_VERSIONS
++    stub:
++    def prefix = task.ext.prefix ?: "${meta.id}"
++    def output_file = bam_format ? "${prefix}.bam" : "${prefix}.paf"
++    def bam_index = bam_index_extension ? "touch ${prefix}.bam.${bam_index_extension}" : ""
++    def bam_input = "${reads.extension}".matches('sam|bam|cram')
++    if(bam_input && !reference) {
++        error("Error: minimap2/align BAM input mode requires reference!")
++	}
++    """
++    touch $output_file
++    ${bam_index}
+     """
+ }
+
+Changes in 'minimap2/align/tests/main.nf.test.snap':
+--- modules/nf-core/minimap2/align/tests/main.nf.test.snap
++++ modules/nf-core/minimap2/align/tests/main.nf.test.snap
+@@ -1,38 +1,552 @@
+ {
+-    "sarscov2 - fastq, fasta, true, false, false": {
+-        "content": [
+-            "test.bam",
++    "sarscov2 - bam, fasta, true, 'bai', false, false": {
++        "content": [
+             [
+-                "versions.yml:md5,9e9eeae0002d466d580a9d6e0d003eb1"
+-            ]
+-        ],
+-        "timestamp": "2023-12-04T12:07:06.01315354"
+-    },
+-    "sarscov2 - fastq, fasta, true, false, false - stub": {
+-        "content": [
+-            "test.bam",
++                "@HD\tVN:1.6\tSO:coordinate",
++                "@SQ\tSN:MT192765.1\tLN:29829",
++                "@PG\tID:minimap2\tPN:minimap2\tVN:2.30-r1287\tCL:minimap2 -t 2 -a genome.fasta -",
++                "@PG\tID:samtools\tPN:samtools\tPP:minimap2\tVN:1.23.1\tCL:samtools sort -@ 1 -o test.bam##idx##test.bam.bai --write-index"
++            ],
++            "5d426b9a5f5b2c54f1d7f1e4c238ae94",
++            "test.bam.bai",
++            {
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:26:01.315588",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - bam, fasta, true, 'bai', false, false - stub": {
++        "content": [
++            {
++                "0": [
++                    
++                ],
++                "1": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "2": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "3": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ],
++                "bam": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "index": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "paf": [
++                    
++                ],
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:26:29.211025",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - fastq, fasta, true, 'bai', false, false - stub": {
++        "content": [
++            {
++                "0": [
++                    
++                ],
++                "1": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "2": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "3": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ],
++                "bam": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "index": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "paf": [
++                    
++                ],
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:26:14.56423",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - fastq, fasta, false, [], false, false - stub": {
++        "content": [
++            {
++                "0": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.paf:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "1": [
++                    
++                ],
++                "2": [
++                    
++                ],
++                "3": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ],
++                "bam": [
++                    
++                ],
++                "index": [
++                    
++                ],
++                "paf": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.paf:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:26:19.467028",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - fastq, fasta, true, [], false, false - stub": {
++        "content": [
++            {
++                "0": [
++                    
++                ],
++                "1": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "2": [
++                    
++                ],
++                "3": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ],
++                "bam": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "index": [
++                    
++                ],
++                "paf": [
++                    
++                ],
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:26:10.208287",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - [fastq1, fastq2], fasta, true, false, false": {
++        "content": [
+             [
+-                "versions.yml:md5,9e9eeae0002d466d580a9d6e0d003eb1"
+-            ]
+-        ],
+-        "timestamp": "2023-12-04T12:07:24.487175659"
+-    },
+-    "sarscov2 - [fastq1, fastq2], fasta, true, false, false": {
+-        "content": [
+-            "test.bam",
++                "@HD\tVN:1.6\tSO:coordinate",
++                "@SQ\tSN:MT192765.1\tLN:29829",
++                "@PG\tID:minimap2\tPN:minimap2\tVN:2.30-r1287\tCL:minimap2 -t 2 -a genome.fasta test_1.fastq.gz test_2.fastq.gz",
++                "@PG\tID:samtools\tPN:samtools\tPP:minimap2\tVN:1.23.1\tCL:samtools sort -@ 1 -o test.bam"
++            ],
++            "1bc392244f228bf52cf0b5a8f6a654c9",
++            {
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:25:45.435644",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - fastq, fasta, true, [], false, false": {
++        "content": [
+             [
+-                "versions.yml:md5,9e9eeae0002d466d580a9d6e0d003eb1"
+-            ]
+-        ],
+-        "timestamp": "2023-12-04T12:07:12.50816279"
++                "@HD\tVN:1.6\tSO:coordinate",
++                "@SQ\tSN:MT192765.1\tLN:29829",
++                "@PG\tID:minimap2\tPN:minimap2\tVN:2.30-r1287\tCL:minimap2 -t 2 -a genome.fasta test_1.fastq.gz",
++                "@PG\tID:samtools\tPN:samtools\tPP:minimap2\tVN:1.23.1\tCL:samtools sort -@ 1 -o test.bam"
++            ],
++            "f194745c0ccfcb2a9c0aee094a08750",
++            {
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:25:35.537045",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - fastq, fasta, true, 'bai', false, false": {
++        "content": [
++            [
++                "@HD\tVN:1.6\tSO:coordinate",
++                "@SQ\tSN:MT192765.1\tLN:29829",
++                "@PG\tID:minimap2\tPN:minimap2\tVN:2.30-r1287\tCL:minimap2 -t 2 -a genome.fasta test_1.fastq.gz",
++                "@PG\tID:samtools\tPN:samtools\tPP:minimap2\tVN:1.23.1\tCL:samtools sort -@ 1 -o test.bam##idx##test.bam.bai --write-index"
++            ],
++            "f194745c0ccfcb2a9c0aee094a08750",
++            "test.bam.bai",
++            {
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:25:40.308055",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - bam, fasta, true, [], false, false": {
++        "content": [
++            [
++                "@HD\tVN:1.6\tSO:coordinate",
++                "@SQ\tSN:MT192765.1\tLN:29829",
++                "@PG\tID:minimap2\tPN:minimap2\tVN:2.30-r1287\tCL:minimap2 -t 2 -a genome.fasta -",
++                "@PG\tID:samtools\tPN:samtools\tPP:minimap2\tVN:1.23.1\tCL:samtools sort -@ 1 -o test.bam"
++            ],
++            "5d426b9a5f5b2c54f1d7f1e4c238ae94",
++            {
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:25:55.526019",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
++    },
++    "sarscov2 - bam, fasta, true, [], false, false - stub": {
++        "content": [
++            {
++                "0": [
++                    
++                ],
++                "1": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "2": [
++                    
++                ],
++                "3": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ],
++                "bam": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": true
++                        },
++                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "index": [
++                    
++                ],
++                "paf": [
++                    
++                ],
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:26:24.507384",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
+     },
+     "sarscov2 - fastq, [], true, false, false": {
+         "content": [
+-            "test.bam",
+             [
+-                "versions.yml:md5,9e9eeae0002d466d580a9d6e0d003eb1"
+-            ]
+-        ],
+-        "timestamp": "2023-12-04T12:07:18.414974788"
++                "@HD\tVN:1.6\tSO:coordinate",
++                "@SQ\tSN:ERR5069949.2151832\tLN:150",
++                "@SQ\tSN:ERR5069949.576388\tLN:77",
++                "@SQ\tSN:ERR5069949.501486\tLN:146",
++                "@SQ\tSN:ERR5069949.1331889\tLN:132",
++                "@SQ\tSN:ERR5069949.2161340\tLN:80",
++                "@SQ\tSN:ERR5069949.973930\tLN:79",
++                "@SQ\tSN:ERR5069949.2417063\tLN:150",
++                "@SQ\tSN:ERR5069949.376959\tLN:151",
++                "@SQ\tSN:ERR5069949.1088785\tLN:149",
++                "@SQ\tSN:ERR5069949.1066259\tLN:147",
++                "@SQ\tSN:ERR5069949.2832676\tLN:139",
++                "@SQ\tSN:ERR5069949.2953930\tLN:151",
++                "@SQ\tSN:ERR5069949.324865\tLN:151",
++                "@SQ\tSN:ERR5069949.2185111\tLN:150",
++                "@SQ\tSN:ERR5069949.937422\tLN:151",
++                "@SQ\tSN:ERR5069949.2431709\tLN:150",
++                "@SQ\tSN:ERR5069949.1246538\tLN:148",
++                "@SQ\tSN:ERR5069949.1189252\tLN:98",
++                "@SQ\tSN:ERR5069949.2216307\tLN:147",
++                "@SQ\tSN:ERR5069949.3273002\tLN:148",
++                "@SQ\tSN:ERR5069949.3277445\tLN:151",
++                "@SQ\tSN:ERR5069949.3022231\tLN:147",
++                "@SQ\tSN:ERR5069949.184542\tLN:151",
++                "@SQ\tSN:ERR5069949.540529\tLN:149",
++                "@SQ\tSN:ERR5069949.686090\tLN:150",
++                "@SQ\tSN:ERR5069949.2787556\tLN:106",
++                "@SQ\tSN:ERR5069949.2650879\tLN:150",
++                "@SQ\tSN:ERR5069949.2064910\tLN:149",
++                "@SQ\tSN:ERR5069949.2328704\tLN:150",
++                "@SQ\tSN:ERR5069949.1067032\tLN:150",
++                "@SQ\tSN:ERR5069949.3338256\tLN:151",
++                "@SQ\tSN:ERR5069949.1412839\tLN:147",
++                "@SQ\tSN:ERR5069949.1538968\tLN:150",
++                "@SQ\tSN:ERR5069949.147998\tLN:94",
++                "@SQ\tSN:ERR5069949.366975\tLN:106",
++                "@SQ\tSN:ERR5069949.1372331\tLN:151",
++                "@SQ\tSN:ERR5069949.1709367\tLN:129",
++                "@SQ\tSN:ERR5069949.2388984\tLN:150",
++                "@SQ\tSN:ERR5069949.1132353\tLN:150",
++                "@SQ\tSN:ERR5069949.1151736\tLN:151",
++                "@SQ\tSN:ERR5069949.479807\tLN:150",
++                "@SQ\tSN:ERR5069949.2176303\tLN:151",
++                "@SQ\tSN:ERR5069949.2772897\tLN:151",
++                "@SQ\tSN:ERR5069949.1020777\tLN:122",
++                "@SQ\tSN:ERR5069949.465452\tLN:151",
++                "@SQ\tSN:ERR5069949.1704586\tLN:149",
++                "@SQ\tSN:ERR5069949.1258508\tLN:151",
++                "@SQ\tSN:ERR5069949.986441\tLN:119",
++                "@SQ\tSN:ERR5069949.2674295\tLN:148",
++                "@SQ\tSN:ERR5069949.885966\tLN:79",
++                "@SQ\tSN:ERR5069949.2342766\tLN:151",
++                "@SQ\tSN:ERR5069949.3122970\tLN:127",
++                "@SQ\tSN:ERR5069949.3279513\tLN:72",
++                "@SQ\tSN:ERR5069949.309410\tLN:151",
++                "@SQ\tSN:ERR5069949.532979\tLN:149",
++                "@SQ\tSN:ERR5069949.2888794\tLN:151",
++                "@SQ\tSN:ERR5069949.2205229\tLN:150",
++                "@SQ\tSN:ERR5069949.786562\tLN:151",
++                "@SQ\tSN:ERR5069949.919671\tLN:151",
++                "@SQ\tSN:ERR5069949.1328186\tLN:151",
++                "@SQ\tSN:ERR5069949.870926\tLN:149",
++                "@SQ\tSN:ERR5069949.2257580\tLN:151",
++                "@SQ\tSN:ERR5069949.3249622\tLN:77",
++                "@SQ\tSN:ERR5069949.611123\tLN:125",
++                "@SQ\tSN:ERR5069949.651338\tLN:142",
++                "@SQ\tSN:ERR5069949.169513\tLN:92",
++                "@SQ\tSN:ERR5069949.155944\tLN:150",
++                "@SQ\tSN:ERR5069949.2033605\tLN:150",
++                "@SQ\tSN:ERR5069949.2730382\tLN:142",
++                "@SQ\tSN:ERR5069949.2125592\tLN:150",
++                "@SQ\tSN:ERR5069949.1062611\tLN:151",
++                "@SQ\tSN:ERR5069949.1778133\tLN:151",
++                "@SQ\tSN:ERR5069949.3057020\tLN:95",
++                "@SQ\tSN:ERR5069949.2972968\tLN:141",
++                "@SQ\tSN:ERR5069949.2734474\tLN:149",
++                "@SQ\tSN:ERR5069949.856527\tLN:151",
++                "@SQ\tSN:ERR5069949.2098070\tLN:151",
++                "@SQ\tSN:ERR5069949.1552198\tLN:150",
++                "@SQ\tSN:ERR5069949.2385514\tLN:150",
++                "@SQ\tSN:ERR5069949.2270078\tLN:151",
++                "@SQ\tSN:ERR5069949.114870\tLN:150",
++                "@SQ\tSN:ERR5069949.2668880\tLN:147",
++                "@SQ\tSN:ERR5069949.257821\tLN:139",
++                "@SQ\tSN:ERR5069949.2243023\tLN:150",
++                "@SQ\tSN:ERR5069949.2605155\tLN:146",
++                "@SQ\tSN:ERR5069949.1340552\tLN:151",
++                "@SQ\tSN:ERR5069949.1561137\tLN:150",
++                "@SQ\tSN:ERR5069949.2361683\tLN:149",
++                "@SQ\tSN:ERR5069949.2521353\tLN:150",
++                "@SQ\tSN:ERR5069949.1261808\tLN:149",
++                "@SQ\tSN:ERR5069949.2734873\tLN:98",
++                "@SQ\tSN:ERR5069949.3017828\tLN:107",
++                "@SQ\tSN:ERR5069949.573706\tLN:150",
++                "@SQ\tSN:ERR5069949.1980512\tLN:151",
++                "@SQ\tSN:ERR5069949.1014693\tLN:150",
++                "@SQ\tSN:ERR5069949.3184655\tLN:150",
++                "@SQ\tSN:ERR5069949.29668\tLN:89",
++                "@SQ\tSN:ERR5069949.3258358\tLN:151",
++                "@SQ\tSN:ERR5069949.1476386\tLN:151",
++                "@SQ\tSN:ERR5069949.2415814\tLN:150",
++                "@PG\tID:minimap2\tPN:minimap2\tVN:2.30-r1287\tCL:minimap2 -t 2 -a test_1.fastq.gz test_1.fastq.gz",
++                "@PG\tID:samtools\tPN:samtools\tPP:minimap2\tVN:1.23.1\tCL:samtools sort -@ 1 -o test.bam"
++            ],
++            "16c1c651f8ec67383bcdee3c55aed94f",
++            {
++                "versions_minimap2": [
++                    [
++                        "MINIMAP2_ALIGN",
++                        "minimap2",
++                        "2.30-r1287"
++                    ]
++                ]
++            }
++        ],
++        "timestamp": "2026-04-23T17:25:49.904205",
++        "meta": {
++            "nf-test": "0.9.5",
++            "nextflow": "25.04.2"
++        }
+     }
+ }
+Changes in 'minimap2/align/tests/main.nf.test':
+--- modules/nf-core/minimap2/align/tests/main.nf.test
++++ modules/nf-core/minimap2/align/tests/main.nf.test
+@@ -9,32 +9,69 @@
+     tag "minimap2"
+     tag "minimap2/align"
+ 
+-    test("sarscov2 - fastq, fasta, true, false, false") {
+-
+-        when {
+-            process {
+-                """
+-                input[0] = [
+-                    [ id:'test', single_end:true ], // meta map
+-                    file(params.test_data['sarscov2']['illumina']['test_1_fastq_gz'], checkIfExists: true)
+-                ]
+-                input[1] = [
+-                    [ id:'test_ref' ], // meta map
+-                    file(params.test_data['sarscov2']['genome']['genome_fasta'], checkIfExists: true)
+-                ]
+-                input[2] = true
+-                input[3] = false
+-                input[4] = false
+-                """
+-            }
+-        }
+-
+-        then {
+-            assertAll(
+-                { assert process.success },
+-                { assert snapshot(
+-                    file(process.out.bam[0][1]).name,
+-                    process.out.versions
++    test("sarscov2 - fastq, fasta, true, [], false, false") {
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(
++                    bam(process.out.bam[0][1]).getHeader(),
++                    bam(process.out.bam[0][1]).getReadsMD5(),
++                    process.out.findAll { key, val -> key.startsWith("versions_") }
++                ).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - fastq, fasta, true, 'bai', false, false") {
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = 'bai'
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(
++                    bam(process.out.bam[0][1]).getHeader(),
++                    bam(process.out.bam[0][1]).getReadsMD5(),
++                    file(process.out.index[0][1]).name,
++                    process.out.findAll { key, val -> key.startsWith("versions_") }
+                 ).match() }
+             )
+         }
+@@ -49,27 +86,29 @@
+                 input[0] = [
+                     [ id:'test', single_end:false ], // meta map
+                     [
+-                        file(params.test_data['sarscov2']['illumina']['test_1_fastq_gz'], checkIfExists: true),
+-                        file(params.test_data['sarscov2']['illumina']['test_2_fastq_gz'], checkIfExists: true)
++                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
++                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                     ]
+                 ]
+                 input[1] = [
+                     [ id:'test_ref' ], // meta map
+-                    file(params.test_data['sarscov2']['genome']['genome_fasta'], checkIfExists: true)
+-                ]
+-                input[2] = true
+-                input[3] = false
+-                input[4] = false
+-                """
+-            }
+-        }
+-
+-        then {
+-            assertAll(
+-                { assert process.success },
+-                { assert snapshot(
+-                    file(process.out.bam[0][1]).name,
+-                    process.out.versions
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(
++                    bam(process.out.bam[0][1]).getHeader(),
++                    bam(process.out.bam[0][1]).getReadsMD5(),
++                    process.out.findAll { key, val -> key.startsWith("versions_") }
+                 ).match() }
+             )
+         }
+@@ -83,60 +122,317 @@
+                 """
+                 input[0] = [
+                     [ id:'test', single_end:true ], // meta map
+-                    file(params.test_data['sarscov2']['illumina']['test_1_fastq_gz'], checkIfExists: true)
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                 ]
+                 input[1] = [
+                     [ id:'test_ref' ], // meta map
+                     []
+                 ]
+                 input[2] = true
+-                input[3] = false
+-                input[4] = false
+-                """
+-            }
+-        }
+-
+-        then {
+-            assertAll(
+-                { assert process.success },
+-                { assert snapshot(
+-                    file(process.out.bam[0][1]).name,
+-                    process.out.versions
+-                ).match() }
+-            )
+-        }
+-
+-    }
+-
+-    test("sarscov2 - fastq, fasta, true, false, false - stub") {
+-
+-        options "-stub"
+-
+-        when {
+-            process {
+-                """
+-                input[0] = [
+-                    [ id:'test', single_end:true ], // meta map
+-                    file(params.test_data['sarscov2']['illumina']['test_1_fastq_gz'], checkIfExists: true)
+-                ]
+-                input[1] = [
+-                    [ id:'test_ref' ], // meta map
+-                    file(params.test_data['sarscov2']['genome']['genome_fasta'], checkIfExists: true)
+-                ]
+-                input[2] = true
+-                input[3] = false
+-                input[4] = false
+-                """
+-            }
+-        }
+-
+-        then {
+-            assertAll(
+-                { assert process.success },
+-                { assert snapshot(
+-                    file(process.out.bam[0][1]).name,
+-                    process.out.versions
+-                ).match() }
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(
++                    bam(process.out.bam[0][1]).getHeader(),
++                    bam(process.out.bam[0][1]).getReadsMD5(),
++                    process.out.findAll { key, val -> key.startsWith("versions_") }
++                ).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - bam, fasta, true, [], false, false") {
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test3.single_end.markduplicates.sorted.bam', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(
++                    bam(process.out.bam[0][1]).getHeader(),
++                    bam(process.out.bam[0][1]).getReadsMD5(),
++                    process.out.findAll { key, val -> key.startsWith("versions_") }
++                ).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - bam, fasta, true, 'bai', false, false") {
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test3.single_end.markduplicates.sorted.bam', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = 'bai'
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(
++                    bam(process.out.bam[0][1]).getHeader(),
++                    bam(process.out.bam[0][1]).getReadsMD5(),
++                    file(process.out.index[0][1]).name,
++                    process.out.findAll { key, val -> key.startsWith("versions_") }
++                ).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - bam, [], true, false, false") {
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test3.single_end.markduplicates.sorted.bam', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    []
++                ]
++                input[2] = true
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.failed }
++            )
++        }
++
++    }
++
++    test("sarscov2 - fastq, fasta, true, [], false, false - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(process.out).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - fastq, fasta, true, 'bai', false, false - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = 'bai'
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(process.out).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - fastq, fasta, false, [], false, false - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = false
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(process.out).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - bam, fasta, true, [], false, false - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test3.single_end.markduplicates.sorted.bam', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(process.out).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - bam, fasta, true, 'bai', false, false - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test3.single_end.markduplicates.sorted.bam', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                input[2] = true
++                input[3] = 'bai'
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.success },
++                { assert snapshot(process.out).match() }
++            )
++        }
++
++    }
++
++    test("sarscov2 - bam, [], true, false, false - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [ id:'test', single_end:true ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test3.single_end.markduplicates.sorted.bam', checkIfExists: true)
++                ]
++                input[1] = [
++                    [ id:'test_ref' ], // meta map
++                    []
++                ]
++                input[2] = true
++                input[3] = []
++                input[4] = false
++                input[5] = false
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                { assert process.failed }
+             )
+         }
+ 
+
+'modules/nf-core/minimap2/align/tests/tags.yml' was removed
+************************************************************

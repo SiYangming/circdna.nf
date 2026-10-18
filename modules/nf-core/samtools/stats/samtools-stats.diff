@@ -1,0 +1,542 @@
+Changes in component 'nf-core/samtools/stats'
+Changes in 'samtools/stats/environment.yml':
+--- modules/nf-core/samtools/stats/environment.yml
++++ modules/nf-core/samtools/stats/environment.yml
+@@ -1,7 +1,10 @@
+-name: samtools_stats
++---
++# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+ channels:
+   - conda-forge
+   - bioconda
+-  - defaults
+ dependencies:
+-  - bioconda::samtools=1.18
++  # renovate: datasource=conda depName=bioconda/htslib
++  - bioconda::htslib=1.23.1
++  # renovate: datasource=conda depName=bioconda/samtools
++  - bioconda::samtools=1.23.1
+
+Changes in 'samtools/stats/meta.yml':
+--- modules/nf-core/samtools/stats/meta.yml
++++ modules/nf-core/samtools/stats/meta.yml
+@@ -16,43 +16,73 @@
+       documentation: http://www.htslib.org/doc/samtools.html
+       doi: 10.1093/bioinformatics/btp352
+       licence: ["MIT"]
++      identifier: biotools:samtools
+ input:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - input:
+-      type: file
+-      description: BAM/CRAM file from alignment
+-      pattern: "*.{bam,cram}"
+-  - input_index:
+-      type: file
+-      description: BAI/CRAI file from alignment
+-      pattern: "*.{bai,crai}"
+-  - meta2:
+-      type: map
+-      description: |
+-        Groovy Map containing reference information
+-        e.g. [ id:'genome' ]
+-  - fasta:
+-      type: file
+-      description: Reference file the CRAM was created with (optional)
+-      pattern: "*.{fasta,fa}"
++  - - meta:
++        type: map
++        description: |
++          Groovy Map containing sample information
++          e.g. [ id:'test', single_end:false ]
++    - input:
++        type: file
++        description: BAM/CRAM file from alignment
++        pattern: "*.{bam,cram}"
++        ontologies: []
++    - input_index:
++        type: file
++        description: BAI/CRAI file from alignment
++        pattern: "*.{bai,crai}"
++        ontologies: []
++  - - meta2:
++        type: map
++        description: |
++          Groovy Map containing reference information
++          e.g. [ id:'genome' ]
++    - fasta:
++        type: file
++        description: Reference file the CRAM was created with (optional)
++        pattern: "*.{fasta,fa,fna}"
++        ontologies: []
++    - fai:
++        type: file
++        description: FASTA ref index file
++        pattern: "*.{fasta,fa,fna}.fai"
++        ontologies: []
+ output:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - stats:
+-      type: file
+-      description: File containing samtools stats output
+-      pattern: "*.{stats}"
+-  - versions:
+-      type: file
+-      description: File containing software versions
+-      pattern: "versions.yml"
++  stats:
++    - - meta:
++          type: map
++          description: |
++            Groovy Map containing sample information
++            e.g. [ id:'test', single_end:false ]
++      - "*.stats":
++          type: file
++          description: File containing samtools stats output
++          pattern: "*.{stats}"
++          ontologies: []
++  versions_samtools:
++    - - ${task.process}:
++          type: string
++          description: Name of the process
++      - samtools:
++          type: string
++          description: Name of the tool
++      - samtools version | sed "1!d;s/.* //":
++          type: eval
++          description: The expression to obtain the version of the tool
++
++topics:
++  versions:
++    - - ${task.process}:
++          type: string
++          description: Name of the process
++      - samtools:
++          type: string
++          description: Name of the tool
++      - samtools version | sed "1!d;s/.* //":
++          type: eval
++          description: The expression to obtain the version of the tool
++
+ authors:
+   - "@drpatelh"
+   - "@FriederikeHanssen"
+@@ -61,3 +91,4 @@
+   - "@drpatelh"
+   - "@FriederikeHanssen"
+   - "@ramprasadn"
++  - "@matthdsm"
+
+Changes in 'samtools/stats/main.nf':
+--- modules/nf-core/samtools/stats/main.nf
++++ modules/nf-core/samtools/stats/main.nf
+@@ -1,19 +1,19 @@
+ process SAMTOOLS_STATS {
+-    tag "$meta.id"
++    tag "${meta.id}"
+     label 'process_single'
+ 
+     conda "${moduleDir}/environment.yml"
+-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/samtools:1.18--h50ea8bc_1' :
+-        'biocontainers/samtools:1.18--h50ea8bc_1' }"
++    container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
++        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8c/8c5d2818c8b9f58e1fba77ce219fdaf32087ae53e857c4a496402978af26e78c/data'
++        : 'community.wave.seqera.io/library/htslib_samtools:1.23.1--5b6bb4ede7e612e5'}"
+ 
+     input:
+     tuple val(meta), path(input), path(input_index)
+-    tuple val(meta2), path(fasta)
++    tuple val(meta2), path(fasta), path(fai)
+ 
+     output:
+     tuple val(meta), path("*.stats"), emit: stats
+-    path  "versions.yml"            , emit: versions
++    tuple val("${task.process}"), val('samtools'), eval('samtools version | sed "1!d;s/.* //"'), emit: versions_samtools, topic: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+@@ -25,25 +25,16 @@
+     """
+     samtools \\
+         stats \\
++        ${args} \\
+         --threads ${task.cpus} \\
+         ${reference} \\
+         ${input} \\
+         > ${prefix}.stats
+-
+-    cat <<-END_VERSIONS > versions.yml
+-    "${task.process}":
+-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+-    END_VERSIONS
+     """
+ 
+     stub:
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     """
+     touch ${prefix}.stats
+-
+-    cat <<-END_VERSIONS > versions.yml
+-    "${task.process}":
+-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+-    END_VERSIONS
+     """
+ }
+
+Changes in 'samtools/stats/tests/main.nf.test.snap':
+--- modules/nf-core/samtools/stats/tests/main.nf.test.snap
++++ modules/nf-core/samtools/stats/tests/main.nf.test.snap
+@@ -1,5 +1,5 @@
+ {
+-    "SAMTOOLS STATS Should run without failures": {
++    "cram": {
+         "content": [
+             {
+                 "0": [
+@@ -8,11 +8,15 @@
+                             "id": "test",
+                             "single_end": false
+                         },
+-                        "test.stats:md5,045a48208b1c6f5b8af4347fe31f4def"
++                        "test.stats:md5,e4d6cf0e75cebd0bafa84141e0b6929b"
+                     ]
+                 ],
+                 "1": [
+-                    "versions.yml:md5,650a365c6635001436008350ae83337c"
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
+                 ],
+                 "stats": [
+                     [
+@@ -20,17 +24,25 @@
+                             "id": "test",
+                             "single_end": false
+                         },
+-                        "test.stats:md5,045a48208b1c6f5b8af4347fe31f4def"
++                        "test.stats:md5,e4d6cf0e75cebd0bafa84141e0b6929b"
+                     ]
+                 ],
+-                "versions": [
+-                    "versions.yml:md5,650a365c6635001436008350ae83337c"
++                "versions_samtools": [
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
+                 ]
+             }
+         ],
+-        "timestamp": "2023-12-04T11:07:28.26821485"
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.4"
++        },
++        "timestamp": "2026-03-19T09:05:39.987454"
+     },
+-    "SAMTOOLS CRAM Should run without failures": {
++    "bam - stub": {
+         "content": [
+             {
+                 "0": [
+@@ -39,11 +51,15 @@
+                             "id": "test",
+                             "single_end": false
+                         },
+-                        "test.stats:md5,dfbfa130d4a6925ddd1931dcd8354a43"
++                        "test.stats:md5,d41d8cd98f00b204e9800998ecf8427e"
+                     ]
+                 ],
+                 "1": [
+-                    "versions.yml:md5,650a365c6635001436008350ae83337c"
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
+                 ],
+                 "stats": [
+                     [
+@@ -51,14 +67,108 @@
+                             "id": "test",
+                             "single_end": false
+                         },
+-                        "test.stats:md5,dfbfa130d4a6925ddd1931dcd8354a43"
++                        "test.stats:md5,d41d8cd98f00b204e9800998ecf8427e"
+                     ]
+                 ],
+-                "versions": [
+-                    "versions.yml:md5,650a365c6635001436008350ae83337c"
++                "versions_samtools": [
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
+                 ]
+             }
+         ],
+-        "timestamp": "2023-12-04T11:07:50.356233402"
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.4"
++        },
++        "timestamp": "2026-03-19T09:05:47.495502"
++    },
++    "cram - stub": {
++        "content": [
++            {
++                "0": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": false
++                        },
++                        "test.stats:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "1": [
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
++                ],
++                "stats": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": false
++                        },
++                        "test.stats:md5,d41d8cd98f00b204e9800998ecf8427e"
++                    ]
++                ],
++                "versions_samtools": [
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.4"
++        },
++        "timestamp": "2026-03-19T09:05:56.38373"
++    },
++    "bam": {
++        "content": [
++            {
++                "0": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": false
++                        },
++                        "test.stats:md5,80f94eb0b68e213bdc8231109d3b43ad"
++                    ]
++                ],
++                "1": [
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
++                ],
++                "stats": [
++                    [
++                        {
++                            "id": "test",
++                            "single_end": false
++                        },
++                        "test.stats:md5,80f94eb0b68e213bdc8231109d3b43ad"
++                    ]
++                ],
++                "versions_samtools": [
++                    [
++                        "SAMTOOLS_STATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.4"
++        },
++        "timestamp": "2026-03-19T09:05:24.59441"
+     }
+ }
+Changes in 'samtools/stats/tests/main.nf.test':
+--- modules/nf-core/samtools/stats/tests/main.nf.test
++++ modules/nf-core/samtools/stats/tests/main.nf.test
+@@ -3,76 +3,113 @@
+     name "Test Process SAMTOOLS_STATS"
+     script "../main.nf"
+     process "SAMTOOLS_STATS"
++
+     tag "modules"
+     tag "modules_nfcore"
+     tag "samtools"
+     tag "samtools/stats"
+ 
+-    test("SAMTOOLS STATS Should run without failures") {
++    test("bam") {
+ 
+         when {
+-            params {
+-                
+-                outdir = "$outputDir"
+-            }
+             process {
+                 """
+-                // define inputs of the process here.
+-                input[0] = [ 
+-                                [ id:'test', single_end:false ], // meta map
+-                                file(params.test_data['sarscov2']['illumina']['test_paired_end_sorted_bam'], checkIfExists: true),
+-                                file(params.test_data['sarscov2']['illumina']['test_paired_end_sorted_bam_bai'], checkIfExists: true)
+-                                
+-                            ]
+-                input[1] = [[],[]]
++                input[0] = Channel.of([
++                    [ id:'test', single_end:false ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true)
++                ])
++                input[1] = [[],[],[]]
+                 """
+-
+             }
+         }
+ 
+         then {
+             assertAll(
+-            {assert process.success},
+-            {assert snapshot(process.out).match()}
++                {assert process.success},
++                {assert snapshot(process.out).match()}
+             )
+         }
+-
+     }
+ 
+-    test("SAMTOOLS CRAM Should run without failures") {
++    test("cram") {
+ 
+         when {
+-            params {
+-                
+-                outdir = "$outputDir"
+-            }
+             process {
+                 """
+-                // define inputs of the process here
+-                input[0] = [ 
+-                                [ id:'test', single_end:false ], // meta map
+-                                file(params.test_data['homo_sapiens']['illumina']['test_paired_end_recalibrated_sorted_cram'], checkIfExists: true),
+-                                file(params.test_data['homo_sapiens']['illumina']['test_paired_end_recalibrated_sorted_cram_crai'], checkIfExists: true)
+-                                
+-                            ]
+-                input[1] =  [ 
+-                                [ id:'genome' ],
+-                                file(params.test_data['homo_sapiens']['genome']['genome_fasta'], checkIfExists: true)
+-                             ]
++                input[0] = Channel.of([
++                    [ id:'test', single_end:false ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/cram/test.paired_end.recalibrated.sorted.cram', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/cram/test.paired_end.recalibrated.sorted.cram.crai', checkIfExists: true)
++                ])
++                input[1] = Channel.of([
++                    [ id:'genome' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr21/sequence/genome.fasta', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr21/sequence/genome.fasta.fai', checkIfExists: true)
++                ])
+                 """
+             }
+-
+-            
+         }
+ 
+         then {
+             assertAll(
+-            {assert process.success},
+-            {assert snapshot(process.out).match()}
++                {assert process.success},
++                {assert snapshot(process.out).match()}
+             )
+         }
+-
+     }
+ 
++    test("bam - stub") {
+ 
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = Channel.of([
++                    [ id:'test', single_end:false ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true)
++                ])
++                input[1] = [[],[],[]]
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                {assert process.success},
++                {assert snapshot(process.out).match()}
++            )
++        }
++    }
++
++    test("cram - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = Channel.of([
++                    [ id:'test', single_end:false ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/cram/test.paired_end.recalibrated.sorted.cram', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/cram/test.paired_end.recalibrated.sorted.cram.crai', checkIfExists: true)
++                ])
++                input[1] = Channel.of([
++                    [ id:'genome' ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr21/sequence/genome.fasta', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr21/sequence/genome.fasta.fai', checkIfExists: true)
++                ])
++                """
++            }
++        }
++
++        then {
++            assertAll(
++                {assert process.success},
++                {assert snapshot(process.out).match()}
++            )
++        }
++    }
+ }
+
+'modules/nf-core/samtools/stats/tests/tags.yml' was removed
+************************************************************
