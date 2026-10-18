@@ -9,7 +9,7 @@
   - 将 SAMPLESHEET_CHECK 的调用与 channel 创建解耦
   - Channel 创建改为直接使用 `file(samplesheet).splitCsv()` 从原始 CSV 解析
   - SAMPLESHEET_CHECK 仍然执行，但其输出不用于 channel 创建
-  - 同时解决文件中存在的 merge conflict markers (<<<<<<<, =======, >>>>>>>)
+  - 同时解决文件中存在的 merge conflict markers（尖括号/等号冲突标记）
   - 确保 FASTQ、BAM、long-read 三种模式均正确处理
 - **Implementation Details**:
 

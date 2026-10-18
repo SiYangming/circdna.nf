@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/circdna//nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/nf-core/circdna/master/nextflow_schema.json",
     "title": "nf-core/circdna pipeline parameters",
     "description": "Pipeline for the identification of circular DNAs",
     "type": "object",
@@ -10,7 +10,10 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": [
+                "input",
+                "outdir"
+            ],
             "properties": {
                 "input": {
                     "type": "string",
@@ -459,31 +462,6 @@
         },
         "config_profile_url": {
             "type": "string"
-        },
-        "max_memory": {
-            "type": "string",
-            "default": "128.GB"
-        },
-        "max_cpus": {
-            "type": "integer",
-            "default": 16
-        },
-        "max_time": {
-            "type": "string",
-            "default": "240.h"
-        },
-        "validationFailUnrecognisedParams": {
-            "type": "boolean"
-        },
-        "validationLenientMode": {
-            "type": "boolean"
-        },
-        "validationSchemaIgnoreParams": {
-            "type": "string",
-            "default": "genomes,igenomes_base,analysis_input,analysis_mode,detect_type,eccfinder_asm_min_length,eccfinder_cdhit_identity,eccfinder_engine,eccfinder_max_dist,eccfinder_max_pvalue,eccfinder_min_reads,eccfinder_ont_copy,eccfinder_ont_divergence,eccfinder_ont_min_align,eccfinder_ont_min_bound,eccfinder_ont_min_cov,eccfinder_ont_min_query,eccfinder_ont_min_read,eccfinder_ont_period,eccfinder_peak_len,eccsplorer_all,eccsplorer_clu,eccsplorer_clu_prefix_length,eccsplorer_clu_taxon,eccsplorer_database,eccsplorer_ecc_proportion,eccsplorer_engine,eccsplorer_genome_size,eccsplorer_image_format,eccsplorer_input_normalize,eccsplorer_map_core,eccsplorer_map_extract,eccsplorer_max_cand_cnt,eccsplorer_pre_a,eccsplorer_pre_b,eccsplorer_read_count,eccsplorer_read_seed,eccsplorer_taxon,eccsplorer_trim_reads,eccsplorer_trim_reads_opt,eccsplorer_viz_mode,eccsplorer_window_size,repex_databases"
-        },
-        "validationShowHiddenParams": {
-            "type": "boolean"
         },
         "fasta": {
             "type": "string"

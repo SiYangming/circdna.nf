@@ -47,7 +47,7 @@
 
 ## 代码质量检查
 
-- [x] Checkpoint 22: 无残留 merge conflict markers (<<<<<<<, =======, >>>>>>>)
+- [x] Checkpoint 22: 无残留 merge conflict markers（尖括号/等号冲突标记）
 - [x] Checkpoint 23: 代码风格与项目一致
 - [x] Checkpoint 24: 无冗余注释（按要求）
 - [x] Checkpoint 25: CHANGELOG.md 已更新

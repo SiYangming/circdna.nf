@@ -5,8 +5,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v4.7.8 - [2026-10-18]
 
+### `Added`
+
+- **nf-test 基础设施（nf-core 模板 4.1.0 对齐）**: 从 upstream TEMPLATE 分支引入 `nf-test.config`、`tests/default.nf.test`、`tests/nextflow.config`、`tests/.nftignore`、`.github/workflows/nf-test.yml`、`.github/actions/nf-test/`、`.github/actions/get-shards/`、`docs/CONTRIBUTING.md`。fork 适配：nf-test 工作流 `runs-on` 改为 `ubuntu-latest`（模板默认 nf-core 组织自托管 fleet），profile 矩阵精简为 docker-only（conda/singularity 覆盖由 ci.yml / download_pipeline.yml 承担）。
+
+### `Removed`
+
+- **`params.max_cpus` / `params.max_memory` / `params.max_time`**: 模板 4.x 已用 `process.resourceLimits` 取代；这三个参数自 v4.7.6 移除 `check_max()` 后已无实际作用（仅被无人使用的 `process_max` / `process_maximum_time` 标签引用）。从 `nextflow.config`、`nextflow_schema.json`、`conf/base.config`（连带删除两个空标签）及全部 13 个 `conf/*.config` profile 中移除。CI/本地测试的资源上限已由 `resourceLimits` 覆盖。
+- **conf/modules.config 失效 withName 块**: 删除 `AMPLICONCLASSIFIER_MAKERESULTSTABLE`、`SEQTK_SEQ_R1`、`SEQTK_SEQ_R2`、`MOSDEPTH_LR_REF`、`BEDTOOLS_INTERSECT_REPEATS` 五个不存在于任何 Nextflow 脚本的进程配置（lint `modules_config` 失败项）。
+- **schema 陈旧参数**: 从 `nextflow_schema.json` 删除 v4.7.7 nf-schema 迁移后遗留的 `validationFailUnrecognisedParams` / `validationLenientMode` / `validationSchemaIgnoreParams` / `validationShowHiddenParams`（lint `schema_params` 失败项），并修正 `$id` 为 `.../circdna/master/nextflow_schema.json`。
+
 ### Fixed
 
+- **multiqc_config report_comment 过期**: `assets/multiqc_config.yml` 的 report_comment 仍指向 fork 2.0.0 发布页，更新为模板期望的 nf-core/circdna 4.7.8 链接。
+- **awsfulltest.yml 触发器与模板不符**: 从 upstream TEMPLATE（4.1.0）同步该文件（`pull_request_review` + `workflow_dispatch` + `release` 触发；本 fork 因 `github.repository` 守卫永不执行）。
+- **.trae 文档中的合并标记字面量**: `.trae/specs/incremental-cache/tasks.md` 与 `checklist.md` 正文引用的 `<<<<<<<` / `>>>>>>>` 字面量被 lint `merge_markers` 误判为未解决的合并冲突，改写为文字描述。
 - **BWA_INDEX 内存按基因组大小缩放导致小基因组容器 OOM（exit 137）——CI `test` profile 从未通过的真正根因**: `modules/nf-core/bwa/index/main.nf` 声明 `memory { 7.B * fasta.size() }`，12.4 MB 测试基因组的容器内存上限仅 ~86 MB，而 bwa index BWT 构建需要 ~66 MB 堆 + 读写页缓存，必然触发容器 cgroup OOM kill；且重试不放大内存（无 `task.attempt` 因子），两次尝试必死。此前 v4.7.7 的"并发 docker pull 内存尖峰"诊断为误判——executor 串行化后 BWA_INDEX 在无任何并发任务时仍以 137 被杀（本地实验证实 `queueSize = 1` 序列化生效）。修复为 `[7.B * fasta.size(), 6.GB].max()`（小基因组下限 6 GB，大基因组仍按 7N 缩放；注意 `Math.max` 不支持 MemoryUnit 类型，须用列表 `.max()`）。
 - **executor 串行化配置导致 CI 任务被拒（req: 2; avail: 1）**: v4.7.7 在 `conf/test.config` / `conf/test_AA.config` 设置 `executor { cpus = 1 }`，但 Nextflow 会将任务资源需求与 executor 资源池比对，`process_low`（2 cpus）任务直接报 `Task requirement exceeds available CPUs`。改为 `queueSize = 1`（任意时刻仅一个任务运行）+ `cpus = 2`（池上限与 `resourceLimits` 对齐）。注：串行化保留作为 CI 稳定性措施，但 exit 137 根因实为上述 BWA_INDEX 内存下限问题。
 - **stub 块中空 versions.yml 导致版本汇总崩溃**: `samplesheet_check`、`getcircularreads`、`bedtools/sortedbam2bed`、`bedtools/splitbam2bed` 的 stub 用 `touch versions.yml` 生成空文件，`softwareVersionsToYAML` 中 `yaml.load('')` 返回 null，报 `Cannot invoke method collectEntries() on null object`（stub 模式 singularity 运行触发）。stub 改为输出与真实脚本同结构的合法 YAML。
