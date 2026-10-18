@@ -467,8 +467,8 @@ Changes in 'bam_markduplicates_picard/tests/main.nf.test.snap':
 +        },
 +        "timestamp": "2026-03-19T10:16:24.606155"
      }
--}
-+}
+ }
+
 'subworkflows/nf-core/bam_markduplicates_picard/tests/nextflow.config' was created
 Changes in 'bam_markduplicates_picard/tests/main.nf.test':
 --- subworkflows/nf-core/bam_markduplicates_picard/tests/main.nf.test
