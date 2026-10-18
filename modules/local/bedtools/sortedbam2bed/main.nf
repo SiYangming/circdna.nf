@@ -45,6 +45,9 @@ process BEDTOOLS_SORTEDBAM2BED {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch '${prefix}.concordant.txt'
-    touch versions.yml
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bedtools: stub
+    END_VERSIONS
     """
 }

@@ -53,6 +53,9 @@ process BEDTOOLS_SPLITBAM2BED {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch '${prefix}.txt'
-    touch versions.yml
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bedtools: stub
+    END_VERSIONS
     """
 }

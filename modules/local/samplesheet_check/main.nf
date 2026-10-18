@@ -35,6 +35,9 @@ process SAMPLESHEET_CHECK {
     stub:
     """
     touch samplesheet.valid.csv
-    touch versions.yml
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: stub
+    END_VERSIONS
     """
 }

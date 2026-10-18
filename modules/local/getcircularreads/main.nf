@@ -43,6 +43,9 @@ process GETCIRCULARREADS {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     echo '' | gzip > '${prefix}.unicycler.circular.fastq.gz'
-    touch versions.yml
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cat: stub
+    END_VERSIONS
     """
 }
