@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **executor 串行化配置导致 CI 任务被拒（req: 2; avail: 1）**: v4.7.7 为消除并发 docker pull 内存尖峰，在 `conf/test.config` / `conf/test_AA.config` 设置 `executor { cpus = 1 }`，但 Nextflow 会将任务资源需求与 executor 资源池比对，`process_low`（2 cpus）任务直接报 `Task requirement exceeds available CPUs`。改为 `queueSize = 1`（任意时刻仅一个任务运行，保持串行化目标）+ `cpus = 2`（池上限与 `resourceLimits` 对齐）。
 - **本地模块缺失 stub 块导致 stub 运行失败**: 为 `bedtools/sortedbam2bed`、`bedtools/splitbam2bed`、`circlefinder`、`getcircularreads`、`samplesheet_check` 5 个本地模块补齐 `stub:` 块，使 `nextflow run -stub`（CI 编译检查与本地快速验证）能完整跑通全部声明的输出。
 - **本地模块 container 声明简化**: `ciderseq`（align/annotate/deconcat/phase/separate）、`cseccdna`、`cstools`、`fled`、`repeatexplorer2` 的 container 三元表达式统一简化为直接镜像引用（`quay.io/bioinfortools/...`）。Singularity/Apptainer 在未指定协议时默认按 `docker://` 解析，行为不变，同时消除 `task.ext.singularity_pull_docker_container` 分支带来的配置漂移。
 
