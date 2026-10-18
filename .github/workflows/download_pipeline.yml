@@ -9,9 +9,8 @@ on:
   pull_request:
     types:
       - opened
-    branches:
-      - master
-  pull_request_target:
+      - synchronize
+      - reopened
     branches:
       - master
 
@@ -48,14 +47,14 @@ jobs:
         env:
           NXF_SINGULARITY_CACHEDIR: ./
         run: |
-          nf-core download  ${{ env.REPO_LOWERCASE }} \
+          nf-core pipelines download  ${{ env.REPO_LOWERCASE }} \
           --revision ${{ env.REPO_BRANCH }} \
           --outdir ./${{ env.REPOTITLE_LOWERCASE }} \
           --compress "none" \
           --container-system 'singularity' \
           --container-library "quay.io" -l "docker.io" -l "ghcr.io" \
           --container-cache-utilisation 'amend' \
-          --download-configuration
+          --download-configuration "yes"
 
       - name: Inspect download
         run: tree ./${{ env.REPOTITLE_LOWERCASE }}
