@@ -2,7 +2,9 @@ process BWA_INDEX {
     tag "$fasta"
     // NOTE requires 5.37N memory where N is the size of the database
     // source: https://bio-bwa.sourceforge.net/bwa.shtml#8
-    memory { 7.B * fasta.size() }
+    // floor at 6.GB: 7*N is not enough for tiny genomes (e.g. 12 MB test
+    // data -> ~86 MB cgroup limit -> container OOM kill, exit 137)
+    memory { [7.B * fasta.size(), 6.GB].max() }
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
