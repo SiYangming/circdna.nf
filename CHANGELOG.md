@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 - **nf-test 基础设施（nf-core 模板 4.1.0 对齐）**: 从 upstream TEMPLATE 分支引入 `nf-test.config`、`tests/default.nf.test`、`tests/nextflow.config`、`tests/.nftignore`、`.github/workflows/nf-test.yml`、`.github/actions/nf-test/`、`.github/actions/get-shards/`、`docs/CONTRIBUTING.md`。fork 适配：nf-test 工作流 `runs-on` 改为 `ubuntu-latest`（模板默认 nf-core 组织自托管 fleet），profile 矩阵精简为 docker-only（conda/singularity 覆盖由 ci.yml / download_pipeline.yml 承担）。
+- **conf/containers\_\*.config 容器配置文件**: 由 `nf-core pipelines lint --fix container_configs` 生成并提交全部 8 个文件（docker/singularity-https/singularity-oras/conda-lock × amd64/arm64）。这些文件供 `nf-core pipelines download` 按架构与仓库重写容器地址使用，运行时不被 `nextflow.config` 引用（lint `container_configs` 失败项）。
+- **本地修改组件的 nf-core patch 登记**: 14 个模块（bwa/index、cat/fastq、cnvkit/segment、fastqc、minimap2/align、picard/markduplicates、samtools/faidx|flagstat|idxstats|index|sort|stats|view、trimgalore、unicycler）与 2 个子工作流（bam_markduplicates_picard、bam_stats_samtools）携带 fork 的有意本地适配（quay.io 容器前缀、apptainer 支持、资源标签、stageAs、BWA_INDEX 内存下限等）。通过 `nf-core modules/subworkflows patch` 生成 `.diff` 补丁并登记到 `modules.json`，lint `check_local_copy` 反向应用补丁后与远端一致。
 
 ### `Removed`
 
@@ -17,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **lint 全量失败项清零（917 passed / 0 failed）**: `.nf-core.yml` 增加 fork 合理豁免——`files_exist` 忽略 `lib/{NfcoreTemplate,Utils,WorkflowMain,WorkflowCircdna}.groovy`（fork 保留自定义 main.nf 帮助/完成处理器，仍引用这些 Groovy 助手类，未迁移到 PIPELINE_INITIALISATION/PIPELINE_COMPLETION 结构），`nextflow_config` 忽略 `manifest.homePage`（fork 仓库地址）；`nf-test.yml` 矩阵改为测试流程最低 Nextflow 版本 `25.04.8`（`actions_nf_test`）；清理 `modules/nf-core/{cat/fastq,fastqc}/` 下两个未跟踪的 `.DS_Store`（导致 patch differ 报 `UnicodeDecodeError` 无法生成补丁）；修复 `bam_markduplicates_picard` 测试快照缺少文件末尾换行导致生成的 `.diff` 无法反向干净应用（`subworkflow_patch` 失败），规范化 EOF 换行后重新生成补丁。
 - **multiqc_config report_comment 过期**: `assets/multiqc_config.yml` 的 report_comment 仍指向 fork 2.0.0 发布页，更新为模板期望的 nf-core/circdna 4.7.8 链接。
 - **awsfulltest.yml 触发器与模板不符**: 从 upstream TEMPLATE（4.1.0）同步该文件（`pull_request_review` + `workflow_dispatch` + `release` 触发；本 fork 因 `github.repository` 守卫永不执行）。
 - **.trae 文档中的合并标记字面量**: `.trae/specs/incremental-cache/tasks.md` 与 `checklist.md` 正文以字面形式引用了 Git 冲突标记（七连小于号与七连大于号），被 lint `merge_markers` 误判为未解决的合并冲突，改写为文字描述。
