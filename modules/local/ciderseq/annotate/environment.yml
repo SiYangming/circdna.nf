@@ -1,0 +1,8 @@
+name: ciderseq2
+channels:
+  - conda-forge
+  - bioconda
+  - yangmingsi
+dependencies:
+  # renovate: datasource=conda depName=yangmingsi/ciderseq2
+  - yangmingsi::ciderseq2=2.0.0

@@ -1,0 +1,12 @@
+.DS_Store
+multiqc/multiqc_data/*.txt
+multiqc/multiqc_data/multiqc.parquet
+multiqc/multiqc_data/multiqc.log
+multiqc/multiqc_data/multiqc_data.json
+multiqc/multiqc_plots/{svg,pdf,png}/*.{svg,pdf,png}
+multiqc/multiqc_report.html
+reports/fastqc/*_fastqc.zip
+reports/trimgalore_fastqc/*_fastqc.zip
+reports/markduplicates/*.md.metrics.txt
+circlefinder/*.microDNA-JT.txt
+pipeline_info/*.{html,json,txt,yml}

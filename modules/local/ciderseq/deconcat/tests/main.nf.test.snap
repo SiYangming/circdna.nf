@@ -1,0 +1,32 @@
+{
+    "test-ciderseq-deconcat": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "example1",
+                        "genome": "EACMV_DNA_A"
+                    },
+                    "example1.EACMV_DNA_A.fa:md5,1a96368a0e13553b81594d29c91b988c"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "example1",
+                        "genome": "EACMV_DNA_A"
+                    },
+                    "example1.EACMV_DNA_A.stat:md5,71cd064e5408e5dbf1c596705b289f79"
+                ]
+            ],
+            [
+                "versions.yml:md5,fcb9da800d93642249a30c1e1d4fa3d2"
+            ]
+        ],
+        "timestamp": "2026-08-25T12:23:58.616753",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

@@ -6,37 +6,51 @@ workflow INPUT_CHECK {
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
-    ch_versions = SAMPLESHEET_CHECK.out.versions
 
-    if ( params.input_format == "FASTQ" ) {
-        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
-            .map { it -> create_fastq_channels(it) }
-            .set { reads }
-    } else if ( params.input_format == "BAM" ) {
-        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
-            .map { it -> create_bam_channels(it) }
-            .set { reads }
-    } else if ( params.protocol in ["pacbio", "ont"] ) {
-        Channel.fromPath(samplesheet).splitCsv ( header:true, sep:',' )
-            .map { it -> create_long_read_channels(it) }
-            .set { reads }
-    }
+    // 增量缓存（.trae/specs/incremental-cache）：channel 直接从原始 CSV 创建，
+    // 任务哈希只依赖 fastq 内容与 meta，不依赖验证输出 CSV；增删样本时旧样本复用缓存。
+    // SAMPLESHEET_CHECK 仍执行（验证 + versions），文件存在性由 create_*_channels 兜底。
+    channel.fromPath(samplesheet)
+        .splitCsv ( header:true, sep:',' )
+        .set { parsed_samplesheet }
+
+    // 按行 platform 分流（混表允许：同一张表含 Illumina + PacBio + ONT）
+    parsed_samplesheet
+        .filter { row -> (row.platform ?: 'illumina') == 'illumina' }
+        .map { it -> params.input_format == 'BAM' ? create_short_read_bam_channels(it) : create_short_read_fastq_channels(it) }
+        .set { ch_reads_short }
+
+    parsed_samplesheet
+        .filter { row -> (row.platform ?: '') in ['pacbio', 'ont'] }
+        .map { it -> create_long_read_channels(it) }
+        .set { ch_reads_long }
 
     emit:
-    reads
-    versions = ch_versions
+    reads_short = ch_reads_short  // channel: [ val(meta), [ reads ] ] OR [ val(meta), bam ]
+    reads_long  = ch_reads_long   // channel: [ val(meta), fastq, input_bam, entrypoint ]
+    versions     = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
-def create_fastq_channels(LinkedHashMap row) {
+def create_short_read_fastq_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id           = row.sample
     meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
     if (row.containsKey('lane') && row.lane) {
         meta.lane = row.lane
     }
-    meta.datatype     = row.containsKey('datatype') ? (row.datatype ? row.datatype : 'eccdna') : 'eccdna'
+    // datatype：兼容 data_type（大写 eccDNA/gDNA）与 datatype（小写 eccdna/gdna）两种列名
+    def datatype_val = row.containsKey('datatype') ? row.datatype : (row.containsKey('data_type') ? row.data_type : null)
+    meta.datatype     = datatype_val ? datatype_val.toString().toLowerCase() : 'eccdna'
+    // 兼容旧过滤（workflows 曾用 meta.data_type）；统一为小写 datatype
+    meta.data_type    = meta.datatype
     meta.platform     = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
     meta.protocol     = row.containsKey('protocol') ? (row.protocol ? row.protocol : 'short_read') : 'short_read'
+    // 短读缺省：datatype=gdna→wgs，eccdna→circleseq
+    meta.assay        = row.containsKey('assay') && row.assay ? row.assay : (meta.datatype == 'gdna' ? 'wgs' : 'circleseq')
+    meta.pair         = (row.containsKey('pair') && row.pair) ? row.pair : ((row.containsKey('group') && row.group) ? row.group : null)
+    meta.concatemer   = row.containsKey('concatemer') && row.concatemer ? row.concatemer.toBoolean() : (meta.assay == 'rca')
+    meta.read_type    = row.containsKey('read_type') && row.read_type ? row.read_type : (meta.single_end ? 'se' : 'pe')
+    meta.enrichment   = row.containsKey('enrichment') && row.enrichment ? row.enrichment : 'none'
 
     def array = []
     if (!file(row.fastq_1).exists()) {
@@ -53,10 +67,19 @@ def create_fastq_channels(LinkedHashMap row) {
     return array
 }
 
-def create_bam_channels(LinkedHashMap row) {
+def create_short_read_bam_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id             = row.sample
     meta.single_end     = false
+    meta.platform       = row.containsKey('platform') ? (row.platform ? row.platform : 'illumina') : 'illumina'
+    def datatype_val    = row.containsKey('datatype') ? row.datatype : (row.containsKey('data_type') ? row.data_type : null)
+    meta.datatype       = datatype_val ? datatype_val.toString().toLowerCase() : 'eccdna'
+    meta.data_type      = meta.datatype
+    meta.assay          = row.containsKey('assay') && row.assay ? row.assay : (meta.datatype == 'gdna' ? 'wgs' : 'circleseq')
+    meta.pair           = (row.containsKey('pair') && row.pair) ? row.pair : null
+    meta.concatemer     = false
+    meta.read_type      = row.containsKey('read_type') && row.read_type ? row.read_type : 'pe'
+    meta.enrichment     = row.containsKey('enrichment') && row.enrichment ? row.enrichment : 'none'
 
     def array = []
     if (!file(row.bam).exists()) {
@@ -74,6 +97,36 @@ def create_long_read_channels(LinkedHashMap row) {
     meta.single_end   = row.containsKey('single_end') ? (row.single_end ? row.single_end.toBoolean() : false) : (!row.fastq_2 || row.fastq_2.isEmpty())
     meta.entrypoint   = row.entrypoint ?: params.entrypoint
     meta.platform     = row.platform ?: params.protocol
+    def datatype_val  = row.containsKey('datatype') ? row.datatype : (row.containsKey('data_type') ? row.data_type : null)
+    meta.datatype     = datatype_val ? datatype_val.toString().toLowerCase() : 'eccdna'
+    meta.data_type    = meta.datatype
+    meta.pair         = (row.containsKey('pair') && row.pair) ? row.pair : null
+    meta.concatemer   = row.containsKey('concatemer') && row.concatemer ? row.concatemer.toBoolean() : false
+    meta.read_type    = row.containsKey('read_type') && row.read_type ? row.read_type : (meta.platform == 'ont' ? 'ont' : 'hifi')
+    meta.enrichment   = row.containsKey('enrichment') && row.enrichment ? row.enrichment : 'none'
+
+    // assay：长读禁止猜 ciderseq；gdna 唯一合法为 wgs，eccdna 需显式或 params.assay 回填
+    if (row.containsKey('assay') && row.assay) {
+        meta.assay = row.assay
+    } else if (meta.datatype == 'gdna') {
+        meta.assay = 'wgs'
+    } else if (params.containsKey('assay') && params.assay) {
+        meta.assay = params.assay
+    } else {
+        exit 1, "ERROR: Please check input samplesheet -> long-read sample '${meta.id}' has no 'assay' column value! " +
+                "Set assay explicitly (wgs|rca|ciderseq|enriched) or backfill with --assay."
+    }
+
+    // concatemer 缺省仅在 assay=rca 时有效，其余强制 false（§1.3）
+    if (!row.containsKey('concatemer') || !row.concatemer) {
+        meta.concatemer = (meta.assay == 'rca')
+    }
+    // 非 rca assay 不允许 concatemer=true（§1.3）
+    if (meta.assay != 'rca' && meta.concatemer) {
+        exit 1, "ERROR: concatemer=true is only meaningful for assay=rca (sample '${meta.id}')."
+    }
+
+    assert_valid_combination(meta)
 
     def fastq = null
     def input_bam = null
@@ -93,4 +146,41 @@ def create_long_read_channels(LinkedHashMap row) {
     }
 
     return [ meta, fastq, input_bam, meta.entrypoint ]
+}
+
+//
+// §1.3 组合断言（workflow 层再做一遍，防止绕过 check_samplesheet）
+//
+def assert_valid_combination(meta) {
+    def platform = meta.platform
+    def assay    = meta.assay
+    def datatype = meta.datatype
+    def enrichment = meta.enrichment
+
+    if (platform == 'illumina') {
+        if (assay == 'wgs' && datatype == 'gdna') return
+        if (assay == 'circleseq' && datatype == 'eccdna') return
+        if (assay == 'wgs' && datatype == 'eccdna' && enrichment != 'none') return
+        exit 1, "ERROR: Invalid combination for sample '${meta.id}': illumina assay='${assay}' datatype='${datatype}'; allowed: wgs+gdna, circleseq+eccdna (Illumina RCA must be circleseq)"
+    } else if (platform in ['pacbio', 'ont']) {
+        if (assay == 'ciderseq') {
+            if (datatype != 'eccdna') exit 1, "ERROR: Invalid combination for sample '${meta.id}': ciderseq requires datatype=eccdna"
+            return
+        }
+        if (assay == 'rca') {
+            if (datatype != 'eccdna') exit 1, "ERROR: Invalid combination for sample '${meta.id}': rca requires datatype=eccdna"
+            return
+        }
+        if (assay == 'enriched') {
+            if (datatype != 'eccdna') exit 1, "ERROR: Invalid combination for sample '${meta.id}': enriched requires datatype=eccdna"
+            return
+        }
+        if (assay == 'wgs') {
+            if (datatype != 'gdna') exit 1, "ERROR: Invalid combination for sample '${meta.id}': long-read wgs requires datatype=gdna (un-enriched WGS cannot be eccDNA)"
+            return
+        }
+        exit 1, "ERROR: Invalid combination for sample '${meta.id}': long-read assay='${assay}' not allowed; use wgs|rca|ciderseq|enriched"
+    } else {
+        exit 1, "ERROR: Invalid combination for sample '${meta.id}': unknown platform '${platform}'"
+    }
 }

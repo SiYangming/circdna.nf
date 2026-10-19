@@ -1,0 +1,2 @@
+sample,fastq_1,fastq_2
+circdna_1,testdatasets/ngs/circdna_1_R1.fastq.gz,testdatasets/ngs/circdna_1_R2.fastq.gz

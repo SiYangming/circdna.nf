@@ -1,3 +1,3 @@
-sample,fastq_1,fastq_2
-SRR28004411,/data1/users/siyangming/PlanteccDNADB/eccDNA/Solanum_lycopersicum/SRR28004411.fastq.gz,
-SRR28004412,/data1/users/siyangming/PlanteccDNADB/eccDNA/Solanum_lycopersicum/SRR28004412.fastq.gz,
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+SRR28004411,/data1/users/siyangming/PlanteccDNADB/eccDNA/Solanum_lycopersicum/SRR28004411.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,,false,ont,other
+SRR28004412,/data1/users/siyangming/PlanteccDNADB/eccDNA/Solanum_lycopersicum/SRR28004412.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,PRJNA1077878,true,ont,other

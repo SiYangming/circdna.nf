@@ -1,0 +1,303 @@
+Changes in component 'nf-core/samtools/idxstats'
+Changes in 'samtools/idxstats/environment.yml':
+--- modules/nf-core/samtools/idxstats/environment.yml
++++ modules/nf-core/samtools/idxstats/environment.yml
+@@ -1,7 +1,10 @@
+-name: samtools_idxstats
++---
++# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+ channels:
+   - conda-forge
+   - bioconda
+-  - defaults
+ dependencies:
+-  - bioconda::samtools=1.18
++  # renovate: datasource=conda depName=bioconda/htslib
++  - bioconda::htslib=1.23.1
++  # renovate: datasource=conda depName=bioconda/samtools
++  - bioconda::samtools=1.23.1
+
+Changes in 'samtools/idxstats/meta.yml':
+--- modules/nf-core/samtools/idxstats/meta.yml
++++ modules/nf-core/samtools/idxstats/meta.yml
+@@ -17,36 +17,60 @@
+       homepage: http://www.htslib.org/
+       documentation: http://www.htslib.org/doc/samtools.html
+       doi: 10.1093/bioinformatics/btp352
+-      licence: ["MIT"]
++      licence:
++        - "MIT"
++      identifier: biotools:samtools
+ input:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - bam:
+-      type: file
+-      description: BAM/CRAM/SAM file
+-      pattern: "*.{bam,cram,sam}"
+-  - bai:
+-      type: file
+-      description: Index for BAM/CRAM/SAM file
+-      pattern: "*.{bai,crai,sai}"
++  - - meta:
++        type: map
++        description: |
++          Groovy Map containing sample information
++          e.g. [ id:'test', single_end:false ]
++    - bam:
++        type: file
++        description: BAM/CRAM/SAM file
++        pattern: "*.{bam,cram,sam}"
++        ontologies: []
++    - bai:
++        type: file
++        description: Index for BAM/CRAM/SAM file
++        pattern: "*.{bai,crai,sai}"
++        ontologies: []
+ output:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - idxstats:
+-      type: file
+-      description: File containing samtools idxstats output
+-      pattern: "*.{idxstats}"
+-  - versions:
+-      type: file
+-      description: File containing software versions
+-      pattern: "versions.yml"
++  idxstats:
++    - - meta:
++          type: map
++          description: |
++            Groovy Map containing sample information
++            e.g. [ id:'test', single_end:false ]
++      - "*.idxstats":
++          type: file
++          description: File containing samtools idxstats output
++          pattern: "*.{idxstats}"
++          ontologies: []
++  versions_samtools:
++    - - ${task.process}:
++          type: string
++          description: The name of the process
++      - samtools:
++          type: string
++          description: The name of the tool
++      - samtools version | sed '1!d;s/.* //':
++          type: eval
++          description: The expression to obtain the version of the tool
++topics:
++  versions:
++    - - ${task.process}:
++          type: string
++          description: The name of the process
++      - samtools:
++          type: string
++          description: The name of the tool
++      - samtools version | sed '1!d;s/.* //':
++          type: eval
++          description: The expression to obtain the version of the tool
+ authors:
+   - "@drpatelh"
+ maintainers:
+   - "@drpatelh"
++  - "@matthdsm"
+
+Changes in 'samtools/idxstats/main.nf':
+--- modules/nf-core/samtools/idxstats/main.nf
++++ modules/nf-core/samtools/idxstats/main.nf
+@@ -1,37 +1,32 @@
+ process SAMTOOLS_IDXSTATS {
+-    tag "$meta.id"
++    tag "${meta.id}"
+     label 'process_single'
+ 
+     conda "${moduleDir}/environment.yml"
+-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/samtools:1.18--h50ea8bc_1' :
+-        'biocontainers/samtools:1.18--h50ea8bc_1' }"
++    container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
++        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8c/8c5d2818c8b9f58e1fba77ce219fdaf32087ae53e857c4a496402978af26e78c/data'
++        : 'community.wave.seqera.io/library/htslib_samtools:1.23.1--5b6bb4ede7e612e5'}"
+ 
+     input:
+     tuple val(meta), path(bam), path(bai)
+ 
+     output:
+     tuple val(meta), path("*.idxstats"), emit: idxstats
+-    path  "versions.yml"               , emit: versions
++    tuple val("${task.process}"), val('samtools'), eval("samtools version | sed '1!d;s/.* //'"), emit: versions_samtools, topic: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+ 
+     script:
+-    def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
+ 
+     """
++    # Note: --threads value represents *additional* CPUs to allocate (total CPUs = 1 + --threads).
+     samtools \\
+         idxstats \\
+-        --threads ${task.cpus-1} \\
+-        $bam \\
++        --threads ${task.cpus - 1} \\
++        ${bam} \\
+         > ${prefix}.idxstats
+-
+-    cat <<-END_VERSIONS > versions.yml
+-    "${task.process}":
+-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+-    END_VERSIONS
+     """
+ 
+     stub:
+@@ -39,10 +34,5 @@
+ 
+     """
+     touch ${prefix}.idxstats
+-
+-    cat <<-END_VERSIONS > versions.yml
+-    "${task.process}":
+-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+-    END_VERSIONS
+     """
+ }
+
+Changes in 'samtools/idxstats/tests/main.nf.test.snap':
+--- modules/nf-core/samtools/idxstats/tests/main.nf.test.snap
++++ modules/nf-core/samtools/idxstats/tests/main.nf.test.snap
+@@ -1,5 +1,32 @@
+ {
+-    "BAM": {
++    "bam - stub": {
++        "content": [
++            [
++                [
++                    {
++                        "id": "test",
++                        "single_end": false
++                    },
++                    "test.idxstats:md5,d41d8cd98f00b204e9800998ecf8427e"
++                ]
++            ],
++            {
++                "versions_samtools": [
++                    [
++                        "SAMTOOLS_IDXSTATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.4"
++        },
++        "timestamp": "2026-03-19T08:59:41.877526"
++    },
++    "bam": {
+         "content": [
+             [
+                 [
+@@ -9,8 +36,21 @@
+                     },
+                     "test.idxstats:md5,df60a8c8d6621100d05178c93fb053a2"
+                 ]
+-            ]
++            ],
++            {
++                "versions_samtools": [
++                    [
++                        "SAMTOOLS_IDXSTATS",
++                        "samtools",
++                        "1.23.1"
++                    ]
++                ]
++            }
+         ],
+-        "timestamp": "2023-11-14T15:52:19.875194"
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.4"
++        },
++        "timestamp": "2026-03-19T08:59:34.725514"
+     }
+ }
+Changes in 'samtools/idxstats/tests/main.nf.test':
+--- modules/nf-core/samtools/idxstats/tests/main.nf.test
++++ modules/nf-core/samtools/idxstats/tests/main.nf.test
+@@ -8,19 +8,16 @@
+     tag "samtools"
+     tag "samtools/idxstats"
+ 
+-    test("BAM") {
++    test("bam") {
+ 
+         when {
+-            params {
+-                outdir   = "$outputDir"
+-            }
+             process {
+                 """
+-                input[0] = [
++                input[0] = Channel.of([
+                     [ id:'test', single_end:false ], // meta map
+-                    file(params.test_data['sarscov2']['illumina']['test_paired_end_sorted_bam'], checkIfExists: true),
+-                    file(params.test_data['sarscov2']['illumina']['test_paired_end_sorted_bam_bai'], checkIfExists: true)
+-                ]
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true)
++                ])
+                 """
+             }
+         }
+@@ -28,9 +25,35 @@
+         then {
+             assertAll (
+                 { assert process.success },
+-                { assert snapshot(process.out.idxstats).match() },
+-                { assert path(process.out.versions.get(0)).getText().contains("samtools") }
++                { assert snapshot(
++                    process.out.idxstats,
++                    process.out.findAll { key, val -> key.startsWith('versions') }
++                ).match() }
+             )
+         }
+     }
+-}
++
++    test("bam - stub") {
++        options "-stub"
++        when {
++            process {
++                """
++                input[0] = Channel.of([
++                    [ id:'test', single_end:false ], // meta map
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true)
++                ])
++                """
++            }
++        }
++
++        then {
++            assertAll (
++                { assert process.success },
++                { assert snapshot(
++                    process.out.idxstats,
++                    process.out.findAll { key, val -> key.startsWith('versions') }
++                ).match() }
++            )
++        }
++    }}
+
+'modules/nf-core/samtools/idxstats/tests/tags.yml' was removed
+************************************************************

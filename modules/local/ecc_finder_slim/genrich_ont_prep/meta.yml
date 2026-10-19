@@ -1,0 +1,34 @@
+name: genrich_ont_prep
+description: Convert primary long-read alignments to compact SAM for Genrich peak calling
+keywords:
+  - samtools
+  - genrich
+  - long-read
+tools:
+  - samtools:
+      description: Tools for manipulating alignments in the SAM format
+      homepage: https://www.htslib.org
+      documentation: https://www.htslib.org/doc/samtools.html
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: Sample metadata
+  - bam:
+      type: file
+      description: Queryname-sorted BAM with primary alignments
+      pattern: "*.{bam,sam}"
+output:
+  - meta:
+      type: map
+      description: Sample metadata
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - sam:
+      type: file
+      description: SAM without SEQ/QUAL fields, sized for Genrich's 64 KB line limit
+      pattern: "*.{sam}"
+authors:
+  - "@siyangming"

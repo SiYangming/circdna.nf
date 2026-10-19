@@ -1,0 +1,322 @@
+Changes in component 'nf-core/bwa/index'
+Changes in 'bwa/index/environment.yml':
+--- modules/nf-core/bwa/index/environment.yml
++++ modules/nf-core/bwa/index/environment.yml
+@@ -1,7 +1,13 @@
+-name: bwa_index
++---
++# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+ channels:
+   - conda-forge
+   - bioconda
+-  - defaults
++
+ dependencies:
+-  - bioconda::bwa=0.7.17
++  # renovate: datasource=conda depName=bioconda/bwa
++  - bioconda::bwa=0.7.19
++  # renovate: datasource=conda depName=bioconda/htslib
++  - bioconda::htslib=1.22.1
++  # renovate: datasource=conda depName=bioconda/samtools
++  - bioconda::samtools=1.22.1
+
+Changes in 'bwa/index/meta.yml':
+--- modules/nf-core/bwa/index/meta.yml
++++ modules/nf-core/bwa/index/meta.yml
+@@ -11,35 +11,61 @@
+         BWA is a software package for mapping DNA sequences against
+         a large reference genome, such as the human genome.
+       homepage: http://bio-bwa.sourceforge.net/
+-      documentation: http://www.htslib.org/doc/samtools.html
++      documentation: https://bio-bwa.sourceforge.net/bwa.shtml
+       arxiv: arXiv:1303.3997
+       licence: ["GPL-3.0-or-later"]
++      identifier: "biotools:bwa"
+ input:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing reference information.
+-        e.g. [ id:'test', single_end:false ]
+-  - fasta:
+-      type: file
+-      description: Input genome fasta file
++  - - meta:
++        type: map
++        description: |
++          Groovy Map containing reference information.
++          e.g. [ id:'test', single_end:false ]
++    - fasta:
++        type: file
++        description: Input genome fasta file
++        ontologies:
++          - edam: "http://edamontology.org/data_2044" # Sequence
++          - edam: "http://edamontology.org/format_1929" # FASTA
+ output:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing reference information.
+-        e.g. [ id:'test', single_end:false ]
+-  - index:
+-      type: file
+-      description: BWA genome index files
+-      pattern: "*.{amb,ann,bwt,pac,sa}"
+-  - versions:
+-      type: file
+-      description: File containing software versions
+-      pattern: "versions.yml"
++  index:
++    - - meta:
++          type: map
++          description: |
++            Groovy Map containing reference information.
++            e.g. [ id:'test', single_end:false ]
++      - bwa:
++          type: map
++          description: |
++            Groovy Map containing reference information.
++            e.g. [ id:'test', single_end:false ]
++          pattern: "*.{amb,ann,bwt,pac,sa}"
++          ontologies:
++            - edam: "http://edamontology.org/data_3210" # Genome index
++  versions_bwa:
++    - - ${task.process}:
++          type: string
++          description: The process the versions were collected from
++      - bwa:
++          type: string
++          description: The tool name
++      - 'bwa 2>&1 | sed -n "s/^Version: //p"':
++          type: string
++          description: The command used to generate the version of the tool
++topics:
++  versions:
++    - - ${task.process}:
++          type: string
++          description: The process the versions were collected from
++      - bwa:
++          type: string
++          description: The tool name
++      - 'bwa 2>&1 | sed -n "s/^Version: //p"':
++          type: string
++          description: The command used to generate the version of the tool
+ authors:
+   - "@drpatelh"
+   - "@maxulysse"
+ maintainers:
+-  - "@drpatelh"
+   - "@maxulysse"
++  - "@gallvp"
+
+Changes in 'bwa/index/main.nf':
+--- modules/nf-core/bwa/index/main.nf
++++ modules/nf-core/bwa/index/main.nf
+@@ -1,18 +1,22 @@
+ process BWA_INDEX {
+     tag "$fasta"
+-    label 'process_single'
++    // NOTE requires 5.37N memory where N is the size of the database
++    // source: https://bio-bwa.sourceforge.net/bwa.shtml#8
++    // floor at 6.GB: 7*N is not enough for tiny genomes (e.g. 12 MB test
++    // data -> ~86 MB cgroup limit -> container OOM kill, exit 137)
++    memory { [7.B * fasta.size(), 6.GB].max() }
+ 
+     conda "${moduleDir}/environment.yml"
+-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/bwa:0.7.17--hed695b0_7' :
+-        'biocontainers/bwa:0.7.17--hed695b0_7' }"
++    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
++        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/d7/d7e24dc1e4d93ca4d3a76a78d4c834a7be3985b0e1e56fddd61662e047863a8a/data' :
++        'community.wave.seqera.io/library/bwa_htslib_samtools:83b50ff84ead50d0' }"
+ 
+     input:
+     tuple val(meta), path(fasta)
+ 
+     output:
+-    tuple val(meta), path(bwa) , emit: index
+-    path "versions.yml"        , emit: versions
++    tuple val(meta), path("bwa"), emit: index
++    tuple val("${task.process}"), val('bwa'), eval('bwa 2>&1 | sed -n "s/^Version: //p"'), topic: versions, emit: versions_bwa
+ 
+     when:
+     task.ext.when == null || task.ext.when
+@@ -27,27 +31,16 @@
+         $args \\
+         -p bwa/${prefix} \\
+         $fasta
+-
+-    cat <<-END_VERSIONS > versions.yml
+-    "${task.process}":
+-        bwa: \$(echo \$(bwa 2>&1) | sed 's/^.*Version: //; s/Contact:.*\$//')
+-    END_VERSIONS
+     """
+ 
+     stub:
+     def prefix = task.ext.prefix ?: "${fasta.baseName}"
+     """
+     mkdir bwa
+-
+     touch bwa/${prefix}.amb
+     touch bwa/${prefix}.ann
+     touch bwa/${prefix}.bwt
+     touch bwa/${prefix}.pac
+     touch bwa/${prefix}.sa
+-
+-    cat <<-END_VERSIONS > versions.yml
+-    "${task.process}":
+-        bwa: \$(echo \$(bwa 2>&1) | sed 's/^.*Version: //; s/Contact:.*\$//')
+-    END_VERSIONS
+     """
+ }
+
+Changes in 'bwa/index/tests/main.nf.test.snap':
+--- modules/nf-core/bwa/index/tests/main.nf.test.snap
++++ modules/nf-core/bwa/index/tests/main.nf.test.snap
+@@ -1,4 +1,57 @@
+ {
++    "BWA index - stub": {
++        "content": [
++            {
++                "0": [
++                    [
++                        {
++                            "id": "test"
++                        },
++                        [
++                            "genome.amb:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.ann:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.bwt:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.pac:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.sa:md5,d41d8cd98f00b204e9800998ecf8427e"
++                        ]
++                    ]
++                ],
++                "1": [
++                    [
++                        "BWA_INDEX",
++                        "bwa",
++                        "0.7.19-r1273"
++                    ]
++                ],
++                "index": [
++                    [
++                        {
++                            "id": "test"
++                        },
++                        [
++                            "genome.amb:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.ann:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.bwt:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.pac:md5,d41d8cd98f00b204e9800998ecf8427e",
++                            "genome.sa:md5,d41d8cd98f00b204e9800998ecf8427e"
++                        ]
++                    ]
++                ],
++                "versions_bwa": [
++                    [
++                        "BWA_INDEX",
++                        "bwa",
++                        "0.7.19-r1273"
++                    ]
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.2"
++        },
++        "timestamp": "2026-01-23T16:58:59.966558606"
++    },
+     "BWA index": {
+         "content": [
+             {
+@@ -17,7 +70,11 @@
+                     ]
+                 ],
+                 "1": [
+-                    "versions.yml:md5,0f20525da90e7489a7ebb02adca3265f"
++                    [
++                        "BWA_INDEX",
++                        "bwa",
++                        "0.7.19-r1273"
++                    ]
+                 ],
+                 "index": [
+                     [
+@@ -33,11 +90,19 @@
+                         ]
+                     ]
+                 ],
+-                "versions": [
+-                    "versions.yml:md5,0f20525da90e7489a7ebb02adca3265f"
++                "versions_bwa": [
++                    [
++                        "BWA_INDEX",
++                        "bwa",
++                        "0.7.19-r1273"
++                    ]
+                 ]
+             }
+         ],
+-        "timestamp": "2023-10-17T17:20:20.180927714"
++        "meta": {
++            "nf-test": "0.9.3",
++            "nextflow": "25.10.2"
++        },
++        "timestamp": "2026-01-23T16:58:53.330725134"
+     }
+ }
+Changes in 'bwa/index/tests/main.nf.test':
+--- modules/nf-core/bwa/index/tests/main.nf.test
++++ modules/nf-core/bwa/index/tests/main.nf.test
+@@ -15,19 +15,43 @@
+                 """
+                 input[0] = [
+                     [id: 'test'],
+-                    file(params.test_data['sarscov2']['genome']['genome_fasta'], checkIfExists: true)
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                 ]
+                 """
+             }
+         }
+ 
+         then {
++            assert process.success
+             assertAll(
+-                { assert process.success },
+                 { assert snapshot(process.out).match() }
+             )
+         }
+ 
+     }
+-    
++
++    test("BWA index - stub") {
++
++        options "-stub"
++
++        when {
++            process {
++                """
++                input[0] = [
++                    [id: 'test'],
++                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
++                ]
++                """
++            }
++        }
++
++        then {
++            assert process.success
++            assertAll(
++                { assert snapshot(process.out).match() }
++            )
++        }
++
++    }
++
+ }
+
+'modules/nf-core/bwa/index/tests/tags.yml' was removed
+************************************************************

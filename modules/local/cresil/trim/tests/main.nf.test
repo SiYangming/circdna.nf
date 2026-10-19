@@ -1,0 +1,61 @@
+
+nextflow_process {
+
+    name "Test Process CRESIL_TRIM"
+    script "../main.nf"
+    process "CRESIL_TRIM"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "cresil"
+    tag "cresil/trim"
+
+    test("test-trim") {
+
+        options "-c ${projectDir}/modules/local/cresil/trim/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test' ], // meta
+                            file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
+                input[1] = [ [ id:'ref' ], // meta2
+                            file("\${projectDir}/modules/local/cresil/testdata/ref.mmi", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+    test("test-trim - stub") {
+
+        options "-stub -c ${projectDir}/modules/local/cresil/trim/tests/nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test' ], // meta
+                            file("\${projectDir}/modules/local/cresil/testdata/exp_reads.fastq", checkIfExists: true) ]
+                input[1] = [ [ id:'ref' ], // meta2
+                            file("\${projectDir}/modules/local/cresil/testdata/ref.mmi", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

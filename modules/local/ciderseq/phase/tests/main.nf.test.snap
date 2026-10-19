@@ -1,0 +1,26 @@
+{
+    "test-ciderseq-phase": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "example1",
+                        "genome": "EACMV_DNA_A"
+                    },
+                    [
+                        "example1.EACMV_DNA_A.fasta:md5,fc8ca0730dc0ba61723ad57f340a8a4c",
+                        "example1.EACMV_DNA_A.genbank:md5,c1d8be5f82da8e0bac0904a0f7282c9b"
+                    ]
+                ]
+            ],
+            [
+                "versions.yml:md5,a018a14ae3b05bec524722b2da4aa5c0"
+            ]
+        ],
+        "timestamp": "2026-08-25T12:13:48.331742",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

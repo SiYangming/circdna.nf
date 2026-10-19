@@ -1,0 +1,26 @@
+{
+    "test-cs-eccdna": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    [
+                        "assess1.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "reorder1.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "rfile1.fasta:md5,1a96368a0e13553b81594d29c91b988c"
+                    ]
+                ]
+            ],
+            [
+                "versions.yml:md5,69721a362c2f6dcb13044b2031adff99"
+            ]
+        ],
+        "timestamp": "2026-08-25T12:14:02.740629",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

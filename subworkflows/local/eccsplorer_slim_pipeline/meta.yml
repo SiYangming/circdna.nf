@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "ECCSPLORER_SLIM_PIPELINE"
+description: |
+  Atomic ECCsplorer alternative — replaces the black-box ECCsplorer call
+  with nf-core standard modules + bio.nf custom scripts.
+  Phase 1 (available): segemehl index/align + haarz split-read detection
+  Phase 2 (pending): peak detection, candidate extraction, normalization, visualization
+  Uses biocontainers/segemehl (~50MB) instead of bioinfortools/eccsplorer (~1.5GB).
+keywords:
+  - eccdna
+  - circular dna
+  - eccsplorer_slim
+  - segemehl
+  - haarz
+components:
+  - segemehl
+  - haarz
+input:
+  - reads:
+      description: Paired-end FASTQ reads [ val(meta), [r1, r2] ]
+  - fasta_meta:
+      description: Reference genome [ val(meta), path(fasta) ]
+output:
+  - segemehl_idx:
+      description: segemehl index
+      type: file
+  - segemehl_sam:
+      description: segemehl alignment output
+      type: file
+      pattern: "*.sam"
+  - segemehl_sngl:
+      description: segemehl split-read candidate file
+      type: file
+      pattern: "*.sngl.bed"
+  - haarz_sr:
+      description: haarz processed split-read regions
+      type: file
+      pattern: "*_haarz-SR.bed"
+  - versions:
+      description: Software versions
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

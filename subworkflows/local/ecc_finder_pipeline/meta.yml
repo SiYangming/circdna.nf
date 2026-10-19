@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "ECC_FINDER_PIPELINE"
+description: Subworkflow routing ecc_finder detection to the correct process based on platform (sr/ont/pacbio) and method (map/asm). Short-read uses a BWA index; long-read (ont/pacbio) uses map-ont (minimap2 built internally) and asm-ont.
+keywords:
+  - eccdna
+  - circular dna
+  - ecc_finder
+  - de novo assembly
+  - reference-guided
+components:
+  - ecc_finder
+input:
+  - reads:
+      description: Paired-end FASTQ (SR) or single-end long reads [ val(meta), reads ]
+  - bwa_index:
+      description: BWA index for SR mode only; ignored for long-read platforms [ val(meta), path(idx) ]
+  - fasta_meta:
+      description: Reference genome for SR and long-read modes [ val(meta), path(fasta) ]
+  - run_map:
+      type: boolean
+      description: Enable mapping-based detection
+  - run_asm:
+      type: boolean
+      description: Enable assembly-based detection
+  - platform:
+      type: string
+      description: "'sr' for Illumina, 'ont'/'pacbio' for long-read"
+output:
+  - eccdna_candidates:
+      description: eccDNA candidates [ val(meta), file ] — CSV (map) and/or FASTA (asm)
+  - versions:
+      description: Software versions
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

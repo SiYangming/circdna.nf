@@ -1,0 +1,10 @@
+# Keep notes/specs; ignore bulky run artifacts
+backup_*/
+cf_validation_*/
+*.nextflow.log
+*.screen.log
+*.bam
+*.bai
+*.csi
+*.fastq.gz
+*.fq.gz

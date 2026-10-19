@@ -1,0 +1,8 @@
+name: fled
+channels:
+  - yangmingsi
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - fled=1.7.0

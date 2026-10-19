@@ -1,0 +1,26 @@
+{
+    "test-ciderseq-separate": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "example1"
+                    },
+                    [
+                        "example1.EACMV_DNA_A.fa:md5,dec39b9ea534456eadd47ead3c15b80d",
+                        "example1.EACMV_DNA_B.fa:md5,c9fbb342cad75d4ec708d7392a0b33ca",
+                        "example1.nohit.fa:md5,0be973b3ffda8f907590a5cc2c5847ee"
+                    ]
+                ]
+            ],
+            [
+                "versions.yml:md5,48b938e3888824c56775b604537e7f3a"
+            ]
+        ],
+        "timestamp": "2026-08-25T12:09:23.106172",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

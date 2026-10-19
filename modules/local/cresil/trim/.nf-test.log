@@ -1,0 +1,8 @@
+7月-02 22:12:21.503 [main] INFO  com.askimed.nf.test.App - nf-test 0.9.5
+7月-02 22:12:21.522 [main] INFO  com.askimed.nf.test.App - Arguments: [test]
+7月-02 22:12:22.435 [main] INFO  com.askimed.nf.test.App - Nextflow Version: 26.04.4
+7月-02 22:12:22.439 [main] WARN  com.askimed.nf.test.commands.RunTestsCommand - No nf-test config file found.
+7月-02 22:12:22.448 [main] INFO  com.askimed.nf.test.lang.dependencies.DependencyResolver - Loaded 3 files from directory /Users/siyangming/nextflow_nf_core/bio.nf/modules/cresil/trim in 0.007 sec
+7月-02 22:12:22.449 [main] INFO  com.askimed.nf.test.lang.dependencies.DependencyResolver - Found 0 files containing tests.
+7月-02 22:12:22.449 [main] DEBUG com.askimed.nf.test.lang.dependencies.DependencyResolver - Found files: []
+7月-02 22:12:22.451 [main] INFO  com.askimed.nf.test.commands.RunTestsCommand - Found 0 tests to execute.

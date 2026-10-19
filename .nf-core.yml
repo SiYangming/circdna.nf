@@ -3,6 +3,15 @@ lint:
   files_exist:
     - assets/multiqc_config.yml
     - .github/workflows/linting_comment.yml
+    # Fork 保留自定义 main.nf 帮助/完成处理器，仍引用 lib/ Groovy 助手类，暂未迁移到
+    # PIPELINE_INITIALISATION / PIPELINE_COMPLETION 结构，故忽略模板 4.1.0 的移除要求
+    - lib/NfcoreTemplate.groovy
+    - lib/Utils.groovy
+    - lib/WorkflowMain.groovy
+    - lib/WorkflowCircdna.groovy
+  nextflow_config:
+    # fork 仓库地址，不以 https://github.com/nf-core/ 开头
+    - manifest.homePage
   files_unchanged:
     - assets/email_template.html
     - .github/workflows/branch.yml

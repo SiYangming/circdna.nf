@@ -42,6 +42,15 @@ On release, automated continuous integration tests run the pipeline on a full-si
    1. Identification of circular amplicons [`AmpliconArchitect`](https://github.com/jluebeck/AmpliconArchitect)
    1. De Novo Assembly of ecDNAs [`Unicycler`](https://github.com/rrwick/Unicycler) -> [`Minimap2`](https://github.com/lh3/minimap2)
 7. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+8. Optional long-read analysis (PacBio HiFi / ONT, see [usage](https://nf-co.re/circdna/usage))
+   1. Long-read QC ([`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+   1. Long-read eccDNA detection engines, selected via `--long_read_identifier`
+      1. [`CircleSeeker`](https://github.com/leoxqy/CircleSeeker) -> comprehensive eccDNA detection from PacBio HiFi reads (CtcReads-Caller + SplitReads-Caller)
+      1. [`CRESIL`](https://gitlab.com/visanu/cresil) -> eccDNA detection from long reads
+      1. [`FLED`](https://github.com/ejbs-lab/fled) -> eccDNA junction detection
+      1. [`Flye`](https://github.com/fenderglass/Flye) -> long-read assembly
+      1. [`ECC_finder`](https://github.com/ueda0413/ECC_finder) -> eccDNA detection (map/asm modes)
+   1. Candidate filtering by read support, blacklist and repeats ([`bedtools`](https://github.com/arq5x/bedtools))
 
 ## Functionality Overview
 
@@ -110,6 +119,32 @@ Please specify the parameter `circle_identifier` depending on the pipeline branc
 ### De novo assembly of ecDNAs with Circle-seq data
 
 > `unicycler` uses [Unicycler](https://github.com/rrwick/Unicycler) for de novo assembly of ecDNAs and [Minimap2](https://github.com/lh3/minimap2) for accurate mapping of the identified circular sequences.
+
+### Long-read eccDNA detection (PacBio HiFi / ONT) and mixed tables
+
+Long-read samplesheets carry per-row routing columns: `platform,assay,datatype,pair,concatemer,read_type,enrichment`.
+`assay` is required for long-read rows (`wgs|rca|ciderseq|enriched`) — `wgs` rows are long-read WGS **background** (minimap2 + mosdepth only, never detected). `concatemer=false` (linearized RCA / T7 debranching) skips TideHunter. `read_type=clr` must be written explicitly for PacBio RS / non-HiFi Sequel.
+
+`samplesheet_long_read.csv`:
+
+```csv
+sample,fastq_1,fastq_2,input_bam,entrypoint,platform,assay,datatype,pair,concatemer,read_type,enrichment
+SAMPLE_RCA,SAMPLE.fastq.gz,,,cleaned_fastq,ont,rca,eccdna,STUDY1,true,ont,circleseq
+SAMPLE_WGS,SAMPLE.fastq.gz,,,cleaned_fastq,pacbio,wgs,gdna,STUDY1,false,hifi,none
+SAMPLE_CIDER,SAMPLE.fastq.gz,,,cleaned_fastq,pacbio,ciderseq,eccdna,STUDY2,false,clr,ciderseq
+```
+
+One table may mix Illumina Circle-seq + PacBio WGS + ONT RCA + CIDER-seq: each row is routed on its own `platform × assay × datatype` (see `samplesheets/circdna_representative.csv` for a full 31-sample representative set derived from `samplesheets/metadata.csv` via `bin/metadata_to_samplesheet.py`).
+
+```bash
+nextflow run nf-core/circdna --input samplesheet_long_read.csv --outdir <OUTDIR> \
+    --fasta <reference.fa> --input_format FASTQ \
+    --protocol pacbio --entrypoint cleaned_fastq \
+    --long_read_identifier cresil,fled,flye,eccfinder \
+    -profile docker
+```
+
+`circleseeker` runs only for `assay=rca + concatemer=true + read_type=hifi` samples; `ciderseq` requires `--ciderseq_config` and its databases.
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;

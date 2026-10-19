@@ -6,6 +6,10 @@ This document describes the output produced by the pipeline. Most of the plots a
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
+### Server profile intermediate outputs
+
+When running with `-profile server`, `conf/server.config` enables all `save_*` intermediate-output flags. In addition, every process without a dedicated `publishDir` rule copies its outputs to `<outdir>/intermediate/<process-path>/`, so intermediate files can be traced back after a run. The server profile also sets `cleanup = true`, so Nextflow removes `work/` after a successful run.
+
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
@@ -22,6 +26,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Circle_finder](#circle_finder) - Identifies putative circular DNA junctions
 - [AmpliconArchitect](#ampliconarchitect) - Reconstruct the structure of focally amplified regions
 - [Unicycler](#unicycler) - DeNovo Alignment of circular DNAs
+- [CircleSeeker](#circleseeker) - Long-read (PacBio HiFi) eccDNA detection
 
 ## General Tools
 
@@ -398,7 +403,50 @@ The plots will show:
   - Samtools stats output
 
 </details>
-### Pipeline information
+### CircleSeeker
+
+[CircleSeeker](https://github.com/leoxqy/CircleSeeker) is an optional long-read eccDNA detection engine (enabled by adding `circleseeker` to `--long_read_identifier`). It detects and classifies eccDNA from PacBio HiFi reads using two evidence-based callers: the CtcReads-Caller (tandem repeat / concatemer evidence, producing "Confirmed" eccDNA) and the SplitReads-Caller (split-read / junction evidence, producing "Inferred" eccDNA). EccDNA are classified as Unique (UeccDNA), Multiple (MeccDNA) or Chimeric (CeccDNA).
+
+<details markdown="1">
+<summary>Output files</summary>
+
+**Output directory: `results/long_read/circleseeker/<SAMPLE>/`**
+
+- `<SAMPLE>_eccDNA_summary.csv`
+  - Combined table of all detected eccDNA (eccDNA_id, type, state, chr, start, end, strand, length, location, segment_count, read_count, copy_number, confidence, inferred_reads)
+- `<SAMPLE>_eccDNA_all.fasta`
+  - FASTA file with the sequences of all detected eccDNA
+- `<SAMPLE>_eccDNA_reads.csv`
+  - Per-read support table (read_name, copy_number, match_degree, identity, mapq)
+- `<SAMPLE>_eccDNA_regions.csv`
+  - Per-region table (region_idx, chr, start, end, strand, length, role)
+- `<SAMPLE>.circleseeker.bed`
+  - BED6+read_count table derived from the summary CSV, used as input for the shared long-read candidate filtering
+- `<SAMPLE>_summary.txt`
+  - Summary statistics text report
+- `<SAMPLE>_report.html`
+  - Interactive HTML report
+- `UeccDNA/`, `MeccDNA/`, `CeccDNA/`
+  - Per-type subdirectories with `*.bed` and `*.fasta` files
+
+</details>
+
+Filtered candidates are published per engine by the shared long-read filtering step:
+
+**Output directory: `results/long_read/filtering/<SAMPLE>/`**
+
+- `<SAMPLE>.<ENGINE>.filtered.bed`
+  - Candidates passing the `--min_read_support` filter (plus `--blacklist_bed` / `--repeats_bed` when provided).
+  - `<ENGINE>` is one of `cresil`, `fled`, `flye`, `circleseeker`, `eccfinder`, `eccfinder_asm`.
+
+The same candidates are also merged across engines per sample:
+
+**Output directory: `results/long_read/candidates/<SAMPLE>/`**
+
+- `<SAMPLE>.eccdna_candidates.bed`
+  - Every engine's filtered candidates in one file, under the shared BED contract
+    (`chr start end name score strand read_count [te_overlap] [origin]`), sorted by position.
+  - Optional trailing columns are preserved as produced by each engine.
 
 <details markdown="1">
 <summary>Output files</summary>

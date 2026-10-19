@@ -22,9 +22,13 @@ workflow BAM_PREPROCESSING {
     main:
     ch_versions = channel.empty()
 
-    // FAIDX
+    // FAIDX — 由 trimmed_reads 触发（空输入时不建索引；Nextflow 26 中 if(ch) 恒 true，
+    // 纯长读/空调用时不能让无条件进程执行）
+    def ch_faidx_trigger = trimmed_reads.map { meta, _reads -> meta }.first()
     SAMTOOLS_FAIDX (
-        fasta_meta.map{ meta, fasta -> [meta, fasta, []] },
+        ch_faidx_trigger
+            .combine(fasta_meta)
+            .map { _m_trigger, m_fasta, fa -> [m_fasta, fa, []] },
         channel.value(true)
     )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions_samtools)
@@ -58,9 +62,16 @@ workflow BAM_PREPROCESSING {
         )
         ch_versions = ch_versions.mix(SAMTOOLS_INDEX_BAM.out.versions_samtools)
     } else {
+        // BAM input mode: input is already sorted, just index it
         ch_bam_sorted = trimmed_reads
         ch_full_bam_sorted = trimmed_reads
         ch_bwa_sorted = trimmed_reads
+
+        // SAMTOOLS INDEX pre-sorted BAM (needed for downstream BAI channel)
+        SAMTOOLS_INDEX_BAM (
+            ch_bam_sorted
+        )
+        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_BAM.out.versions_samtools)
     }
 
     ch_bam_sorted_bai       = SAMTOOLS_INDEX_BAM.out.index

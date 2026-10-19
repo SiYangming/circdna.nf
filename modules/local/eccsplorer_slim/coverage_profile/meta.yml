@@ -1,0 +1,47 @@
+name: eccsplorer_slim_coverage_profile
+description: Extract per-base coverage profiles for each eccDNA candidate region using bedtools coverage -d and bedtools getfasta.
+keywords:
+  - coverage
+  - eccDNA
+  - bedtools
+tools:
+  - coverage_profile.py:
+      description: Standalone coverage profiling script from ECCsplorer slim
+      homepage: https://github.com/crimBubble/ECCsplorer
+      licence: ["GPL-3.0-or-later"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - candidates_bed:
+      type: file
+      description: BED file of candidate regions
+      pattern: "*.bed"
+  - meta2:
+      type: map
+      description: Groovy Map for alignment sample
+  - all_bed:
+      type: file
+      description: Alignment BED file (all reads)
+      pattern: "*.bed"
+  - meta3:
+      type: map
+      description: Groovy Map for reference genome
+  - ref_fa:
+      type: file
+      description: Reference genome FASTA file
+      pattern: "*.fa"
+output:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - coverage:
+      type: file
+      description: Per-candidate per-base coverage TSV files
+      pattern: "*_coverage.tsv"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@siyangming"

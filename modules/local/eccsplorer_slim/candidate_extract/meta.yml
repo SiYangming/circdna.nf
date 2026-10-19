@@ -1,0 +1,47 @@
+name: eccsplorer_slim_candidate_extract
+description: Extract eccDNA candidate regions by intersecting split-read regions with peak regions (high-confidence 3/3 or low-confidence 2/3 combos). Uses bedtools intersect.
+keywords:
+  - eccDNA
+  - candidate
+  - bedtools
+tools:
+  - candidate_extract.py:
+      description: Standalone candidate extraction script from ECCsplorer slim
+      homepage: https://github.com/crimBubble/ECCsplorer
+      licence: ["GPL-3.0-or-later"]
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - sr_bed:
+      type: file
+      description: Split-read regions BED file (from haarz)
+      pattern: "*_regions-SR.bed"
+  - meta2:
+      type: map
+      description: Groovy Map for peak_all sample
+  - peak_all_bed:
+      type: file
+      description: Peak regions BED file (all reads)
+      pattern: "*_regions-all.bed"
+  - meta3:
+      type: map
+      description: Groovy Map for peak_dr sample
+  - peak_dr_bed:
+      type: file
+      description: Peak regions BED file (discordant reads)
+      pattern: "*_regions-DR.bed"
+output:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - candidates:
+      type: file
+      description: Candidate regions BED file
+      pattern: "*.bed"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@siyangming"

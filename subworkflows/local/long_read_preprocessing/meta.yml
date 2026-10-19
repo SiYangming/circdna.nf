@@ -1,0 +1,26 @@
+name: long_read_preprocessing
+description: "Preprocessing workflow for long-read sequencing data (PacBio/ONT)"
+keywords:
+  - preprocessing
+  - long-read
+  - pacbio
+  - ont
+
+subworkflows:
+  - long_read_preprocessing:
+      description: "Preprocess PacBio or ONT long-read data"
+
+input:
+  - reads:
+      type: channel
+      description: |
+        Channel containing [meta, fastq, input_bam, entrypoint]
+
+output:
+  - preprocessed_fastq:
+      type: channel
+      description: |
+        Channel containing [meta, fastq] after preprocessing
+
+authors:
+  - "@SiYangming"

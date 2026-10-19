@@ -1,0 +1,6 @@
+name: convert_cresil_to_bed
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.9

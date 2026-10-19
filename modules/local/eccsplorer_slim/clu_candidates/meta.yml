@@ -1,0 +1,30 @@
+name: eccsplorer_slim_clu_candidates
+description: Extract eccDNA candidate clusters from RepeatExplorer2 (seqclust) output
+keywords: eccdna, clustering, repeatsexplorer, candidates
+tools:
+  - python
+input:
+  - meta:
+      type: map
+      description: Sample metadata
+  - clu_dir:
+      type: directory
+      description: seqclust output root directory
+  - pre_a:
+      type: string
+      description: ReadID prefix dataset A
+  - pre_b:
+      type: string
+      description: ReadID prefix dataset B
+output:
+  - cluster_candidates:
+      type: file
+      description: Candidate clusters enriched in dataset A
+  - comparative_table:
+      type: file
+      description: Comparative cluster table with scores
+  - versions:
+      type: file
+      description: File containing software versions
+authors:
+  - "@siyangming"

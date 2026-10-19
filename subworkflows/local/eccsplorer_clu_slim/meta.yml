@@ -1,0 +1,29 @@
+name: eccsplorer_clu_slim
+description: RepeatExplorer2 clustering subworkflow (prepare -> seqclust -> candidates)
+keywords:
+  - eccdna
+  - clustering
+  - repeat_explorer
+modules:
+  - clu_prepare
+  - repeatexplorer2
+  - clu_candidates
+input:
+  - reads:
+      type: channel
+      description: Treatment reads [meta, r1, r2]
+  - control:
+      type: channel
+      description: Control reads [meta, c1, c2]
+  - taxon:
+      type: val
+      description: Taxon selector (vir/met)
+output:
+  - cluster_candidates:
+      type: channel
+      description: Candidate clusters enriched in treatment
+  - comparative_table:
+      type: channel
+      description: Comparative cluster table with scores
+authors:
+  - "@siyangming"

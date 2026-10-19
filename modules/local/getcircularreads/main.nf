@@ -38,4 +38,14 @@ process GETCIRCULARREADS {
         cat: \$(echo \$(cat --version 2>&1) | sed 's/^.*coreutils) //; s/ .*\$//')
     END_VERSIONS
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    echo '' | gzip > '${prefix}.unicycler.circular.fastq.gz'
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cat: stub
+    END_VERSIONS
+    """
 }
