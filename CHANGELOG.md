@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.7.9 - [2026-10-19]
+
+### Fixed
+
+- **流程测试 versions.yml 三重缺陷导致 MULTIQC 解析失败（CI pipeline 测试红的根因）**: ① `workflows/circdna.nf` 的版本汇总 `collectFile` 缺 `storeDir` 且文件名不符 nf-core 约定，`software_versions.yml` 从未发布到 `${params.outdir}/pipeline_info/`；修复为 `storeDir: "${params.outdir}/pipeline_info"` + 改名 `nf_core_circdna_software_mqc_versions.yml`（MultiQC 1.35 仅解析匹配 `*_software_mqc_versions.yml` 的文件，旧名从不匹配所以内容缺陷一直潜伏）。② `workflows/circdna.nf` 中 `ch_versions.mix(CIRCLE_MAP_PIPELINE.out)` 混入整个 `.out`——`CIRCLE_MAP_PIPELINE` 有 `bed` + `versions` 两个命名 emit，多输出时 `.out` 返回第一个输出（bed channel），`(meta, bed_path)` 元组流入 ch_versions 使 `softwareVersionsToYAML` destructure 错位，产生 3 处 `!!sun.nio.fs.UnixPath {}: null` 垃圾键；改为 `.out.versions`（`CIRCLE_FINDER_PIPELINE`/`UNICYCLER_PIPELINE` 仅单个匿名 versions emit，`.out` 即 versions channel，无需改动）。③ `subworkflows/nf-core/utils_nfcore_pipeline/main.nf` 的 `softwareVersionsToYAML` 两个内容 bug：`merged['Workflow']` 中 `Nextflow: workflow.nextflow.version` 传入 VersionNumber 对象被 SnakeYAML 序列化为 `Nextflow: !!nextflow.util.VersionNumber {}`（加 `.toString()`）；元组元素含 Path/File 时增加防御分支（解析其 YAML 内容而非错位 destructure）。修复后 stub-run 产物 YAML 无任何 `!!` 标签垃圾，MULTIQC 正常完成。
+- **nf-test CI 的 `NFT_WORKDIR: "~"` 导致断言路径不存在**: nf-test 0.9.4 不展开 `~`，将其解析为字面目录名，pipeline 测试的全部 `assertAll()` 路径检查失败。从 `.github/workflows/nf-test.yml` 与 `.github/actions/nf-test/action.yml` 移除该环境变量及传递。
+- **CRESIL_ANNOTATE 容器内 `consensus_status` KeyError**: `quay.io/bioinfortools/cresil:1.2.1` 的 annotate 脚本引用不存在的 `consensus_status` 列。模块内增加 shadow-package 补丁（`cresil_shadow/` + sed `consensus_status`→`eccdna_status` + PYTHONPATH 前置），并对空 identify 表显式 exit 0。
+- **cresil/flye 模块测试在 CI runner 资源超限**: `modules/local/cresil/{annotate,identify,identify_wgls,trim,visualize}/tests/nextflow.config` 与 `modules/local/flye/tests/nextflow.config` 增加 withName 覆盖（cpus=4、memory=6.GB），消除 `Process requirement exceeds available CPUs`；对应测试命令补 `-c tests/nextflow.config`（cresil identify/identify_wgls 仅 stub 分支需要）；flye 测试 testdata 路径修正；5 个 cresil 模块快照内 cresil 版本 `1.2.1`→`1.2.2`。
+
+### `Added`
+
+- **`tests/default.nf.test.snap` 流程测试快照**: nf-test 0.9.4 CI 模式（`--ci`）要求快照文件已提交，首次提交 pipeline 级快照（含 versions.yml 内容断言）。
+
 ## v4.7.8 - [2026-10-18]
 
 ### `Added`

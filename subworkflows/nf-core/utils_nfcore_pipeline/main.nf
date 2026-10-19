@@ -105,8 +105,15 @@ def softwareVersionsToYAML(ch_versions) {
                 def yaml = new org.yaml.snakeyaml.Yaml()
                 yaml.load(version.text).collectEntries { k, v -> [k.tokenize(':')[-1], v] }
             } else {
-                def (_process_name, tool, ver) = version
-                [(tool): ver]
+                def version_list = version instanceof List ? version : [version]
+                def version_file = version_list.find { it instanceof Path || it instanceof File }
+                if (version_file) {
+                    def yaml = new org.yaml.snakeyaml.Yaml()
+                    yaml.load(version_file.text).collectEntries { k, v -> [k.tokenize(':')[-1], v] }
+                } else {
+                    def (_process_name, tool, ver) = version
+                    [(tool): ver]
+                }
             }
         }
         .unique()
@@ -116,7 +123,7 @@ def softwareVersionsToYAML(ch_versions) {
             versions_list.each { entry -> merged.putAll(entry) }
             merged['Workflow'] = [
                 (workflow.manifest.name): getWorkflowVersion(),
-                Nextflow: workflow.nextflow.version
+                Nextflow: workflow.nextflow.version.toString()
             ]
             def yaml = new org.yaml.snakeyaml.Yaml()
             yaml.dumpAsMap(merged).trim()

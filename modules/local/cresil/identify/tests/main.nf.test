@@ -39,7 +39,7 @@ nextflow_process {
 
     test("test-identify - stub") {
 
-        options "-stub"
+        options "-stub -c ${projectDir}/modules/local/cresil/identify/tests/nextflow.config"
 
         when {
             process {

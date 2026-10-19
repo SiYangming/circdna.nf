@@ -9,12 +9,12 @@ nextflow_process {
 
     test("flye - stub") {
 
-        options "-stub"
+        options "-stub -c ${projectDir}/modules/local/flye/tests/nextflow.config"
 
         when {
             process {
                 """
-                def reads = file("\${projectDir}/modules/flye/testdata/ecoli_test_reads.fasta", checkIfExists: true)
+                def reads = file("\${projectDir}/modules/local/flye/testdata/ecoli_test_reads.fasta", checkIfExists: true)
                 input[0] = [ [ id:'test' ], reads ]
                 """
             }

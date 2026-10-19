@@ -40,7 +40,17 @@ process CRESIL_ANNOTATE {
         exit 0
     fi
 
-    # consensus_status / CSI / empty-abort fixes are baked into cresil:1.2.1.
+    # CSI / empty-abort fixes are baked into cresil:1.2.1, but the image
+    # still reads 'consensus_status' when iterating the eccbed table (whose
+    # column is named 'eccdna_status'). Patch a writable shadow copy of the
+    # package: site-packages is root-owned and not writable when docker runs
+    # as the host user.
+    CRESIL_PKG=\$(python -c "import cresil, os; print(os.path.dirname(cresil.__file__))")
+    mkdir -p cresil_shadow
+    cp -r "\$CRESIL_PKG" cresil_shadow/
+    sed -i "s|^            eccdna_status = value\\['consensus_status'\\]\$|            eccdna_status = value['eccdna_status']|" cresil_shadow/cresil/cli/annotate.py
+    export PYTHONPATH="\$PWD/cresil_shadow:\${PYTHONPATH:-}"
+
     cresil annotate \\
         -t ${task.cpus} \\
         -identify ${identify_table} \\

@@ -12,6 +12,8 @@ nextflow_process {
 
     test("test-visualize") {
 
+        options "-c ${projectDir}/modules/local/cresil/visualize/tests/nextflow.config"
+
         when {
             process {
                 """
@@ -41,7 +43,7 @@ nextflow_process {
 
     test("test-visualize - stub") {
 
-        options "-stub"
+        options "-stub -c ${projectDir}/modules/local/cresil/visualize/tests/nextflow.config"
 
         when {
             process {

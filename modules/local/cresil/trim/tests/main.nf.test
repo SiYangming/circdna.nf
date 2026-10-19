@@ -12,6 +12,8 @@ nextflow_process {
 
     test("test-trim") {
 
+        options "-c ${projectDir}/modules/local/cresil/trim/tests/nextflow.config"
+
         when {
             process {
                 """
@@ -34,7 +36,7 @@ nextflow_process {
 
     test("test-trim - stub") {
 
-        options "-stub"
+        options "-stub -c ${projectDir}/modules/local/cresil/trim/tests/nextflow.config"
 
         when {
             process {

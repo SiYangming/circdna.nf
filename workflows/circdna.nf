@@ -483,7 +483,7 @@ workflow CIRCDNA {
                 run_circle_map_realign,
                 run_circle_map_repeats
             )
-            ch_versions = ch_versions.mix(CIRCLE_MAP_PIPELINE.out)
+            ch_versions = ch_versions.mix(CIRCLE_MAP_PIPELINE.out.versions)
         }
 
         if (run_circexplorer2) {
@@ -670,7 +670,12 @@ workflow CIRCDNA {
     // MODULE: Pipeline reporting
     //
     ch_versions_for_multiqc = softwareVersionsToYAML(ch_versions)
-        .collectFile(name: 'software_versions_mqc.yml')
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name: 'nf_core_circdna_software_mqc_versions.yml',
+            sort: true,
+            newLine: true,
+        )
 
     //
     // MODULE: MultiQC
