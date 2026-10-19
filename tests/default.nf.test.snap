@@ -2,39 +2,39 @@
     "-profile test": {
         "content": [
             {
-                "SAMPLESHEET_CHECK": {
-                    "python": "3.12.12"
-                },
-                "cat": "9.5",
-                "trimgalore": "2.1.0",
-                "fastqc": "0.12.1",
-                "UNICYCLER": {
-                    "unicycler": "0.5.1"
-                },
-                "samtools": "1.22.1",
-                "bwa": "0.7.19-r1273",
-                "seqtk": "1.4-r122",
-                "minimap2": "2.30-r1287",
                 "BEDTOOLS_SORTEDBAM2BED": {
                     "bedtools": "2.30.0"
-                },
-                "circexplorer2": "2.3.8",
-                "SAMBLASTER": {
-                    "samblaster": "0.1.26",
-                    "samtools": "1.19.2"
-                },
-                "CIRCLEMAP_READEXTRACTOR": {
-                    "Circle-Map": "1.1.4"
                 },
                 "BEDTOOLS_SPLITBAM2BED": {
                     "bedtools": "2.30.0"
                 },
+                "CIRCLEMAP_READEXTRACTOR": {
+                    "Circle-Map": "1.1.4"
+                },
                 "CIRCLEMAP_REPEATS": {
                     "Circle-Map": "1.1.4"
                 },
+                "SAMBLASTER": {
+                    "samblaster": "0.1.26",
+                    "samtools": "1.19.2"
+                },
+                "SAMPLESHEET_CHECK": {
+                    "python": "3.12.12"
+                },
+                "UNICYCLER": {
+                    "unicycler": "0.5.1"
+                },
                 "Workflow": {
                     "nf-core/circdna": "v4.7.9"
-                }
+                },
+                "bwa": "0.7.19-r1273",
+                "cat": "9.5",
+                "circexplorer2": "2.3.8",
+                "fastqc": "0.12.1",
+                "minimap2": "2.30-r1287",
+                "samtools": "1.22.1",
+                "seqtk": "1.4-r122",
+                "trimgalore": "2.1.0"
             },
             [
                 "bwa",
@@ -254,9 +254,6 @@
                 "circdna_1.bed:md5,6dbb4d2fea07a6d9156bfd712f63cbb5",
                 "circdna_2.bed:md5,4521ef4644679594c45cb92e054c6a20",
                 "circdna_3.bed:md5,8f3d70606913df52afb5c108b93f28ad",
-                "circdna_1.microDNA-JT.txt:md5,5511acc06e5aca4f045cb8d1525a9976",
-                "circdna_2.microDNA-JT.txt:md5,c6c7f2f723eb10f940385fa3f463ae0e",
-                "circdna_3.microDNA-JT.txt:md5,ecd4e568dacf80d6856b34c459d5d252",
                 "circdna_1_circularDNA_repeats_coordinates.bed:md5,2f1ae4929263d516209e0366f502d02e",
                 "circdna_2_circularDNA_repeats_coordinates.bed:md5,7162ae49bba245cf6477e678c97d967a",
                 "circdna_3_circularDNA_repeats_coordinates.bed:md5,4d32985fd6ac04c3c7a68027faf4a1da",
@@ -266,52 +263,13 @@
                 "circdna_2.md.bam.bai:md5,2c6615e86a23cb2c31b78878bdf80df7",
                 "circdna_3.md.bam:md5,f25c4fcff1fa7be5c2786b6b881108da",
                 "circdna_3.md.bam.bai:md5,b7a5ba59ad898d4e80a781a0afe03b91",
-                "fastqc-status-check-heatmap.txt:md5,d83afaaba4c83f98c35c8bc5873e2035",
-                "fastqc_adapter_content_plot.txt:md5,e2f6ea3d6a652623a39916c36ae635da",
-                "fastqc_per_base_n_content_plot.txt:md5,ef8b3ecd84d975a150dda29dbaaf41df",
-                "fastqc_per_base_sequence_quality_plot.txt:md5,0ad787df66f45ebfa491b93e0a7b434f",
-                "fastqc_per_sequence_gc_content_plot_Counts.txt:md5,cba7763114a30721f245b9d6a54cf565",
-                "fastqc_per_sequence_gc_content_plot_Percentages.txt:md5,cb6f990724a0ff4e211bb4a0047418d1",
-                "fastqc_per_sequence_quality_scores_plot.txt:md5,776b5033120d280df3f366dba149f229",
-                "fastqc_sequence_counts_plot.txt:md5,cb41c314ebd96342c084f5af6b489d00",
-                "fastqc_sequence_duplication_levels_plot.txt:md5,71df234c46f0bc580f9e4ca600e1abce",
-                "fastqc_sequence_length_distribution_plot.txt:md5,3e45860e59f782e5fb549b9af4b6dc19",
-                "multiqc_citations.txt:md5,ee1baba4adea57b43a9ae59ce7e1dd7f",
-                "multiqc_fastqc.txt:md5,56ca9081a64f748f5e34d1c97a3b40db",
-                "multiqc_general_stats.txt:md5,70a19e4ce389c0b60b7e48cdf62a7ced",
-                "multiqc_picard_dups.txt:md5,027d3e31667c8149435dadbcb8e5cf0d",
-                "multiqc_samtools_flagstat.txt:md5,68e1886d85a9631f287291df01ed345a",
-                "multiqc_samtools_idxstats.txt:md5,89670cbc8dc097d7eff67410c1235e02",
-                "multiqc_samtools_stats.txt:md5,bb0f0d6baed296033187ad653dd51fb8",
-                "picard_MarkIlluminaAdapters_histogram.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "picard_MeanQualityByCycle_histogram.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "picard_MeanQualityByCycle_histogram_1.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "picard_QualityScoreDistribution_histogram.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "picard_deduplication.txt:md5,b6a8afaee673baf8c3b27eda2955ee03",
-                "samtools-flagstat-pct-table.txt:md5,90921b865a92496cd82eff12b0ea432e",
-                "samtools-flagstat-table.txt:md5,451885b04c462f2e967523d65c6178ba",
-                "samtools-idxstats-mapped-reads-plot_Normalised_Counts.txt:md5,c2f95831048cfc5f1fd1f4643854fd9a",
-                "samtools-idxstats-mapped-reads-plot_Observed_over_Expected_Counts.txt:md5,19b5c57de247a23bbb8270ede1b024c9",
-                "samtools-idxstats-mapped-reads-plot_Raw_Counts.txt:md5,2a1b69df61ba7a052b14e74bcd2e5d70",
-                "samtools-stats-dp.txt:md5,a425f592cbdb525c976bce2dbc4dba1a",
-                "samtools_alignment_plot.txt:md5,01c1e9fcbdc66736434fb3f7cdfe8c35",
-                "samtools_insert_size.txt:md5,d23b06d7431e351346e36cde725e885b",
                 "samplesheet.valid.csv:md5,8c4d2c9b73176a2243ca2dd3b11d559a",
                 "circdna_1_1_fastqc.html:md5,80195b023469f3cd483e078998b75714",
-                "circdna_1_1_fastqc.zip:md5,84fa111602e5468e9dd0527c3cd506cc",
                 "circdna_1_2_fastqc.html:md5,21474c4d7876c1c6dc67bc0c0ed7b62e",
-                "circdna_1_2_fastqc.zip:md5,e4834fd5cb18ca21234021a1585d65aa",
                 "circdna_2_1_fastqc.html:md5,3731b5162006e85ad172d6f95b588dfc",
-                "circdna_2_1_fastqc.zip:md5,a2435008ee6934aa672bdceef52cd94a",
                 "circdna_2_2_fastqc.html:md5,1145b2de836db06f95b7af7ade46bac8",
-                "circdna_2_2_fastqc.zip:md5,b6454636567a7aab45075be1485e2ede",
                 "circdna_3_1_fastqc.html:md5,697fcb752cdbdae2200e0e5cd7ba91e5",
-                "circdna_3_1_fastqc.zip:md5,18c1fd5b9cd9b3e90371f23f3684f56c",
                 "circdna_3_2_fastqc.html:md5,5d8ac01a850c8041bc481daa4d569c22",
-                "circdna_3_2_fastqc.zip:md5,524563dfa0a31c83904aa4295239ae2d",
-                "circdna_1.md.metrics.txt:md5,4e35d62f22d8a7fcb77228f94681e040",
-                "circdna_2.md.metrics.txt:md5,6564607610223a3839df299c164f2368",
-                "circdna_3.md.metrics.txt:md5,3cc6d4955c2d4768aa1a4714c1b837e2",
                 "circdna_1.flagstat:md5,a7a2f6fa2ec4e498eb9bb2a05be9e343",
                 "circdna_1.idxstats:md5,3de2f0e6f2b356c38f701c8b29370c70",
                 "circdna_1.stats:md5,0a261ecbc99f9242f9642b167e4478a4",
@@ -331,17 +289,11 @@
                 "circdna_3.idxstats:md5,4c315f4eae18daca601e67236b8939a4",
                 "circdna_3.stats:md5,cc72b45d46f79c2833be48c70db6f177",
                 "circdna_1.trimmed_1_val_1_fastqc.html:md5,11a3e9bbc955ec76b094bfb46fca4ea9",
-                "circdna_1.trimmed_1_val_1_fastqc.zip:md5,2bfbdd5fb7f4b3c465e5a3548c6107ce",
                 "circdna_1.trimmed_2_val_2_fastqc.html:md5,8997dc9fe7ad646f136baf85a4646166",
-                "circdna_1.trimmed_2_val_2_fastqc.zip:md5,137e67a4c297cbed71c8433dd4d43f1c",
                 "circdna_2.trimmed_1_val_1_fastqc.html:md5,a481ff223cae99c7aa014a4c50206f2e",
-                "circdna_2.trimmed_1_val_1_fastqc.zip:md5,a5f0ce80fff0fcdcd5181525994fc9bc",
                 "circdna_2.trimmed_2_val_2_fastqc.html:md5,6194880b5ecdfc6f2bcb84dffa7e533b",
-                "circdna_2.trimmed_2_val_2_fastqc.zip:md5,db5dd5fb22c3356cb7b2b3178a68a3c2",
                 "circdna_3.trimmed_1_val_1_fastqc.html:md5,55a81826201abc402860bce30193741d",
-                "circdna_3.trimmed_1_val_1_fastqc.zip:md5,5648374d12673cb68181de9fe6491473",
                 "circdna_3.trimmed_2_val_2_fastqc.html:md5,8050d78bb2041d325b8376270af41b75",
-                "circdna_3.trimmed_2_val_2_fastqc.zip:md5,2784cfc1234039f4c10e8b4e827bb21d",
                 "circdna_1.trimmed_1.fastq.gz_trimming_report.txt:md5,a907a9f2fe59ee84a4878c2d6a63e52b",
                 "circdna_1.trimmed_2.fastq.gz_trimming_report.txt:md5,220d8a8f6ec84a71a0b7699e5ef83a05",
                 "circdna_2.trimmed_1.fastq.gz_trimming_report.txt:md5,039e38ea4a1ee6334bf36a00f9394a7e",
@@ -350,7 +302,7 @@
                 "circdna_3.trimmed_2.fastq.gz_trimming_report.txt:md5,1a335b7ad3b2fd3fc6776d90c3dcf843"
             ]
         ],
-        "timestamp": "2026-10-19T18:03:18.425371757",
+        "timestamp": "2026-10-19T21:01:48.375014243",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
