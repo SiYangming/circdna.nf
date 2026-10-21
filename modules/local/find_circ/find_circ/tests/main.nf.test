@@ -1,0 +1,38 @@
+nextflow_process {
+
+    name "Test Process FIND_CIRC"
+    script "../main.nf"
+    process "FIND_CIRC"
+
+    tag "modules"
+    tag "modules_local"
+    tag "find_circ"
+    tag "find_circ/find_circ"
+
+    test("test-find-circ - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test' ],
+                            file("${projectDir}/modules/local/find_circ/testdata/breaking_anchors.fastq", checkIfExists: true) ]
+                input[1] = [ [ id:'genome' ],
+                            file("${projectDir}/modules/local/find_circ/testdata", checkIfExists: true) ]
+                input[2] = file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert path(process.out.bed.get(0).get(1)).exists() },
+                { assert path(process.out.versions.get(0)).exists() }
+            )
+        }
+
+    }
+
+}

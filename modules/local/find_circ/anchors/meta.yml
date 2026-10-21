@@ -1,0 +1,50 @@
+name: "find_circ_anchors"
+description: Extract anchor sequences from unmapped BAM reads for find_circ
+keywords:
+  - eccDNA
+  - circRNA
+  - anchors
+  - find_circ
+tools:
+  - "find_circ":
+      description: "Detect head-to-tail spliced (circular) RNA/DNA junctions from sequencing reads"
+      homepage: "https://github.com/marvin-jens/find_circ"
+      documentation: "https://github.com/marvin-jens/find_circ"
+      doi: "10.1038/nsmb.2590"
+      licence:
+        - "MIT"
+      identifier: biotools:find_circ
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test', single_end:false ]
+    - bam:
+        type: file
+        description: Unmapped reads BAM (typically SAM flag 4)
+        pattern: "*.{bam,BAM}"
+        ontologies: []
+output:
+  anchors:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test', single_end:false ]
+      - "*_anchors.qfa.gz":
+          type: file
+          description: Gzipped FASTQ/QFA of anchor sequences
+          pattern: "*_anchors.qfa.gz"
+          ontologies: []
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

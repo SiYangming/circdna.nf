@@ -1,0 +1,46 @@
+process FIND_CIRC_ANCHORS {
+    tag "$meta.id"
+    label 'process_high'
+
+    conda "${moduleDir}/environment.yml"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/find_circ%3A1.2--hdfd78af_0':
+        'quay.io/biocontainers/find_circ:1.2--hdfd78af_0' }"
+
+    input:
+    tuple val(meta), path(bam)
+
+    output:
+    tuple val(meta), path("${prefix}_anchors.qfa.gz"), emit: anchors
+    path "versions.yml"                              , emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def args = task.ext.args ?: ''
+    prefix = task.ext.prefix ?: "${meta.id}"
+    def VERSION = '1.2'
+    """
+    unmapped2anchors.py \\
+        $args \\
+        $bam \\
+        | gzip > ${prefix}_anchors.qfa.gz
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        find_circ: $VERSION
+    END_VERSIONS
+    """
+
+    stub:
+    prefix = task.ext.prefix ?: "${meta.id}"
+    def VERSION = '1.2'
+    """
+    echo '' | gzip > ${prefix}_anchors.qfa.gz
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        find_circ: $VERSION
+    END_VERSIONS
+    """
+}

@@ -119,6 +119,7 @@ conda install -c yangmingsi eccsplorer_slim=1.0.0 ecc_finder_slim=1.0.0
 | `eccsplorer_map_slim`    | ECCsplorer MAP 模式（segemehl → haarz → peak_detect → 完整分析链） |
 | `ecc_finder_map_sr_slim` | ecc_finder MAP_SR 模式（Genrich → TideHunter → merge_score）       |
 | `ecc_finder_asm_sr_slim` | ecc_finder ASM_SR 模式（unicycler → asm_filter）                   |
+| `find_circ`              | legacy：unmapped → anchors → Bowtie2 + find_circ.py → BED6         |
 
 可逗号组合，例如 `--circle_identifier 'eccsplorer_map_slim,ecc_finder_map_sr_slim,ecc_finder_asm_sr_slim'`
 

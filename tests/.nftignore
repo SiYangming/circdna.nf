@@ -10,3 +10,5 @@ reports/trimgalore_fastqc/*_fastqc.zip
 reports/markduplicates/*.md.metrics.txt
 circlefinder/*.microDNA-JT.txt
 pipeline_info/*.{html,json,txt,yml}
+reports/fastqc/*_fastqc.html
+reports/trimgalore_fastqc/*_fastqc.html
