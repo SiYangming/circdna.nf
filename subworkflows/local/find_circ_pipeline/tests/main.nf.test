@@ -1,7 +1,7 @@
 nextflow_workflow {
 
-    name "Test Workflow FIND_CIRC CDR1as"
-    script "../../../subworkflows/local/find_circ_pipeline/main.nf"
+    name "Test Workflow FIND_CIRC_PIPELINE"
+    script "../main.nf"
     workflow "FIND_CIRC_PIPELINE"
 
     tag "subworkflows"
