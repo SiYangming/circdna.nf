@@ -18,16 +18,16 @@ nextflow_workflow {
                 """
                 input[0] = Channel.of([
                     [ id:'cdr1as' ],
-                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true)
+                    file("${projectDir}/modules/local/find_circ/testdata/stub.bam", checkIfExists: true)
                 ])
                 input[1] = Channel.of([
                     [ id:'cdr1as' ],
-                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true)
+                    file("${projectDir}/modules/local/find_circ/testdata/stub.bam.bai", checkIfExists: true)
                 ])
                 input[2] = Channel.value([
                     [ id:'genome' ],
-                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true),
-                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true)
+                    file("${projectDir}/modules/local/find_circ/testdata/stub.fa", checkIfExists: true),
+                    file("${projectDir}/modules/local/find_circ/testdata/stub.fa.fai", checkIfExists: true)
                 ])
                 """
             }
