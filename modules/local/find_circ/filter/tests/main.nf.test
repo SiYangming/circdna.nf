@@ -1,0 +1,35 @@
+nextflow_process {
+
+    name "Test Process FIND_CIRC_FILTER"
+    script "../main.nf"
+    process "FIND_CIRC_FILTER"
+
+    tag "modules"
+    tag "modules_local"
+    tag "find_circ"
+    tag "find_circ/filter"
+
+    test("test-filter - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test' ],
+                            file("${projectDir}/modules/local/find_circ/testdata/cdr1as_reference.bed", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert path(process.out.bed.get(0).get(1)).exists() },
+                { assert path(process.out.versions.get(0)).exists() }
+            )
+        }
+
+    }
+
+}

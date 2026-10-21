@@ -1,0 +1,46 @@
+nextflow_workflow {
+
+    name "Test Workflow FIND_CIRC CDR1as"
+    script "../../../subworkflows/local/find_circ_pipeline/main.nf"
+    workflow "FIND_CIRC_PIPELINE"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "find_circ"
+    tag "find_circ_pipeline"
+
+    test("cdr1as-stub") {
+
+        options "-stub -c ${projectDir}/modules/local/find_circ/tests/nextflow.config"
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'cdr1as' ],
+                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true)
+                ])
+                input[1] = Channel.of([
+                    [ id:'cdr1as' ],
+                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true)
+                ])
+                input[2] = Channel.value([
+                    [ id:'genome' ],
+                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true),
+                    file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.out.bed },
+                { assert workflow.out.versions }
+            )
+        }
+
+    }
+
+}

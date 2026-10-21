@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.7.10 - [2026-10-21]
+
+### `Added`
+
+- **find_circ legacy circle identifier**: New `modules/local/find_circ/{anchors,find_circ,filter}` plus `modules/local/bowtie2/build` and `subworkflows/local/find_circ_pipeline`. Enable with `--circle_identifier find_circ`. Uses `bioconda::find_circ=1.2` / `quay.io/biocontainers/find_circ:1.2--hdfd78af_0` (anchors/filter) and a mulled find_circ+bowtie2 image for detection. Default `ext.args=--noncanonical` for eccDNA. Intermediate publish gated by `save_find_circ_intermediate`. Module tests use marvin-jens `test_data` CDR1as files under `modules/local/find_circ/testdata/`.
+
 ## v4.7.9 - [2026-10-19]
 
 ### Fixed

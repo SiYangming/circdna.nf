@@ -10,7 +10,7 @@
 
 Depending on the branch (circle_identifier) used in the pipeline, different input data is needed:
 
-> The circle_identifiers `circle_map_realign`, `circle_map_repeats`, `circle_finder`, and `circexplorer2` work best with ATAC-seq or Circle-seq data.
+> The circle_identifiers `circle_map_realign`, `circle_map_repeats`, `circle_finder`, `circexplorer2`, and `find_circ` work best with ATAC-seq or Circle-seq data.
 
 > The circle_identifier `ampliconarchitect` only works with WGS data.
 

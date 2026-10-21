@@ -396,6 +396,9 @@
         "save_circle_finder_intermediate": {
             "type": "boolean"
         },
+        "save_find_circ_intermediate": {
+            "type": "boolean"
+        },
         "save_unicycler_intermediate": {
             "type": "boolean"
         },

@@ -25,7 +25,7 @@
                     "unicycler": "0.5.1"
                 },
                 "Workflow": {
-                    "nf-core/circdna": "v4.7.9"
+                    "nf-core/circdna": "v4.7.10"
                 },
                 "bwa": "0.7.19-r1273",
                 "cat": "9.5",

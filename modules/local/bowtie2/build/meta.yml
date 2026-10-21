@@ -1,0 +1,46 @@
+name: "bowtie2_build"
+description: Build Bowtie2 index from a FASTA reference
+keywords:
+  - index
+  - bowtie2
+  - fasta
+tools:
+  - "bowtie2":
+      description: "Fast and sensitive read alignment"
+      homepage: "http://bowtie-bio.sourceforge.net/bowtie2/"
+      documentation: "http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml"
+      licence:
+        - "GPL-3.0-or-later"
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing reference information
+          e.g. [ id:'genome' ]
+    - fasta:
+        type: file
+        description: Reference genome FASTA
+        pattern: "*.{fa,fasta,fna,fa.gz,fasta.gz}"
+        ontologies: []
+output:
+  index:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing reference information
+      - bowtie2:
+          type: directory
+          description: Directory containing Bowtie2 index files
+          pattern: "bowtie2"
+          ontologies: []
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750
+authors:
+  - "@siyangming"
+maintainers:
+  - "@siyangming"

@@ -1,0 +1,35 @@
+nextflow_process {
+
+    name "Test Process BOWTIE2_BUILD"
+    script "../main.nf"
+    process "BOWTIE2_BUILD"
+
+    tag "modules"
+    tag "modules_local"
+    tag "bowtie2"
+    tag "bowtie2/build"
+
+    test("test-bowtie2-build - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'genome' ],
+                            file("${projectDir}/modules/local/find_circ/testdata/CDR1as_locus.fa", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert path(process.out.index.get(0).get(1)).exists() },
+                { assert path(process.out.versions.get(0)).exists() }
+            )
+        }
+
+    }
+
+}

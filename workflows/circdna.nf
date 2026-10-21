@@ -21,6 +21,7 @@ include { MULTIQC }     from '../modules/nf-core/multiqc/main'
 include { BAM_PREPROCESSING              } from '../subworkflows/local/bam_preprocessing/main'
 include { CIRCLE_MAP_PIPELINE            } from '../subworkflows/local/circle_map_pipeline/main'
 include { CIRCLE_FINDER_PIPELINE         } from '../subworkflows/local/circle_finder_pipeline/main'
+include { FIND_CIRC_PIPELINE             } from '../subworkflows/local/find_circ_pipeline/main'
 include { AMPLICONARCHITECT_PIPELINE     } from '../subworkflows/local/ampliconarchitect_pipeline/main'
 include { UNICYCLER_PIPELINE             } from '../subworkflows/local/unicycler_pipeline/main'
 include { LONG_READ_PREPROCESSING        } from '../subworkflows/local/long_read_preprocessing/main'
@@ -80,6 +81,7 @@ workflow CIRCDNA {
     def run_circle_map_realign = false
     def run_circle_map_repeats = false
     def run_circle_finder = false
+    def run_find_circ = false
     def run_ampliconarchitect = false
     def run_unicycler = false
     def run_eccsplorer_blackbox = false
@@ -94,6 +96,7 @@ workflow CIRCDNA {
         run_circle_map_realign = ("circle_map_realign" in branch)
         run_circle_map_repeats = ("circle_map_repeats" in branch)
         run_circle_finder = ("circle_finder" in branch)
+        run_find_circ = ("find_circ" in branch)
         run_ampliconarchitect = ("ampliconarchitect" in branch)
         run_unicycler = ("unicycler" in branch)
         run_eccsplorer_blackbox = ("eccsplorer" in branch)
@@ -102,7 +105,7 @@ workflow CIRCDNA {
         run_ecc_finder_map_ont_blackbox = ("ecc_finder_map_ont" in branch)
         run_ecc_finder_asm_ont_blackbox = ("ecc_finder_asm_ont" in branch)
         def use_blackbox_any = (run_eccsplorer_blackbox | run_ecc_finder_map_sr_blackbox | run_ecc_finder_asm_sr_blackbox | run_ecc_finder_map_ont_blackbox | run_ecc_finder_asm_ont_blackbox)
-        def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)
+        def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_find_circ | run_ampliconarchitect | run_circexplorer2)
         // slim 标识符（原子化链，不走 legacy 路径）
         def use_slim_any = branch.any { ident -> ident in ['eccsplorer_map_slim','eccsplorer_clu_slim','eccsplorer_all_slim','ecc_finder_map_sr_slim','ecc_finder_asm_sr_slim','ecc_finder_map_ont_slim','ecc_finder_asm_ont_slim'] }
         use_legacy_mode = use_legacy_any
@@ -368,7 +371,7 @@ workflow CIRCDNA {
                         ch_versions = ch_versions.mix(ECCSPLORER_CLU_SLIM.out.versions)
                     }
                     if (use_ecc_finder_map_sr_slim || use_ecc_finder_asm_sr_slim) {
-                        def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_ampliconarchitect | run_circexplorer2)
+                        def use_legacy_any = (run_unicycler | run_circle_map_realign | run_circle_map_repeats | run_circle_finder | run_find_circ | run_ampliconarchitect | run_circexplorer2)
                         if (!use_legacy_any) {
                             // slim-only：生成 sorted BAM（复用 BAM_PREPROCESSING）
                             BAM_PREPROCESSING ( ch_eccdna_reads, ch_bwa_index, ch_fasta_meta, true )
@@ -427,7 +430,7 @@ workflow CIRCDNA {
 
         // BAM 输入 + legacy identifier：BAM_PREPROCESSING（仅索引，不重比对）
         if (use_legacy_mode && (run_ampliconarchitect | run_circexplorer2 | run_circle_finder |
-            run_circle_map_realign | run_circle_map_repeats)) {
+            run_find_circ | run_circle_map_realign | run_circle_map_repeats)) {
             BAM_PREPROCESSING (
                 ch_bam_sorted,
                 ch_bwa_index,
@@ -449,9 +452,9 @@ workflow CIRCDNA {
         }
     }
 
-    // 短读 legacy identifier（circle_finder / circle_map / circexplorer2 / unicycler / ampliconarchitect）
+    // 短读 legacy identifier（circle_finder / circle_map / circexplorer2 / find_circ / unicycler / ampliconarchitect）
     if (use_legacy_mode && (run_ampliconarchitect | run_circexplorer2 | run_circle_finder |
-        run_circle_map_realign | run_circle_map_repeats)) {
+        run_find_circ | run_circle_map_realign | run_circle_map_repeats)) {
         if (run_ampliconarchitect) {
             AMPLICONARCHITECT_PIPELINE (
                 ch_bam_sorted,
@@ -491,6 +494,15 @@ workflow CIRCDNA {
                 ch_bam_sorted
             )
             ch_versions = ch_versions.mix(CIRCEXPLORER2_PARSE.out.versions_circexplorer2)
+        }
+
+        if (run_find_circ) {
+            FIND_CIRC_PIPELINE (
+                ch_bam_sorted,
+                ch_bam_sorted_bai,
+                BAM_PREPROCESSING.out.fasta_fai
+            )
+            ch_versions = ch_versions.mix(FIND_CIRC_PIPELINE.out.versions)
         }
 
         if (run_unicycler && params.input_format == "FASTQ") {

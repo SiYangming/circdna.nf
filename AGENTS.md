@@ -435,6 +435,7 @@ params.mode == 'eccdna'     → ECCDNA_MODE (+ optional legacy/blackbox/slim bra
 | `circle_map_realign` | CIRCLE_MAP_PIPELINE (realign) | Circle-Map realignment      |
 | `circle_map_repeats` | CIRCLE_MAP_PIPELINE (repeats) | Circle-Map repeat analysis  |
 | `circle_finder`      | CIRCLE_FINDER_PIPELINE        | Circle-Finder detection     |
+| `find_circ`          | FIND_CIRC_PIPELINE            | find_circ (anchors + Bowtie2)|
 | `ampliconarchitect`  | AMPLICONARCHITECT_PIPELINE    | AmpliconArchitect + CNVkit  |
 | `unicycler`          | UNICYCLER_PIPELINE            | Unicycler circular assembly |
 
